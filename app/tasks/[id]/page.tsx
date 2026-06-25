@@ -327,7 +327,6 @@ export default async function TaskDetailPage({
                   id: task.id,
                   status: task.status,
                   hasReviewed,
-                  paymentStatus: payment?.status ?? null,
                 }}
               />
             </CardContent>

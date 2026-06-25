@@ -72,9 +72,9 @@ export function TaskActions({ task }: TaskActionsProps) {
       if (res.ok) {
         const score = res.data?.score ?? 0;
         const passed = res.data?.status === "passed";
-        toast[passed ? "success" : "error"](
-          `Validation ${passed ? "passed" : "failed"} · score ${score}/100`,
-        );
+        const message = `Validation ${passed ? "passed" : "failed"} · score ${score}/100`;
+        if (passed) toast.success(message);
+        else toast.error(message);
       } else {
         toast.error(res.error);
       }

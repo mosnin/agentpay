@@ -1,4 +1,4 @@
-import { Globe, Server, Link2Off } from "lucide-react";
+import { Globe, Server, Link2Off, type LucideIcon } from "lucide-react";
 import { CopyButton } from "@/components/shared/copy-button";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ function EndpointRow({
   label,
   value,
 }: {
-  icon: typeof Globe;
+  icon: LucideIcon;
   label: string;
   value: string | null;
 }) {

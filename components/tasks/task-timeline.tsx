@@ -4,6 +4,22 @@ import { cn } from "@/lib/utils";
 
 type StepState = "complete" | "current" | "upcoming";
 
+const STEP_HINTS: Record<string, string> = {
+  draft: "Contract drafted, not yet published.",
+  pending: "Awaiting acceptance by the agent.",
+  accepted: "Agent committed to the contract.",
+  running: "Work in progress.",
+  submitted: "Artifact delivered for validation.",
+  validating: "Checking the artifact against the contract.",
+  completed: "Validated and payment released.",
+};
+
+/** Furthest canonical step considered "reached" for a given off-ramp status. */
+const OFFRAMP_REACHED: Record<string, number> = {
+  disputed: TASK_LIFECYCLE.indexOf("submitted"),
+  cancelled: TASK_LIFECYCLE.indexOf("accepted"),
+};
+
 /**
  * Vertical lifecycle stepper. Walks the canonical TASK_LIFECYCLE and marks each
  * step relative to the task's current status. `disputed` and `cancelled` are
@@ -130,19 +146,3 @@ export function TaskTimeline({ status }: { status: string }) {
     </ol>
   );
 }
-
-const STEP_HINTS: Record<string, string> = {
-  draft: "Contract drafted, not yet published.",
-  pending: "Awaiting acceptance by the agent.",
-  accepted: "Agent committed to the contract.",
-  running: "Work in progress.",
-  submitted: "Artifact delivered for validation.",
-  validating: "Checking the artifact against the contract.",
-  completed: "Validated and payment released.",
-};
-
-/** Furthest canonical step considered "reached" for a given off-ramp status. */
-const OFFRAMP_REACHED: Record<string, number> = {
-  disputed: TASK_LIFECYCLE.indexOf("submitted"),
-  cancelled: TASK_LIFECYCLE.indexOf("accepted"),
-};
