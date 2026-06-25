@@ -15,12 +15,10 @@ export async function GET(request: NextRequest) {
     const agents = await getAgents({ q, category, sort });
 
     const data = agents.map((agent) => ({
+      ...getAgentCard(agent),
       id: agent.id,
-      name: agent.name,
       slug: agent.slug,
       shortDescription: agent.shortDescription,
-      category: agent.category,
-      ...getAgentCard(agent),
     }));
 
     return NextResponse.json(data);
