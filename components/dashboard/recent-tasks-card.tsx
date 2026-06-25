@@ -22,8 +22,8 @@ export function RecentTasksCard({ tasks }: { tasks: TaskListItem[] }) {
           <CardDescription>Latest work you commissioned or fulfilled.</CardDescription>
         </div>
         <Button asChild variant="ghost" size="sm" className="shrink-0 text-muted-foreground">
-          <Link href="/tasks">
-            View all
+          <Link href="/tasks/new">
+            New task
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         </Button>

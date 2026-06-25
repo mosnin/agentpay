@@ -212,7 +212,7 @@ function methodClass(method: HttpMethod): string {
 export default function DevelopersPage() {
   return (
     <SiteShell>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         {/* Hero */}
         <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-8 sm:p-12">
           <div className="pointer-events-none absolute inset-0 bg-grid-fade opacity-60" />

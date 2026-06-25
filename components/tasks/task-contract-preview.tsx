@@ -59,7 +59,7 @@ export function TaskContractPreview({
             </span>
           )}
           {contract.contractHash && (
-            <span className="font-mono text-muted-foreground">{contract.contractHash}</span>
+            <span className="break-all font-mono text-muted-foreground">{contract.contractHash}</span>
           )}
         </div>
       </div>
