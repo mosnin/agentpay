@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo,
+      Consolas, monospace;
+
+    /* Light theme (kept for completeness; app is dark-first). */
+    --background: 0 0% 100%;
+    --foreground: 224 20% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 20% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 20% 9%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 20% 12%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 94%;
+    --accent-foreground: 224 20% 12%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 60% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 10%;
+    --border: 220 13% 91%;
+    --input: 220 13% 88%;
+    --ring: 243 75% 59%;
+    --chart-1: 243 75% 59%;
+    --chart-2: 199 89% 48%;
+    --chart-3: 152 60% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 280 65% 60%;
+    --radius: 0.7rem;
+  }
+
+  .dark {
+    --background: 224 24% 4%;
+    --foreground: 210 20% 98%;
+    --card: 224 20% 6.5%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 24% 5%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 243 80% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 16% 12%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 222 16% 11%;
+    --muted-foreground: 218 12% 58%;
+    --accent: 222 16% 14%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 72% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 58% 48%;
+    --success-foreground: 152 80% 6%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 38 92% 8%;
+    --border: 220 14% 15%;
+    --input: 220 14% 17%;
+    --ring: 243 80% 67%;
+    --chart-1: 243 80% 67%;
+    --chart-2: 199 89% 56%;
+    --chart-3: 152 58% 52%;
+    --chart-4: 38 92% 58%;
+    --chart-5: 280 70% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    @apply bg-primary/30 text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Subtle glass surface used across panels and nav. */
+  .glass {
+    @apply border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl;
+  }
+  .glass-strong {
+    @apply border border-white/[0.08] bg-white/[0.04] backdrop-blur-2xl;
+  }
+
+  /* Gradient text for hero + headings. */
+  .text-gradient {
+    @apply bg-gradient-to-br from-white via-white to-white/55 bg-clip-text text-transparent;
+  }
+  .text-gradient-primary {
+    @apply bg-gradient-to-br from-primary via-primary to-primary/60 bg-clip-text text-transparent;
+  }
+
+  /* Faint dotted grid background for hero / empty canvases. */
+  .bg-grid {
+    background-image: radial-gradient(
+      hsl(var(--border)) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+  .bg-grid-fade {
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  /* Ambient gradient glow. */
+  .glow-primary {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.1),
+      0 8px 40px -8px hsl(var(--primary) / 0.35);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Slim, themed scrollbars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+  background-clip: content-box;
+}
