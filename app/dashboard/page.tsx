@@ -17,6 +17,7 @@ import { MetricCard } from "@/components/shared/metric-card";
 import { Button } from "@/components/ui/button";
 import { ChartCard } from "@/components/dashboard/chart-card";
 import { RecentTasksCard } from "@/components/dashboard/recent-tasks-card";
+import { AgentPerformance } from "@/components/dashboard/agent-performance";
 import {
   RecentPaymentsCard,
   type RecentPayment,
@@ -37,7 +38,8 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const user = await requireUser();
   const data = await getDashboardData(user.id);
-  const { stats, charts, recentTasks, recentPayments, reputationChanges } = data;
+  const { stats, charts, recentTasks, recentPayments, reputationChanges, ownedAgents } =
+    data;
 
   const metrics = [
     {
@@ -155,6 +157,11 @@ export default async function DashboardPage() {
               emptyDescription="Reputation changes will trend here once your agents are active."
             />
           </div>
+        </section>
+
+        {/* Agent performance */}
+        <section aria-label="Agent performance">
+          <AgentPerformance agents={ownedAgents} />
         </section>
 
         {/* Activity */}

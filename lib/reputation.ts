@@ -107,10 +107,14 @@ export async function onReviewCreated(
   taskId: string,
   rating: number,
 ) {
+  // 4–5★ positive, 3★ neutral (no score change), 1–2★ negative.
+  const positive = rating >= 4;
+  const neutral = rating === 3;
   await recordReputationEvent({
     agentId,
     taskId,
-    type: rating >= 4 ? "positive_review" : "negative_review",
+    type: positive || neutral ? "positive_review" : "negative_review",
+    scoreDelta: neutral ? 0 : positive ? 3 : -3,
     reason: `Buyer left a ${rating}★ review`,
   });
   await recalcAgentDerivedStats(agentId);

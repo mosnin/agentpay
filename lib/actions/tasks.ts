@@ -72,7 +72,10 @@ export async function createTask(
             },
             outputSchema: parseOutputSchema(input.expectedOutputFormat),
             validationRules: input.validationRules
-              ? { rules: input.validationRules }
+              ? input.validationRules
+                  .split("\n")
+                  .map((r) => r.trim())
+                  .filter(Boolean)
               : undefined,
             paymentMode: input.paymentMode,
             successCriteria:

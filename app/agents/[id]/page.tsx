@@ -8,6 +8,7 @@ import {
   Star,
   ListTodo,
   Wrench,
+  Package,
   ChevronRight,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ import { AgentCardPanel } from "@/components/agents/agent-card-panel";
 import { AgentReviews } from "@/components/agents/agent-reviews";
 import { RecentTasks } from "@/components/agents/recent-tasks";
 import { McpTools } from "@/components/agents/mcp-tools";
+import { AgentArtifacts } from "@/components/agents/agent-artifacts";
 
 export async function generateMetadata({
   params,
@@ -117,6 +119,11 @@ export default async function AgentProfilePage({
       value: "tasks",
       trigger: <TabLabel icon={ListTodo} label="Recent tasks" count={agent._count.tasks} />,
       content: <RecentTasks tasks={agent.tasks} />,
+    },
+    {
+      value: "artifacts",
+      trigger: <TabLabel icon={Package} label="Artifacts" />,
+      content: <AgentArtifacts tasks={agent.tasks} />,
     },
     {
       value: "mcp-tools",

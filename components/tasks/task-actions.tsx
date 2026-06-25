@@ -20,6 +20,7 @@ import {
   startTask,
   runValidation,
   completeTask,
+  cancelTask,
 } from "@/lib/actions/tasks";
 import { SubmitArtifactDialog } from "./submit-artifact-dialog";
 import { ReviewForm } from "./review-form";
@@ -91,6 +92,7 @@ export function TaskActions({ task }: TaskActionsProps) {
   const showComplete = ["submitted", "validating"].includes(status);
   const showReview = status === "completed";
   const showDispute = ACTIVE_STATUSES.has(status);
+  const showCancel = ["draft", "pending", "accepted", "running"].includes(status);
 
   const isTerminal = status === "completed" || status === "cancelled";
 
@@ -177,19 +179,34 @@ export function TaskActions({ task }: TaskActionsProps) {
         )}
       </div>
 
-      {showDispute && (
+      {(showDispute || showCancel) && (
         <>
           {hasPrimary && <Separator className="bg-border/60" />}
-          <DisputeDialog taskId={id} disabled={pending}>
+          {showDispute && (
+            <DisputeDialog taskId={id} disabled={pending}>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-muted-foreground hover:text-destructive"
+                disabled={pending}
+              >
+                <ShieldAlert />
+                Open dispute
+              </Button>
+            </DisputeDialog>
+          )}
+          {showCancel && (
             <Button
               variant="ghost"
               className="w-full justify-start text-muted-foreground hover:text-destructive"
               disabled={pending}
+              onClick={() =>
+                run("cancel", () => cancelTask(id), "Task cancelled · payment refunded")
+              }
             >
-              <ShieldAlert />
-              Open dispute
+              <Ban />
+              {isBusy("cancel") ? "Cancelling…" : "Cancel task"}
             </Button>
-          </DisputeDialog>
+          )}
         </>
       )}
 
