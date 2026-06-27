@@ -1,4 +1,5 @@
 import "server-only";
+import type { TaskStatus } from "@prisma/client";
 import { prisma } from "./prisma";
 import {
   agentCardInclude,
@@ -216,9 +217,14 @@ function lastNDays(n: number): { date: string; key: string }[] {
 }
 
 /** Every task the user is involved in (as buyer, or owner of the selling agent), newest activity first. */
-export async function getUserTasks(userId: string) {
+export async function getUserTasks(userId: string, statuses?: string[]) {
   return prisma.task.findMany({
-    where: { OR: [{ buyerId: userId }, { sellerAgent: { ownerId: userId } }] },
+    where: {
+      OR: [{ buyerId: userId }, { sellerAgent: { ownerId: userId } }],
+      ...(statuses && statuses.length > 0
+        ? { status: { in: statuses as TaskStatus[] } }
+        : {}),
+    },
     include: taskListInclude,
     orderBy: { updatedAt: "desc" },
     take: 100,

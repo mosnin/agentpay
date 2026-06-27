@@ -27,13 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 73 — Status filter on the `/tasks` index.**
-Now that `/tasks` lists everything, add a lightweight status filter so a power user can focus. Read
-`?status=` from searchParams in `app/tasks/page.tsx`, filter `getUserTasks` accordingly (accept the
-real lifecycle statuses + an "active" group = pending/accepted/running/submitted/validating), and
-render a row of filter pills (All / Active / Completed / …) that link to the param, with a result
-count. This makes the page dynamic (ƒ), like `/marketplace`. Bounded to `app/tasks/page.tsx` (+ maybe
-`getUserTasks` gaining an optional status arg). Verify tsc/lint/build, push.
+**Step 74 — Connect the dashboard to the `/tasks` index.**
+The dashboard's "Recent tasks" card shows 6 and has only a "New task" link — now that `/tasks` exists,
+it should offer "View all." Add a subtle "View all →" link (to `/tasks`) in the `RecentTasksCard`
+header or footer so the full index is discoverable from where users already look at recent tasks.
+Bounded to `components/dashboard/recent-tasks-card.tsx`. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -366,6 +364,11 @@ count. This makes the page dynamic (ƒ), like `/marketplace`. Bounded to `app/ta
   the task-detail breadcrumb "Tasks" → `/tasks` (was `/dashboard`). Static-prerendered like its authed
   siblings. `app/tasks/page.tsx` + `lib/queries.ts` + `lib/nav.ts` + `app/tasks/[id]/page.tsx`.
   tsc/lint/build ✓ (/tasks emitted).
+- **Iteration 73 (13:02 UTC) — Status filter on the `/tasks` index.**
+  Added curated filter pills (All / Active / Completed / Disputed / Cancelled) reading `?status=`, with
+  a result count and a contextual empty state ("No completed tasks" → View all). `getUserTasks` gained
+  an optional `statuses` arg (filtered at the DB, cast to the `TaskStatus` enum); page is now dynamic
+  (ƒ) like `/marketplace`. `app/tasks/page.tsx` + `lib/queries.ts`. tsc/lint/build ✓.
 
 ---
 

@@ -10,7 +10,7 @@ import { TaskStatusBadge } from "@/components/shared/task-status-badge";
 import { DeadlineBadge } from "@/components/shared/deadline-badge";
 import { requireUser } from "@/lib/auth";
 import { getUserTasks } from "@/lib/queries";
-import { formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Your tasks",
@@ -19,9 +19,28 @@ export const metadata: Metadata = {
 
 const TERMINAL = new Set(["completed", "cancelled", "disputed"]);
 
-export default async function TasksPage() {
+// Curated status buckets — ruthless simplicity over one pill per raw status.
+const FILTERS: { key: string; label: string; statuses?: string[] }[] = [
+  { key: "all", label: "All" },
+  {
+    key: "active",
+    label: "Active",
+    statuses: ["pending", "accepted", "running", "submitted", "validating"],
+  },
+  { key: "completed", label: "Completed", statuses: ["completed"] },
+  { key: "disputed", label: "Disputed", statuses: ["disputed"] },
+  { key: "cancelled", label: "Cancelled", statuses: ["cancelled"] },
+];
+
+export default async function TasksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   const user = await requireUser();
-  const tasks = await getUserTasks(user.id);
+  const { status } = await searchParams;
+  const active = FILTERS.find((f) => f.key === status) ?? FILTERS[0];
+  const tasks = await getUserTasks(user.id, active.statuses);
 
   return (
     <AppShell>
@@ -37,65 +56,106 @@ export default async function TasksPage() {
         </Button>
       </PageHeader>
 
-      {tasks.length === 0 ? (
-        <EmptyState
-          icon={ListChecks}
-          title="No tasks yet"
-          description="Hire an agent from the marketplace to commission your first task."
-          action={
-            <Button asChild>
-              <Link href="/marketplace">Browse agents</Link>
-            </Button>
-          }
-        />
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <ul className="divide-y divide-border/60">
-              {tasks.map((task) => {
-                const isBuyer = task.buyerId === user.id;
-                return (
-                  <li key={task.id}>
-                    <Link
-                      href={`/tasks/${task.id}`}
-                      className="group flex items-center justify-between gap-4 px-4 py-3.5 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-6"
-                    >
-                      <div className="min-w-0 space-y-1">
-                        <p className="truncate text-sm font-medium text-foreground">
-                          {task.title}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                          <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/30 px-1.5 py-0.5 font-medium">
-                            {isBuyer ? "Hired" : "Selling"}
-                          </span>
-                          <span className="truncate">
-                            {task.sellerAgent ? task.sellerAgent.name : "Unassigned"}
-                          </span>
-                          <span aria-hidden className="text-border">
-                            •
-                          </span>
-                          <span className="shrink-0">
-                            {formatRelativeTime(task.updatedAt)}
-                          </span>
-                          {task.deadline && !TERMINAL.has(task.status) && (
-                            <DeadlineBadge deadline={task.deadline} urgentOnly />
-                          )}
+      <div className="space-y-4">
+        {/* Status filter */}
+        <div className="flex flex-wrap items-center gap-2">
+          {FILTERS.map((f) => {
+            const isActive = f.key === active.key;
+            return (
+              <Link
+                key={f.key}
+                href={f.key === "all" ? "/tasks" : `/tasks?status=${f.key}`}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  isActive
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-border/60 bg-muted/30 text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {f.label}
+              </Link>
+            );
+          })}
+          <span className="ml-auto text-xs text-muted-foreground">
+            {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
+          </span>
+        </div>
+
+        {tasks.length === 0 ? (
+          <EmptyState
+            icon={ListChecks}
+            title={
+              active.key === "all"
+                ? "No tasks yet"
+                : `No ${active.label.toLowerCase()} tasks`
+            }
+            description={
+              active.key === "all"
+                ? "Hire an agent from the marketplace to commission your first task."
+                : "Nothing matches this filter right now."
+            }
+            action={
+              active.key === "all" ? (
+                <Button asChild>
+                  <Link href="/marketplace">Browse agents</Link>
+                </Button>
+              ) : (
+                <Button asChild variant="outline">
+                  <Link href="/tasks">View all tasks</Link>
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <Card>
+            <CardContent className="p-0">
+              <ul className="divide-y divide-border/60">
+                {tasks.map((task) => {
+                  const isBuyer = task.buyerId === user.id;
+                  return (
+                    <li key={task.id}>
+                      <Link
+                        href={`/tasks/${task.id}`}
+                        className="group flex items-center justify-between gap-4 px-4 py-3.5 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-6"
+                      >
+                        <div className="min-w-0 space-y-1">
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {task.title}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/30 px-1.5 py-0.5 font-medium">
+                              {isBuyer ? "Hired" : "Selling"}
+                            </span>
+                            <span className="truncate">
+                              {task.sellerAgent ? task.sellerAgent.name : "Unassigned"}
+                            </span>
+                            <span aria-hidden className="text-border">
+                              •
+                            </span>
+                            <span className="shrink-0">
+                              {formatRelativeTime(task.updatedAt)}
+                            </span>
+                            {task.deadline && !TERMINAL.has(task.status) && (
+                              <DeadlineBadge deadline={task.deadline} urgentOnly />
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-1.5">
-                        <TaskStatusBadge status={task.status} />
-                        <span className="text-xs font-medium tabular-nums text-muted-foreground">
-                          {formatCurrency(task.budget, task.currency)}
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+                        <div className="flex shrink-0 flex-col items-end gap-1.5">
+                          <TaskStatusBadge status={task.status} />
+                          <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                            {formatCurrency(task.budget, task.currency)}
+                          </span>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </AppShell>
   );
 }
