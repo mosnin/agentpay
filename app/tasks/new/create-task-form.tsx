@@ -57,6 +57,7 @@ export interface AgentSelectOption {
   currency: string;
   verified: boolean;
   pricingModel: string;
+  primaryCapability?: string | null;
 }
 
 interface CreateTaskFormProps {
@@ -96,6 +97,18 @@ export function CreateTaskForm({
     d.setDate(d.getDate() + 7);
     return d.toISOString().slice(0, 10);
   })();
+  // Arriving via "Hire this agent": seed a starter title from the agent's
+  // specialty and tailor the objective prompt, so the brief is ~80% there.
+  const presetAgentObj = agentById(presetAgent);
+  const presetCapability = presetAgentObj?.primaryCapability?.trim() ?? "";
+  const presetTitle = presetAgentObj
+    ? presetCapability
+      ? presetCapability.charAt(0).toUpperCase() + presetCapability.slice(1)
+      : `${presetAgentObj.category} task`
+    : "";
+  const objectivePlaceholder = presetAgentObj
+    ? `Describe what you want ${presetAgentObj.name} to deliver${presetCapability ? ` for ${presetCapability.toLowerCase()}` : ""} — outcome, scope, volume, and constraints.`
+    : "Describe the outcome you want, including any volume, scope, and constraints.";
 
   const {
     register,
@@ -108,7 +121,7 @@ export function CreateTaskForm({
   } = useForm<CreateTaskInput>({
     resolver: zodResolver(createTaskSchema),
     defaultValues: {
-      title: "",
+      title: presetTitle,
       objective: "",
       category: presetCategory || undefined,
       sellerAgentId: presetAgent,
@@ -213,7 +226,7 @@ export function CreateTaskForm({
               <Textarea
                 id="objective"
                 rows={4}
-                placeholder="Describe the outcome you want, including any volume, scope, and constraints."
+                placeholder={objectivePlaceholder}
                 aria-invalid={Boolean(errors.objective)}
                 {...register("objective")}
               />

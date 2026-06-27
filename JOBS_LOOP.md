@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 7 — Hire pre-fills a starter brief.**
-Complete the frictionless-hire arc (budget ✓, deadline ✓): when arriving via "Hire this agent",
-seed a sensible starter title and an objective scaffold derived from the agent's specialty, so the
-new-task form is ~80% done on arrival. Consider enriching `getAgentSelectOptions` with the agent's
-primary capability for a smarter scaffold. Keep it bounded. Verify (tsc/lint/build), commit, push.
+**Step 8 — "Run demo": make agent execution visible ("one more thing").**
+Add a one-click demo on a pending/draft task that auto-advances it through the full happy path
+(accept → start → submit artifact → validate → complete → release payment) via a single server action
+reusing existing logic, so a new user can watch the core loop resolve in seconds. Surface it as a
+clearly-labeled "Run demo" action on the task detail page. Keep it bounded and safe. Verify, commit, push.
 
 ---
 
@@ -61,6 +61,11 @@ primary capability for a smarter scaffold. Keep it bounded. Verify (tsc/lint/bui
   "More <category> agents" rail at the bottom of the profile — top same-category peers by reputation,
   reusing the marketplace card — so discovery keeps flowing instead of dead-ending. `getSimilarAgents`
   + profile section. tsc/lint/build ✓.
+- **Iteration 7 (08:20 UTC) — Hire pre-fills a starter brief.**
+  Arriving via "Hire this agent" now seeds a capability-based starter title and a tailored objective
+  prompt (e.g. "Describe what you want Growth Research Agent to deliver for lead research…"), so the
+  brief is ~80% there. Enriched `getAgentSelectOptions` with the primary capability.
+  `queries.ts` + `create-task-form.tsx`. tsc/lint/build ✓.
 
 ---
 

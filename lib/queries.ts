@@ -105,7 +105,7 @@ export async function getSimilarAgents(
 }
 
 export async function getAgentSelectOptions() {
-  return prisma.agent.findMany({
+  const agents = await prisma.agent.findMany({
     where: { status: "active" },
     select: {
       id: true,
@@ -115,9 +115,18 @@ export async function getAgentSelectOptions() {
       currency: true,
       verified: true,
       pricingModel: true,
+      capabilities: {
+        select: { capability: { select: { name: true } } },
+        take: 1,
+      },
     },
     orderBy: { name: "asc" },
   });
+  // Flatten the primary capability so the task form can scaffold a brief.
+  return agents.map(({ capabilities, ...a }) => ({
+    ...a,
+    primaryCapability: capabilities[0]?.capability.name ?? null,
+  }));
 }
 
 export async function getCapabilities() {
