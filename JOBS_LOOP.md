@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 27 — Consistent, actionable dashboard empty states.**
-Match the recent-tasks card's empty-state treatment across the other dashboard activity cards: give
-`recent-payments-card` and `reputation-feed` a relevant CTA ("Commission an agent" / "List an agent")
-and consistent padding, so an empty dashboard guides the next move everywhere. Read those components
-first; bounded to `components/dashboard/`. Verify (tsc/lint/build), commit, push.
+**Step 28 — Visible keyboard focus on list rows.**
+The interactive rows/links in the dashboard cards (recent-tasks, recent-payments, needs-attention)
+rely on the browser default outline, while Buttons have focus-visible rings. Add a consistent
+`focus-visible:ring` treatment to those row links so keyboard focus is clearly visible. Bounded to
+those components. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -146,6 +146,10 @@ first; bounded to `components/dashboard/`. Verify (tsc/lint/build), commit, push
   Added an optional `href` to the shared `MetricCard` (wraps in a Link with a hover border when set,
   backward-compatible) and linked the seller-side metrics — Total earnings, Agents owned, Average
   reputation — to `/seller`. `metric-card.tsx` + dashboard. tsc/lint/build ✓.
+- **Iteration 27 (09:42 UTC) — Consistent, actionable dashboard empty states.**
+  `recent-payments-card` ("Commission an agent") and `reputation-feed` ("List an agent") now have the
+  same actionable empty-state CTA treatment as the recent-tasks card, so an empty dashboard guides the
+  next move everywhere. tsc/lint/build ✓.
 
 ---
 

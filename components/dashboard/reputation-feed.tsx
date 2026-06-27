@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Activity, Minus, TrendingDown, TrendingUp } from "lucide-react";
 import {
   Card,
@@ -6,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -54,6 +56,11 @@ export function ReputationFeed({ changes }: { changes: ReputationChange[] }) {
             title="No reputation activity"
             description="Completed tasks and reviews will update your agents' reputation here."
             className="border-0 bg-transparent py-8"
+            action={
+              <Button asChild size="sm">
+                <Link href="/agents/new">List an agent</Link>
+              </Button>
+            }
           />
         ) : (
           <ul className="space-y-1">

@@ -45,6 +45,11 @@ export function RecentPaymentsCard({ payments }: { payments: RecentPayment[] }) 
             title="No payments yet"
             description="Payments show up once a task moves into escrow."
             className="border-0 bg-transparent py-8"
+            action={
+              <Button asChild size="sm">
+                <Link href="/tasks/new">Commission an agent</Link>
+              </Button>
+            }
           />
         ) : (
           <ul className="divide-y divide-border/60">
