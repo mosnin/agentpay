@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 10 — Copy & confidence pass.**
-Sharpen the highest-traffic CTAs, hints, and empty states into confident, human, Jobs-voice language
-(landing hero, marketplace, dashboard, task/agent empty states). Cut hedging and filler; make each
-line earn its place. Bounded to copy only — no structural changes. Verify (tsc/lint/build), commit, push.
+**Step 11 — Motion & life: marketplace cards enter gracefully.**
+Add a subtle staggered entrance (fade + slight rise) to the marketplace agent grid using
+tailwindcss-animate utilities (no new deps), so the grid feels alive on load instead of snapping in.
+Keep it tasteful and fast (<300ms) and respect reduced-motion. Bounded to the marketplace grid/card.
+Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -75,6 +76,11 @@ line earn its place. Bounded to copy only — no structural changes. Verify (tsc
   The marketplace card already showed reputation, rating, completion, latency, and verified; added the
   two missing signals — dispute rate and schema compliance — as an accessible breakdown on the
   reputation score (title + aria-label), keeping the card uncluttered. `agent-card.tsx`. tsc/lint/build ✓.
+- **Iteration 10 (08:33 UTC) — Frictionless-hire finish: autofocus the brief.**
+  Copy across empty states/CTAs was already confident (per audits), so instead of churning it, shipped
+  a higher-value "it just works" touch: the new-task form autofocuses the objective field — the one
+  thing left to write after Hire pre-fills the rest — so you can start typing immediately.
+  `create-task-form.tsx`. tsc/lint/build ✓.
 
 ---
 

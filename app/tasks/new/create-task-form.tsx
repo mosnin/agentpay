@@ -226,6 +226,7 @@ export function CreateTaskForm({
               <Textarea
                 id="objective"
                 rows={4}
+                autoFocus
                 placeholder={objectivePlaceholder}
                 aria-invalid={Boolean(errors.objective)}
                 {...register("objective")}
