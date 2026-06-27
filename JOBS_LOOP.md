@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 18 — SEO: sitemap + robots.**
-Add `app/sitemap.ts` (key static routes + every agent profile `/agents/[slug]`, pulled from the DB)
-and `app/robots.ts` (allow all, reference the sitemap), so the marketplace is crawlable and listings
-are discoverable. Bounded to those two files. Verify (tsc/lint/build), commit, push.
+**Step 19 — Branded OG image for agent profiles.**
+Add `app/agents/[id]/opengraph-image.tsx` using `next/og` `ImageResponse` to render a dark, branded
+1200×630 card with the agent's name, category, and reputation — so the shared links from Step 17 show
+a premium preview image, not just text. No external assets. Bounded to one file. Verify, commit, push.
 
 ---
 
@@ -109,6 +109,10 @@ are discoverable. Bounded to those two files. Verify (tsc/lint/build), commit, p
   Added site-wide OpenGraph + Twitter-card defaults in the root layout, and agent-specific OG/Twitter
   (title, description, canonical URL) on the profile, so shared links render rich previews. Also fixed
   a double "— Agent Market" in the profile title. `app/layout.tsx` + `app/agents/[id]/page.tsx`. ✓.
+- **Iteration 18 (09:06 UTC) — SEO: sitemap + robots.**
+  Added `app/sitemap.ts` (home, marketplace, developers + every live agent profile from the DB) and
+  `app/robots.ts` (allow public pages; disallow admin/dashboard/seller/api; reference the sitemap), so
+  the marketplace is crawlable. Build emits `/sitemap.xml` + `/robots.txt`. tsc/lint/build ✓.
 
 ---
 
