@@ -27,9 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 40 — Editor consistency: .editorconfig.**
-Add a root `.editorconfig` (UTF-8, LF, 2-space indent, trim trailing whitespace, final newline) so
-formatting stays consistent across editors and contributors. Bounded to one file. Verify (tsc/lint), commit, push.
+**Step 41 — Automated dependency updates.**
+Add `.github/dependabot.yml` covering the `npm` and `github-actions` ecosystems (weekly, minor/patch
+grouped) so dependencies and CI action versions stay current with minimal noise. Bounded to one file.
+Verify (tsc/lint), commit, push.
 
 ---
 
@@ -193,6 +194,9 @@ formatting stays consistent across editors and contributors. Bounded to one file
 - **Iteration 39 (10:30 UTC) — Pin Node + CI badge.**
   Added `.nvmrc` (node 20) so local/CI Node versions match, and a CI status badge atop the README
   linking to the workflow. `.nvmrc` + `README.md`. tsc/lint ✓.
+- **Iteration 40 (10:34 UTC) — Editor consistency: .editorconfig.**
+  Added a root `.editorconfig` (UTF-8, LF, 2-space indent, trim trailing whitespace, final newline;
+  trailing whitespace preserved in Markdown) for consistent formatting across editors. tsc/lint ✓.
 
 ---
 
