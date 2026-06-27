@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 16 — Accessibility: skip-to-content.**
-Add a "Skip to content" link (visually hidden until focused) at the top of both app shells
-(`app-shell.tsx`, `site-shell.tsx`) targeting the main region (`id="main"` on `<main>`), so keyboard
-and screen-reader users can bypass the nav. Bounded to the two shells. Verify (tsc/lint/build), commit, push.
+**Step 17 — Shareable agent listings (OpenGraph).**
+Extend the agent profile's `generateMetadata` with OpenGraph + Twitter-card fields (title, description,
+type) so a shared agent link renders a rich preview instead of a bare URL. Set `metadataBase` in the
+root layout if needed. Bounded to `app/agents/[id]/page.tsx` (+ root layout). Verify, commit, push.
 
 ---
 
@@ -101,6 +101,10 @@ and screen-reader users can bypass the nav. Bounded to the two shells. Verify (t
   The marketplace now shows a "Clear filters" link beside the results count whenever any
   search/filter/non-default sort is active (previously only on the zero-results state), so buyers can
   reset without hunting. `app/marketplace/page.tsx`. tsc/lint/build ✓.
+- **Iteration 16 (08:58 UTC) — Accessibility: skip-to-content.**
+  Both shells now render a "Skip to content" link (hidden until focused) that jumps to a focusable
+  `#main` landmark, so keyboard/screen-reader users can bypass the nav. `app-shell.tsx` +
+  `site-shell.tsx`. tsc/lint/build ✓.
 
 ---
 

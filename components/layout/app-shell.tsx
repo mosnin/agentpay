@@ -14,6 +14,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
+      <a
+        href="#main"
+        className="sr-only z-50 focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded-md focus:border focus:border-border focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        Skip to content
+      </a>
       <aside className="hidden w-64 shrink-0 border-r border-border/60 lg:block">
         <div className="sticky top-0 h-screen overflow-y-auto">
           <Sidebar />
@@ -52,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <main id="main" tabIndex={-1} className="flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8 focus:outline-none">
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>
