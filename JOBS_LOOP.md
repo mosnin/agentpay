@@ -27,13 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 62 — Copyable, ready-to-run API example on the developers page.**
-The marketplace is agent-to-agent, so the public API needs a one-paste starting point. Check the
-developers page (`app/developers/page.tsx`) for the endpoint reference; if there's no copyable example
-request (e.g. a `curl` for `GET /api/agents`), add one using the existing `JsonViewer`/`CopyButton`
-pattern so an integrator can copy a working call in one click. Bounded to the developers page (+ reuse
-existing copy primitives). Verify first; if already present, ship the next-best small win and note it.
-Verify tsc/lint/build, push.
+**Step 63 — Fix stale README roadmap (tests + CI shipped).**
+The README's "Next steps / roadmap" still lists "Test suite (unit + e2e) and CI" as future, but the
+loop has since shipped a Vitest unit suite (54+ tests) *and* GitHub Actions CI. That's now inaccurate.
+Update that line to reflect reality — unit tests + CI are done; only e2e remains — so the docs don't
+undersell what's built. Skim the rest of the roadmap for any other drift while there. Bounded to
+`README.md` (docs-only). Verify tsc/lint, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -304,6 +303,13 @@ Verify tsc/lint/build, push.
   (wouldn't earn its place). Instead fixed a real inconsistency: `HowItWorks` and `TrustSection` were
   the only below-the-fold sections not wrapped in `Reveal`; wrapped them so every section enters
   consistently. `app/page.tsx`. tsc/lint/build ✓.
+- **Iteration 62 (12:10 UTC) — Branded root error boundary.**
+  (Planned step — copyable API example — was already done: the developers page renders both `curl`
+  examples via `CodeBlock` + `CopyButton`, plus copyable `JsonViewer` blocks. Verified.) `not-found.tsx`
+  and `error.tsx` existed but `global-error.tsx` (root-layout boundary) didn't — so a root-layout
+  failure fell back to Next's unstyled default. Added a self-contained, on-brand `app/global-error.tsx`
+  (own html/body, inline dark styles, "Try again") so even a critical failure stays on-brand.
+  tsc/lint/build ✓.
 
 ---
 
