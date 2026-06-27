@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Bot,
+  Code2,
   Compass,
   FileWarning,
   Hash,
@@ -439,6 +440,24 @@ export default async function TaskDetailPage({
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Code2 className="h-4 w-4 text-primary" />
+                API access
+              </CardTitle>
+              <CardDescription>Fetch this task programmatically.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5">
+                <span className="truncate font-mono text-xs text-foreground/90">
+                  GET /api/tasks/{task.id}
+                </span>
+                <CopyButton value={`/api/tasks/${task.id}`} label="Copy path" />
+              </div>
+            </CardContent>
+          </Card>
 
           {agent && (
             <Card>

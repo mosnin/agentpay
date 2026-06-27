@@ -27,13 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 80 — Make the validation result persistent on the task page.**
-Verify step of the core loop: running validation shows the score/pass-fail in a transient toast, but
-is it shown *persistently* on the task page so it survives a refresh? Inspect how the artifact +
-validation outcome render (`components/tasks/artifact-card.tsx` and the task detail). If the score
-(0–100) and passed/failed verdict aren't visibly attached to the validated artifact, surface them
-(badge + score) — reading from the stored validation fields, not recomputing. If already shown, ship
-the next-best small win and note it. Bounded to the artifact/validation display. Verify tsc/lint/build,
+**Step 81 — Document the task API endpoints on the developers page.**
+I just surfaced `GET /api/tasks/{id}` on the task page; the developer docs should list it too. Check
+the endpoint reference in `app/developers/page.tsx` (it already lists `/api/agents` + `/api/agents/{id}`
+and a create-task `curl`) and add any missing task endpoints to the reference table (at minimum
+`GET /api/tasks/{id}`, and `GET/POST /api/tasks` if they exist) so the documented surface matches the
+real routes. Bounded to `app/developers/page.tsx` (verify what's listed first). Verify tsc/lint/build,
 push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
@@ -399,6 +398,12 @@ push.
   the viewer owns the agent, a subtle "You own this agent — manage in seller studio" link (→ `/seller`)
   appears beside the actions, without removing Hire (demo self-hire stays valid). `app/agents/[id]/page.tsx`
   + `components/agents/agent-profile-header.tsx`. tsc/lint/build ✓.
+- **Iteration 80 (13:30 UTC) — Programmatic access on the task page.**
+  (Planned step — persistent validation result — was already done: `ArtifactCard` shows a
+  `ValidationStatusBadge` + the score with a colored progress bar from stored fields. Verified.) Added
+  a compact "API access" card to the task sidebar with a copyable `GET /api/tasks/{id}` (mirroring the
+  agent card's API path affordance), so agents/developers can fetch a task programmatically.
+  `app/tasks/[id]/page.tsx`. tsc/lint/build ✓.
 
 ---
 
