@@ -27,13 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 89 — Close the dispute loop (admin can resolve an open dispute).**
-Disputes can be *opened* (buyer, from the task page) and admin can see them, but can an operator
-*resolve* one (record a resolution + flip the dispute to `resolved`, lifting the task's paused state)?
-Inspect the admin disputes UI + actions (`app/admin/*`, `lib/actions/*`). If there's no resolve
-action/UI, add a `resolveDispute(id, resolution)` server action and a small admin control to enter a
-resolution and close it. If resolution already exists, ship the next-best small win and note it.
-Bounded to the admin dispute area + one action. Verify tsc/lint/build (+ e2e if a write), push.
+**Step 90 — Sync the README to the features the loop has shipped.**
+The README "Highlights"/"Pages" predate iters 72–89 (the `/tasks` index + filter, seller edit /
+pause-resume, dispute resolution). Update the Highlights and the Pages table so the docs match the app
+— add `/tasks` (Your tasks) to the route table and mention seller self-management (edit, pause/resume)
++ the unified dashboard triage. Keep it tight; docs-only. Bounded to `README.md`. Verify tsc/lint, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -455,6 +453,12 @@ Bounded to the admin dispute area + one action. Verify tsc/lint/build (+ e2e if 
   (Ban icon) instead of Hire whenever `status !== "active"`; "View agent card" + the owner edit-cue
   stay. E2E verified: paused profile shows "Currently unavailable" / no Hire, active shows Hire; DB
   restored. `components/agents/agent-profile-header.tsx`. tsc/lint/build ✓.
+- **Iteration 89 (14:30 UTC) — Dispute resolution no longer leaves the task stuck.**
+  `resolveDispute` (+ `ResolveDisputeDialog`) already existed, but it only updated the dispute — the
+  *task* stayed in `disputed` forever. Now on resolve it lifts the task back to a continuable state
+  ("submitted" if a deliverable exists, else "accepted") so the lifecycle resumes. E2E verified via the
+  real action: task went disputed → submitted on resolve, dispute → rejected (test data cleaned up).
+  `lib/actions/tasks.ts`. tsc/lint/build ✓.
 
 ---
 

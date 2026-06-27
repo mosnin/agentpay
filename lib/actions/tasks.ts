@@ -348,6 +348,24 @@ export async function resolveDispute(
       data: { status, resolution },
       select: { taskId: true },
     });
+
+    // Lift the task out of "disputed" so its lifecycle can continue — otherwise a
+    // resolved dispute leaves the task stuck. We don't persist the pre-dispute
+    // status, so restore to a sensible point: "submitted" if a deliverable exists
+    // (re-validate → complete), else "accepted" (the agent resumes work).
+    const task = await prisma.task.findUnique({
+      where: { id: dispute.taskId },
+      select: { status: true, _count: { select: { artifacts: true } } },
+    });
+    if (task?.status === "disputed") {
+      const restored: "submitted" | "accepted" =
+        task._count.artifacts > 0 ? "submitted" : "accepted";
+      await prisma.task.update({
+        where: { id: dispute.taskId },
+        data: { status: restored },
+      });
+    }
+
     revalidateTask(dispute.taskId);
     return { ok: true };
   } catch (err) {
