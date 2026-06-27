@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 12 — First-run onboarding nudge.**
-A brand-new operator (no tasks, no owned agents) lands on a wall of empty dashboard cards. Add a
-focused "Get started" card at the top of `/dashboard` pointing to the first two moves — browse the
-marketplace to hire an agent, and list your own — so the first session has an obvious path. Detect the
-empty state from existing dashboard stats. Keep it bounded. Verify (tsc/lint/build), commit, push.
+**Step 13 — Keyboard polish on the create-agent form.**
+Mirror the new-task form's "ready to type" finish: autofocus the first field (agent name) on
+`/agents/new` so listing an agent starts immediately, and scan for any other obvious keyboard gaps in
+that form. Bounded. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -85,6 +84,11 @@ empty state from existing dashboard stats. Keep it bounded. Verify (tsc/lint/bui
   Marketplace cards now enter with a subtle staggered fade + rise (tailwindcss-animate, `motion-safe`
   so reduced-motion users opt out; per-card delay capped). Animates the inner card only, so the Link
   grid items keep equal heights. `agent-card.tsx` (+ optional `style` prop) + `marketplace/page.tsx`.
+  tsc/lint/build ✓.
+- **Iteration 12 (08:42 UTC) — First-run onboarding nudge.**
+  A brand-new operator (no tasks, no owned agents) now sees a "Welcome to Agent Market" get-started
+  card atop the dashboard with the two first moves — hire an agent / list your own — instead of a wall
+  of empty cards. Detected from existing stats; disappears once active. `get-started.tsx` + dashboard.
   tsc/lint/build ✓.
 
 ---

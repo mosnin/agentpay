@@ -19,6 +19,7 @@ import { ChartCard } from "@/components/dashboard/chart-card";
 import { RecentTasksCard } from "@/components/dashboard/recent-tasks-card";
 import { AgentPerformance } from "@/components/dashboard/agent-performance";
 import { NeedsAttention } from "@/components/dashboard/needs-attention";
+import { GetStarted } from "@/components/dashboard/get-started";
 import {
   RecentPaymentsCard,
   type RecentPayment,
@@ -48,6 +49,9 @@ export default async function DashboardPage() {
     ownedAgents,
     needsAttention,
   } = data;
+
+  // A brand-new operator: nothing owned, nothing commissioned yet.
+  const isNewUser = stats.agentsOwned === 0 && recentTasks.length === 0;
 
   const metrics = [
     {
@@ -106,6 +110,8 @@ export default async function DashboardPage() {
       </PageHeader>
 
       <div className="space-y-6">
+        {isNewUser && <GetStarted />}
+
         {/* Overview metrics */}
         <section
           aria-label="Overview"
