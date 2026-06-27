@@ -27,11 +27,9 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 38 — Continuous integration.**
-The repo has no CI. Add `.github/workflows/ci.yml` that, on PRs/pushes, spins up a `postgres:16`
-service, runs `npm ci`, `prisma generate` + `prisma db push`, then `tsc --noEmit`, `next lint`, and
-`next build` — so regressions are caught automatically (the same gates this loop runs locally). Bounded
-to one workflow file. Verify (tsc/lint), commit, push.
+**Step 39 — Pin Node + CI badge.**
+Add a `.nvmrc` (node `20`) so local and CI Node versions match, and a CI status badge at the top of the
+README pointing at the new workflow. Bounded to `.nvmrc` + `README.md`. Verify (tsc/lint), commit, push.
 
 ---
 
@@ -188,6 +186,10 @@ to one workflow file. Verify (tsc/lint), commit, push.
   Added `docker-compose.yml` (postgres:16, db `agentmarket`, healthcheck, named volume) matching the
   default `DATABASE_URL`, and pointed the README at `docker compose up -d` — the docs referenced compose
   but no file existed. `docker-compose.yml` + `README.md`. yaml/tsc/lint ✓.
+- **Iteration 38 (10:26 UTC) — Continuous integration.**
+  Added `.github/workflows/ci.yml`: on push/PR, a `postgres:16` service + `npm ci` (postinstall prisma
+  generate) → `db:push` → `db:seed` → `typecheck` → `lint` → `build`, mirroring the loop's local gates.
+  Lockfile confirmed in sync, so `npm ci` is reliable. yaml/tsc/lint ✓.
 
 ---
 
