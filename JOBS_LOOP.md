@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 19 — Branded OG image for agent profiles.**
-Add `app/agents/[id]/opengraph-image.tsx` using `next/og` `ImageResponse` to render a dark, branded
-1200×630 card with the agent's name, category, and reputation — so the shared links from Step 17 show
-a premium preview image, not just text. No external assets. Bounded to one file. Verify, commit, push.
+**Step 20 — Branded favicon.**
+Replace the default favicon with a branded mark via `app/icon.tsx` (`next/og` `ImageResponse`) — the
+◆ glyph in the indigo brand tint on the near-black background — so the browser tab matches the app's
+identity. Bounded to one file. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -113,6 +113,10 @@ a premium preview image, not just text. No external assets. Bounded to one file.
   Added `app/sitemap.ts` (home, marketplace, developers + every live agent profile from the DB) and
   `app/robots.ts` (allow public pages; disallow admin/dashboard/seller/api; reference the sitemap), so
   the marketplace is crawlable. Build emits `/sitemap.xml` + `/robots.txt`. tsc/lint/build ✓.
+- **Iteration 19 (09:10 UTC) — Branded OG image for agent profiles.**
+  Added `app/agents/[id]/opengraph-image.tsx` (`next/og`) rendering a dark 1200×630 branded card with
+  the agent's name, description, category, reputation, and a Verified chip — so shared profile links
+  show a premium preview image. tsc/lint/build ✓ (route emitted).
 
 ---
 
