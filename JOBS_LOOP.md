@@ -27,15 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 72 — A "Your tasks" index at `/tasks`.**
-Real gap: `/tasks/new` and `/tasks/[id]` exist but there's no `/tasks` index — the dashboard shows
-only 6 recent tasks and its breadcrumb points at `/dashboard`, so a power user can't see *all* their
-tasks. Add `app/tasks/page.tsx` ("Your tasks") listing every task where the operator is the buyer or
-owns the selling agent, reusing existing list patterns + `TaskStatusBadge`/`DeadlineBadge`, ordered by
-`updatedAt`, each linking to its detail page; add a `getUserTasks(userId)` query. Link it where it
-belongs (sidebar nav and/or the task-detail breadcrumb). Keep this version filter-free (status filters
-can be a follow-up) so it's finishable. Bounded to: new page + query (+ a nav/breadcrumb link). Verify
-tsc/lint/build, push.
+**Step 73 — Status filter on the `/tasks` index.**
+Now that `/tasks` lists everything, add a lightweight status filter so a power user can focus. Read
+`?status=` from searchParams in `app/tasks/page.tsx`, filter `getUserTasks` accordingly (accept the
+real lifecycle statuses + an "active" group = pending/accepted/running/submitted/validating), and
+render a row of filter pills (All / Active / Completed / …) that link to the param, with a result
+count. This makes the page dynamic (ƒ), like `/marketplace`. Bounded to `app/tasks/page.tsx` (+ maybe
+`getUserTasks` gaining an optional status arg). Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -360,6 +358,14 @@ tsc/lint/build, push.
   marketplace `lastModified` to the latest catalog update (max agent `updatedAt`) as a real freshness
   signal, and intentionally left `/developers` (static docs, no tracked change date) without one rather
   than faking "now" each crawl. `app/sitemap.ts`. tsc/lint/build ✓.
+- **Iteration 72 (12:54 UTC) — "Your tasks" index page.**
+  Filled a real gap: `/tasks/new` + `/tasks/[id]` existed but there was no `/tasks` index. Added
+  `app/tasks/page.tsx` listing every task the operator is in (buyer or owner of the selling agent) via
+  a new `getUserTasks` query — `TaskStatusBadge` + `DeadlineBadge` + a Hired/Selling role tag, newest
+  activity first, each linking to detail. Linked it in the sidebar (so it's in ⌘K too) and repointed
+  the task-detail breadcrumb "Tasks" → `/tasks` (was `/dashboard`). Static-prerendered like its authed
+  siblings. `app/tasks/page.tsx` + `lib/queries.ts` + `lib/nav.ts` + `app/tasks/[id]/page.tsx`.
+  tsc/lint/build ✓ (/tasks emitted).
 
 ---
 

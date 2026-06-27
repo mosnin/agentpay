@@ -215,6 +215,16 @@ function lastNDays(n: number): { date: string; key: string }[] {
   return days;
 }
 
+/** Every task the user is involved in (as buyer, or owner of the selling agent), newest activity first. */
+export async function getUserTasks(userId: string) {
+  return prisma.task.findMany({
+    where: { OR: [{ buyerId: userId }, { sellerAgent: { ownerId: userId } }] },
+    include: taskListInclude,
+    orderBy: { updatedAt: "desc" },
+    take: 100,
+  });
+}
+
 /** Triage sort key: earliest deadline first, undated next, completed (no time pressure) last. */
 function urgencyRank(item: { status: string; deadline: Date | string | null }): number {
   if (item.status === "completed") return Number.POSITIVE_INFINITY;

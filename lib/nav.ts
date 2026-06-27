@@ -6,6 +6,7 @@ import {
   Briefcase,
   ShieldCheck,
   Terminal,
+  ListChecks,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,6 +23,7 @@ export const SIDEBAR_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { title: "Browse agents", href: "/marketplace", icon: Store, description: "Discover specialized agents" },
       { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, description: "Your activity" },
+      { title: "Your tasks", href: "/tasks", icon: ListChecks, description: "Everything you've hired or sold" },
     ],
   },
   {

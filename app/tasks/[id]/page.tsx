@@ -129,7 +129,7 @@ export default async function TaskDetailPage({
       <PageHeader
         title={task.title}
         breadcrumbs={[
-          { label: "Tasks", href: "/dashboard" },
+          { label: "Tasks", href: "/tasks" },
           { label: task.title },
         ]}
       >
