@@ -27,18 +27,18 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 111 — Lock `reputationEventLabel` (humanized reputation-history labels) with tests.**
-The reputation timeline shows a human-readable label per event via `reputationEventLabel(type)`
-(lib/constants.ts), backed by `REPUTATION_EVENT_LABELS` with a humanized fallback for unmapped types
-(e.g. snake_case → Title Case). It's user-facing string logic with a fallback branch and no test. Add
-`lib/__tests__/reputation-labels.test.ts` asserting: every key in `REPUTATION_EVENT_LABELS` round-trips
-to its exact label; an unknown type like `"some_new_event"` humanizes to `"Some New Event"`; and the
-result is always a non-empty string. Pure, bounded to a new test file. Verify test + tsc/lint, push.
+**Step 112 — Consolidate the redundant `deadlineStatus` tests (craft / no clutter).**
+Iter 109 added `lib/__tests__/deadline-status.test.ts` before noticing `lib/__tests__/utils.test.ts`
+(L94–122) already covers `deadlineStatus`'s three tones and exact thresholds. Only one assertion in the
+new file is genuinely additive: that `Date` / ISO-string / epoch-number inputs are treated equivalently.
+Fold that single case into the existing `deadlineStatus` describe block in `utils.test.ts`, then delete
+the duplicate `deadline-status.test.ts`. Net: fewer, non-overlapping tests — quality over count. Verify
+test + tsc/lint, push. (Lesson logged: grep the existing test files before adding a "missing" test.)
 
-> Status: comprehensively complete, regression- and scope-audited, 84 tests, optimized CI, a11y +
-> reduced-motion passes done. The loop has converged; current iterations are locking the pure-helper
-> layer with regression tests. After this sweep the remaining work is fine-polish — standing offer to
-> the user to wind it down early whenever you like.
+> Status: comprehensively complete, regression- and scope-audited, 88 tests, optimized CI, a11y +
+> reduced-motion passes done. The loop has converged; recent iterations lock the pure-helper layer with
+> regression tests (and now tidy a self-introduced duplicate). After this, remaining work is fine-polish
+> — standing offer to the user to wind it down early whenever you like.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -577,6 +577,13 @@ result is always a non-empty string. Pure, bounded to a new test file. Verify te
   5 in-progress statuses, single-status tabs map 1:1, every filter key resolves to statuses that exist
   in `TASK_STATUS_CONFIG`, an unknown key falls back to a raw status, and the result is a fresh copy
   (mutation can't corrupt the config). 84 tests pass (was 78). tsc/lint ✓.
+- **Iteration 111 (13:14 UTC) — Locked `reputationEventLabel` with tests.**
+  The reputation timeline's per-event labels (curated map + snake_case→sentence-case fallback) had no
+  test. Added `lib/__tests__/reputation-labels.test.ts` (4 cases): every `REPUTATION_EVENT_LABELS` key
+  round-trips, an unknown type humanizes to *sentence* case (`some_new_event` → "Some new event" — the
+  fallback only uppercases the first char, not Title Case as the plan assumed), and output is always a
+  non-empty string. 88 tests pass (was 84). tsc/lint ✓. (Noted: utils.test.ts already covers
+  `deadlineStatus`, so iter 109's separate file is largely redundant — next step consolidates it.)
 
 ---
 
