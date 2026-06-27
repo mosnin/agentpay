@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 41 — Automated dependency updates.**
-Add `.github/dependabot.yml` covering the `npm` and `github-actions` ecosystems (weekly, minor/patch
-grouped) so dependencies and CI action versions stay current with minimal noise. Bounded to one file.
-Verify (tsc/lint), commit, push.
+**Step 42 — Expand test coverage to the mock adapters + contract generator.**
+Add unit tests for the pure/local logic in `lib/interop/a2aAdapter.ts` (getAgentCard shape,
+createTaskMessage envelope), `lib/payments/x402Adapter.ts` (createPaymentRequirement / releasePayment
+mock shapes), and `lib/mockContract.ts` (deterministic generateStructuredContract). Read each first;
+bounded to new `lib/__tests__/*` files. Verify (test + tsc/lint/build), commit, push.
 
 ---
 
@@ -197,6 +198,11 @@ Verify (tsc/lint), commit, push.
 - **Iteration 40 (10:34 UTC) — Editor consistency: .editorconfig.**
   Added a root `.editorconfig` (UTF-8, LF, 2-space indent, trim trailing whitespace, final newline;
   trailing whitespace preserved in Markdown) for consistent formatting across editors. tsc/lint ✓.
+- **Iteration 41 (10:46 UTC) — Test suite (Vitest).**
+  Added Vitest + a `test` script and 15 unit tests for the pure deterministic logic (`lib/utils`
+  formatters/slug/hash/clamp/mockHash and `lib/mockValidation` scoring + verdict), and wired
+  `npm run test` into CI. `vitest.config.ts` + `lib/__tests__/*` + `package.json` + `ci.yml`. 15/15
+  pass; tsc/lint/build ✓.
 
 ---
 
