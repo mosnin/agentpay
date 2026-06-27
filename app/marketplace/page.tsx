@@ -73,6 +73,9 @@ export default async function MarketplacePage({
   ]);
 
   const total = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
+  const hasFilters = Boolean(
+    q || category || pricingModel || minRating || verified || (sort && sort !== "reputation"),
+  );
 
   return (
     <SiteShell>
@@ -114,6 +117,16 @@ export default async function MarketplacePage({
                 </>
               )}
             </p>
+            {hasFilters && (
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="shrink-0 text-muted-foreground"
+              >
+                <Link href="/marketplace">Clear filters</Link>
+              </Button>
+            )}
           </div>
 
           {agents.length === 0 ? (

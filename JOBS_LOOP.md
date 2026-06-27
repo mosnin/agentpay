@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 15 — Marketplace: clear filters anytime.**
-Today "Clear filters" only appears on the empty (zero-results) state. Show a "Clear filters" link
-beside the results count whenever any search/filter/non-default sort is active, so buyers can reset
-without hunting. Bounded to `app/marketplace/page.tsx`. Verify (tsc/lint/build), commit, push.
+**Step 16 — Accessibility: skip-to-content.**
+Add a "Skip to content" link (visually hidden until focused) at the top of both app shells
+(`app-shell.tsx`, `site-shell.tsx`) targeting the main region (`id="main"` on `<main>`), so keyboard
+and screen-reader users can bypass the nav. Bounded to the two shells. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -97,6 +97,10 @@ without hunting. Bounded to `app/marketplace/page.tsx`. Verify (tsc/lint/build),
   Added a floating "Hire" pill (sticky bottom, `lg:hidden`) on the agent profile with the agent's name
   + starting price, so on long profiles the primary action stays one tap away. Reuses the hire
   deep-link and scrolls away cleanly at the page end. `app/agents/[id]/page.tsx`. tsc/lint/build ✓.
+- **Iteration 15 (08:54 UTC) — Clear filters anytime.**
+  The marketplace now shows a "Clear filters" link beside the results count whenever any
+  search/filter/non-default sort is active (previously only on the zero-results state), so buyers can
+  reset without hunting. `app/marketplace/page.tsx`. tsc/lint/build ✓.
 
 ---
 
