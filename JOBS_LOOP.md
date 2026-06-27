@@ -1,6 +1,6 @@
 # Agent Market — "Think Like Steve Jobs" Improvement Loop
 
-**Cron job:** `9d472b29` · every 3 min · **window** 2026-06-27 07:56 → **19:56 UTC** (epoch `1782590176`, 12h)
+**Cron job:** `8937b25b` · every 1 min (scheduler floor — sub-minute/15s isn't expressible) · **window** 2026-06-27 07:56 → **19:56 UTC** (epoch `1782590176`, 12h)
 
 > Note: the in-session cron is reported `[session-only]` in this sandbox (the `durable` flag isn't
 > honored), so it only advances while the session is awake. Iterations are therefore also run live.
@@ -27,12 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 5 — Dashboard "Needs your attention".**
-Add a section pinned near the top of `/dashboard` that surfaces tasks awaiting the operator's *own*
-action — submitted (run validation), validating (complete & release payment), and completed-but-
-unreviewed (leave a review) — each linking to the task with the next action named, so the operator
-always knows the next move. Add a focused query in `lib/queries.ts` and a component in
-`components/dashboard/`. Keep it bounded. Verify (tsc/lint/build), commit, push.
+**Step 6 — Marketplace never dead-ends.**
+When search/filters return zero agents on `/marketplace`, replace the blank result with a helpful
+empty state: a clear "No agents match" message and a one-tap "Clear filters" action (plus a nudge to
+browse everything). No silent dead-ends. Keep it bounded to the marketplace page/filters.
+Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -52,6 +51,11 @@ always knows the next move. Add a focused query in `lib/queries.ts` and a compon
   The command palette now lazily fetches `/api/agents` on first open and lists every agent (search by
   name / category / capability); Enter jumps straight to its profile, alongside Pages and Categories.
   Delivers on the "Search agents…" promise. `components/layout/search-command.tsx`. tsc/lint/build ✓.
+- **Iteration 5 (08:10 UTC) — Dashboard "Needs your attention".**
+  Pinned a section atop `/dashboard` surfacing tasks awaiting the operator's own move — submitted →
+  run validation, validating → complete & release, completed-unreviewed → leave a review — each
+  linking through with the next action named. `getDashboardData` slice + `needs-attention.tsx`.
+  tsc/lint/build ✓.
 
 ---
 

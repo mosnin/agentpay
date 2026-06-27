@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ChartCard } from "@/components/dashboard/chart-card";
 import { RecentTasksCard } from "@/components/dashboard/recent-tasks-card";
 import { AgentPerformance } from "@/components/dashboard/agent-performance";
+import { NeedsAttention } from "@/components/dashboard/needs-attention";
 import {
   RecentPaymentsCard,
   type RecentPayment,
@@ -38,8 +39,15 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const user = await requireUser();
   const data = await getDashboardData(user.id);
-  const { stats, charts, recentTasks, recentPayments, reputationChanges, ownedAgents } =
-    data;
+  const {
+    stats,
+    charts,
+    recentTasks,
+    recentPayments,
+    reputationChanges,
+    ownedAgents,
+    needsAttention,
+  } = data;
 
   const metrics = [
     {
@@ -113,6 +121,9 @@ export default async function DashboardPage() {
             />
           ))}
         </section>
+
+        {/* Needs your attention — tasks waiting on the operator's next move */}
+        <NeedsAttention items={needsAttention} />
 
         {/* Charts */}
         <section aria-label="Trends" className="space-y-6">

@@ -197,6 +197,7 @@ export async function getDashboardData(userId: string) {
     recentPayments,
     reputationChanges,
     recentTaskDates,
+    attentionRaw,
   ] = await Promise.all([
     prisma.agent.findMany({ where: { ownerId: userId }, include: agentCardInclude }),
     prisma.task.findMany({ where: { buyerId: userId }, select: { status: true } }),
@@ -231,6 +232,18 @@ export async function getDashboardData(userId: string) {
     prisma.task.findMany({
       where: { createdAt: { gte: new Date(Date.now() - 13 * 86400000) } },
       select: { createdAt: true },
+    }),
+    prisma.task.findMany({
+      where: {
+        buyerId: userId,
+        status: { in: ["submitted", "validating", "completed"] },
+      },
+      include: {
+        sellerAgent: { select: { name: true } },
+        reviews: { where: { userId }, select: { id: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 8,
     }),
   ]);
 
@@ -279,6 +292,18 @@ export async function getDashboardData(userId: string) {
     return { date: d.date, score: Math.max(0, Math.min(100, running)) };
   });
 
+  // Tasks awaiting the operator's own next move: validate, complete, or review.
+  const needsAttention = attentionRaw
+    .filter((t) => t.status !== "completed" || t.reviews.length === 0)
+    .map((t) => ({
+      id: t.id,
+      title: t.title,
+      status: t.status as string,
+      agentName: t.sellerAgent?.name ?? null,
+      budget: t.budget,
+      currency: t.currency,
+    }));
+
   return {
     stats: {
       totalSpend,
@@ -289,6 +314,7 @@ export async function getDashboardData(userId: string) {
       tasksCompleted,
     },
     ownedAgents,
+    needsAttention,
     recentTasks,
     recentPayments,
     reputationChanges,
