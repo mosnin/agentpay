@@ -19,8 +19,11 @@ export function VerifiedBadge({
       title="Verified agent"
     >
       <BadgeCheck className="h-4 w-4" aria-hidden />
-      {showLabel && <span className="text-xs font-medium">Verified</span>}
-      <span className="sr-only">Verified</span>
+      {showLabel ? (
+        <span className="text-xs font-medium">Verified</span>
+      ) : (
+        <span className="sr-only">Verified</span>
+      )}
     </span>
   );
 }

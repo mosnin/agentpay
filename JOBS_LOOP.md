@@ -27,16 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 106 — Accessible label for the verified badge (likely the last a11y item).**
-`components/shared/verified-badge.tsx` shows a verification checkmark, often icon-only (no label) on
-cards/profiles — meaningful, not decorative, so screen readers should announce "Verified". Give the
-icon-only variant an `aria-label="Verified"` (`role="img"`); when it already renders the "Verified"
-text label, mark the icon `aria-hidden`. After this, the meaningful visual-only indicators (charts,
-stars, reputation, verified) are all labeled — close the a11y sweep. Bounded to `verified-badge.tsx`.
-Verify tsc/lint/build, push.
+**Step 107 — Respect `prefers-reduced-motion` in the dashboard charts.**
+The spec calls for reduced-motion-safe UI; entrance/Reveal motion already honors it, but Recharts
+animates its series by default. In `components/dashboard/dashboard-chart.tsx` (a client component), read
+`useReducedMotion()` (framer-motion) and pass `isAnimationActive={!reduce}` to the chart series so
+reduced-motion users get a static render. Bounded to that one component. Verify tsc/lint/build, push.
 
-> Status: comprehensively complete, regression- and scope-audited (both clean), 68 tests, optimized CI.
-> Remaining items are fine-polish/a11y. Standing offer to wind the loop down early.
+> Status: comprehensively complete, regression- and scope-audited (both clean), 68 tests, optimized CI,
+> a11y sweep done. The loop has effectively converged — remaining items are fine-polish. Standing offer
+> to the user to wind it down early.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -545,6 +544,12 @@ Verify tsc/lint/build, push.
   `title` only). Added `role="img"` + `aria-label` "Reputation NN out of 100 — <tier>" to the ring and
   an `aria-label` to the inline badge, with the decorative SVG/dot `aria-hidden`.
   `components/shared/reputation-score.tsx`. tsc/lint/build ✓.
+- **Iteration 106 (16:46 UTC) — Verified badge a11y (closed the sweep).**
+  (`VerifiedBadge` was already accessible via an always-present `sr-only` "Verified" + `aria-hidden`
+  icon.) Fixed a double-announce: when `showLabel`, it rendered *both* the visible "Verified" text and
+  the `sr-only` span; made them mutually exclusive so AT reads "Verified" once. The meaningful
+  visual-only indicators (charts/stars/reputation/verified) are now all labeled. `verified-badge.tsx`.
+  tsc/lint/build ✓.
 
 ---
 
