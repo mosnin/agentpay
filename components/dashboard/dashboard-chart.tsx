@@ -1,5 +1,6 @@
 "use client";
 
+import { useReducedMotion } from "framer-motion";
 import {
   Area,
   AreaChart,
@@ -59,6 +60,9 @@ export function DashboardChart({
   valuePrefix,
   valueSuffix,
 }: DashboardChartProps) {
+  // Honor prefers-reduced-motion — Recharts animates its series by default.
+  const animate = !useReducedMotion();
+
   const axisProps = {
     stroke: "hsl(var(--muted-foreground))",
     fontSize: 11,
@@ -81,7 +85,7 @@ export function DashboardChart({
           <XAxis dataKey={xKey} {...axisProps} interval="preserveStartEnd" />
           <YAxis {...axisProps} width={48} />
           {tooltip}
-          <Bar dataKey={yKey} fill={color} radius={[6, 6, 0, 0]} maxBarSize={48} />
+          <Bar dataKey={yKey} fill={color} radius={[6, 6, 0, 0]} maxBarSize={48} isAnimationActive={animate} />
         </BarChart>
       ) : variant === "line" ? (
         <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
@@ -89,7 +93,7 @@ export function DashboardChart({
           <XAxis dataKey={xKey} {...axisProps} interval="preserveStartEnd" />
           <YAxis {...axisProps} width={36} domain={["auto", "auto"]} />
           {tooltip}
-          <Line type="monotone" dataKey={yKey} stroke={color} strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey={yKey} stroke={color} strokeWidth={2} dot={false} isAnimationActive={animate} />
         </LineChart>
       ) : (
         <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
@@ -109,6 +113,7 @@ export function DashboardChart({
             stroke={color}
             strokeWidth={2}
             fill={`url(#grad-${yKey})`}
+            isAnimationActive={animate}
           />
         </AreaChart>
       )}

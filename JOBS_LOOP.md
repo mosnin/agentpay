@@ -27,15 +27,17 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 107 — Respect `prefers-reduced-motion` in the dashboard charts.**
-The spec calls for reduced-motion-safe UI; entrance/Reveal motion already honors it, but Recharts
-animates its series by default. In `components/dashboard/dashboard-chart.tsx` (a client component), read
-`useReducedMotion()` (framer-motion) and pass `isAnimationActive={!reduce}` to the chart series so
-reduced-motion users get a static render. Bounded to that one component. Verify tsc/lint/build, push.
+**Step 108 — Cover `mockValidation`'s failure branches.**
+`evaluateArtifact` (deterministic validation) has the happy-path scoring tested (iter 41), but its
+guard branches — missing artifact content/URL → fail, and missing contract output schema → fail —
+may not be. Read `lib/__tests__/mock-validation.test.ts`; if those branches aren't asserted, add tests
+for them (a no-content/no-URL artifact and a contract without an output schema both yield a failed
+verdict). Bounded to the test file. If already covered, ship the next-best small win and note it.
+Verify test + tsc/lint, push.
 
-> Status: comprehensively complete, regression- and scope-audited (both clean), 68 tests, optimized CI,
-> a11y sweep done. The loop has effectively converged — remaining items are fine-polish. Standing offer
-> to the user to wind it down early.
+> Status: comprehensively complete, regression- and scope-audited, 68 tests, optimized CI, a11y +
+> reduced-motion passes done. The loop has effectively converged — remaining items are fine-polish.
+> Standing offer to the user to wind it down early.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -550,6 +552,11 @@ reduced-motion users get a static render. Bounded to that one component. Verify 
   the `sr-only` span; made them mutually exclusive so AT reads "Verified" once. The meaningful
   visual-only indicators (charts/stars/reputation/verified) are now all labeled. `verified-badge.tsx`.
   tsc/lint/build ✓.
+- **Iteration 107 (16:54 UTC) — Charts respect reduced motion.**
+  Recharts animates its series by default; added `useReducedMotion()` (framer-motion) to
+  `dashboard-chart.tsx` and passed `isAnimationActive={!reduce}` to the Bar/Line/Area, so
+  reduced-motion users get a static render — completing the spec's reduced-motion-safe goal across
+  entrance, Reveal, and charts. tsc/lint/build ✓.
 
 ---
 
