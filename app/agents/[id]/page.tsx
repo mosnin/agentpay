@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { SiteShell } from "@/components/layout/site-shell";
 import { getAgentByIdOrSlug, getSimilarAgents } from "@/lib/queries";
+import { getCurrentUser } from "@/lib/auth";
 import { getAgentCard } from "@/lib/interop/a2aAdapter";
 import { listToolsForAgent } from "@/lib/interop/mcpAdapter";
 import { AgentProfileHeader } from "@/components/agents/agent-profile-header";
@@ -86,12 +87,16 @@ export default async function AgentProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const agent = await getAgentByIdOrSlug(id);
+  const [agent, currentUser] = await Promise.all([
+    getAgentByIdOrSlug(id),
+    getCurrentUser(),
+  ]);
 
   if (!agent) {
     notFound();
   }
 
+  const isOwner = !!currentUser && currentUser.id === agent.ownerId;
   const reviewCount = agent._count.reviews;
   const card = getAgentCard(agent);
   const tools = listToolsForAgent(agent);
@@ -165,7 +170,7 @@ export default async function AgentProfilePage({
           <span className="truncate text-foreground">{agent.name}</span>
         </nav>
 
-        <AgentProfileHeader agent={agent} reviewCount={reviewCount} />
+        <AgentProfileHeader agent={agent} reviewCount={reviewCount} isOwner={isOwner} />
 
         <div className="mt-8">
           <AgentTabs tabs={tabs} />

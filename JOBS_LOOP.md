@@ -27,13 +27,14 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 79 — Owner affordance on the agent profile.**
-When the viewer *owns* the agent they're looking at, the profile only offers "Hire this agent" — no
-path to manage it. Add a subtle owner cue (e.g. a "You own this agent — manage in seller studio" link
-to `/seller`) shown only to the owner. Fetch the current user in `app/agents/[id]/page.tsx` (if not
-already), compute `isOwner = agent.ownerId === user?.id`, pass it to `AgentProfileHeader`, and render
-the cue without removing Hire (self-hire stays valid for the demo). Bounded to the profile page +
-header. Verify tsc/lint/build, push.
+**Step 80 — Make the validation result persistent on the task page.**
+Verify step of the core loop: running validation shows the score/pass-fail in a transient toast, but
+is it shown *persistently* on the task page so it survives a refresh? Inspect how the artifact +
+validation outcome render (`components/tasks/artifact-card.tsx` and the task detail). If the score
+(0–100) and passed/failed verdict aren't visibly attached to the validated artifact, surface them
+(badge + score) — reading from the stored validation fields, not recomputing. If already shown, ship
+the next-best small win and note it. Bounded to the artifact/validation display. Verify tsc/lint/build,
+push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -393,6 +394,11 @@ header. Verify tsc/lint/build, push.
   Swapped the generic "Dashboard" H1 for "Welcome back, <FirstName>" (first token of `user.name` from
   the existing `requireUser()`, falling back to "Dashboard" if absent) — a small warmth touch at the
   operator's home base. Browser tab title stays "Dashboard". `app/dashboard/page.tsx`. tsc/lint/build ✓.
+- **Iteration 79 (13:26 UTC) — Owner affordance on the agent profile.**
+  The profile page now fetches the current user in parallel and passes `isOwner` to the header; when
+  the viewer owns the agent, a subtle "You own this agent — manage in seller studio" link (→ `/seller`)
+  appears beside the actions, without removing Hire (demo self-hire stays valid). `app/agents/[id]/page.tsx`
+  + `components/agents/agent-profile-header.tsx`. tsc/lint/build ✓.
 
 ---
 

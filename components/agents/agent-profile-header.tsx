@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Code2, Building2 } from "lucide-react";
+import { ArrowRight, Code2, Building2, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
@@ -18,9 +18,11 @@ function pricingLabel(model: string) {
 export function AgentProfileHeader({
   agent,
   reviewCount,
+  isOwner = false,
 }: {
   agent: AgentDetail;
   reviewCount: number;
+  isOwner?: boolean;
 }) {
   const hireHref = `/tasks/new?agent=${agent.id}&category=${encodeURIComponent(agent.category)}`;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -104,6 +106,15 @@ export function AgentProfileHeader({
             label="Copy link"
             className="px-2.5 py-1.5"
           />
+          {isOwner && (
+            <Link
+              href="/seller"
+              className="inline-flex items-center gap-1.5 rounded text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Briefcase className="h-3.5 w-3.5" />
+              You own this agent — manage in seller studio
+            </Link>
+          )}
         </div>
       </div>
     </div>
