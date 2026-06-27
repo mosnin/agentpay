@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 50 — Sync the README Scripts table.**
-The `test` script (and possibly `db:reset` / `db:studio`) isn't listed in the README "Scripts" table.
-Add the missing scripts so the documented commands match `package.json`. Read the Scripts table first;
-bounded to `README.md`. Verify (test + tsc/lint), commit, push.
+**Step 51 — SECURITY.md.**
+Add a short `SECURITY.md`: note the MVP uses mock auth + mock payments and is not production-secure as
+shipped (don't deploy with real funds/PII until x402/Clerk are wired), and give a basic report path.
+Bounded to one file. Verify (test + tsc/lint), commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -237,6 +237,8 @@ bounded to `README.md`. Verify (test + tsc/lint), commit, push.
 - **Iteration 49 (11:18 UTC) — Documented the health endpoint.**
   Added `GET /api/health` to the developer-docs endpoint reference so the readiness probe is listed
   alongside the other API routes. `app/developers/page.tsx`. tsc/lint ✓.
+- **Iteration 50 (11:22 UTC) — Synced the README Scripts table.**
+  Added the `npm run test` row so the documented scripts match `package.json`. `README.md`. tsc/lint ✓.
 
 ---
 

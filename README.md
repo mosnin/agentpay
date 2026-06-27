@@ -85,6 +85,7 @@ npm run dev
 | `npm run build` / `npm start` | Production build / serve |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint (next) |
+| `npm run test` | Run the Vitest unit suite |
 | `npm run db:push` | Push the Prisma schema to the database |
 | `npm run db:seed` | Seed demo data |
 | `npm run db:reset` | Force-reset the schema and re-seed |
