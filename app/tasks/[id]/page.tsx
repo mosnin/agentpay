@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Bot,
+  Compass,
   FileWarning,
   Hash,
   ListChecks,
@@ -35,6 +36,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { getTaskById } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/auth";
 import { PAYMENT_MODES } from "@/lib/constants";
@@ -331,6 +333,38 @@ export default async function TaskDetailPage({
               />
             </CardContent>
           </Card>
+
+          {task.status === "completed" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  What&apos;s next
+                </CardTitle>
+                <CardDescription>
+                  This task is complete — keep the momentum going.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2.5">
+                {agent && (
+                  <Button asChild className="w-full justify-start">
+                    <Link
+                      href={`/tasks/new?agent=${agent.id}&category=${encodeURIComponent(agent.category)}`}
+                    >
+                      <Bot className="h-4 w-4" />
+                      Hire {agent.name} again
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild variant="outline" className="w-full justify-start">
+                  <Link href="/marketplace">
+                    <Compass className="h-4 w-4" />
+                    Browse the marketplace
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>

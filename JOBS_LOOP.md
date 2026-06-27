@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 22 — Close the loop: "Hire again" on completed tasks.**
-On a completed task's detail page, surface a subtle "Hire <agent> again" action (deep-linking to
-`/tasks/new?agent=…&category=…`, reusing the prefill from earlier iterations) plus a "Browse
-marketplace" link, so finishing a task naturally restarts the discover→hire loop. Read the task page
-first; keep it bounded. Verify (tsc/lint/build), commit, push.
+**Step 23 — Recently viewed agents.**
+Add a lightweight "Recently viewed" rail: a client component that records each visited agent
+({slug, name, category}) in localStorage on profile view (dedup, cap ~8), and a marketplace rail that
+renders them as quick links (render null until mounted to avoid hydration mismatch). Bounded to two
+small client components + their placements. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -126,6 +126,10 @@ first; keep it bounded. Verify (tsc/lint/build), commit, push.
   Added `app/manifest.ts` (standalone, dark `#0a0a0b` theme, branded `/icon`) and a `viewport`
   themeColor in the root layout, so the app is installable and mobile browser chrome matches the dark
   theme. Build emits `/manifest.webmanifest`. tsc/lint/build ✓.
+- **Iteration 22 (09:22 UTC) — Close the loop: "Hire again" on completed tasks.**
+  Completed task pages now show a "What's next" sidebar card with "Hire <agent> again" (prefilled
+  deep-link) and "Browse the marketplace", so finishing a task restarts the discover→hire loop.
+  `app/tasks/[id]/page.tsx`. tsc/lint/build ✓.
 
 ---
 
