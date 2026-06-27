@@ -4,6 +4,7 @@ import { JsonViewer } from "@/components/shared/json-viewer";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatDateTime, safeJsonParse } from "@/lib/utils";
+import { PASS_THRESHOLD } from "@/lib/mockValidation";
 
 interface ArtifactLike {
   id: string;
@@ -64,6 +65,14 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
             value={score}
             className={cn("h-1.5 bg-muted", scoreTone(score))}
           />
+          {(artifact.validationStatus === "passed" ||
+            artifact.validationStatus === "failed") && (
+            <p className="text-xs text-muted-foreground">
+              {artifact.validationStatus === "passed"
+                ? `Meets the ${PASS_THRESHOLD}/100 pass threshold.`
+                : `Below the ${PASS_THRESHOLD}/100 pass threshold.`}
+            </p>
+          )}
         </div>
       )}
 

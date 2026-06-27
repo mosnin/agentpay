@@ -27,16 +27,16 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 121 — Explain the validation verdict in one line (derived from score, no migration).**
-`ArtifactCard` shows the validation status badge + score bar, but a *failed* card gives no reason. The
-full `notes[]` aren't persisted (would need a schema migration — deferred), but the key reason can be
-reconstructed from stored data: import `PASS_THRESHOLD` from `lib/mockValidation` and, when a score is
-present, render a one-line verdict under the score bar — passed → "Meets the {PASS_THRESHOLD}/100 pass
-threshold.", failed → "Below the {PASS_THRESHOLD}/100 pass threshold." So a buyer sees *why* without a
-DB change. Bounded to `components/tasks/artifact-card.tsx`. Verify tsc/lint/build, push.
+**Step 122 — Pay-step receipt: confirm the payment release clearly on a completed task.**
+Walk the *pay* step: when validation passes and the task completes, escrow releases payment (mock x402,
+`mockHash` tx ref in `payments.ts`). Check the task-detail payment UI — does the buyer/seller see a clear
+confirmation (amount, payment mode, and the mock tx reference)? If the release isn't surfaced as a
+concise "Payment released" receipt, add one (bounded to the payment/task-actions component); a tidy
+receipt is the trust payoff of the loop. Read the payment UI first. If it's already clear, ship the
+next-best small win and note it. Verify tsc/lint/build, push.
 
-> Status: CONVERGED on UI/feature scope. Verify step is now transparent (status + score bar + content);
-> this adds the "why" from existing data. Deferred (needs a migration): persisting full `notes[]`.
+> Status: CONVERGED on UI/feature scope; working the core loop end-to-end for last-mile polish (verify
+> step done: status + score bar + verdict line + content). Deferred (needs a migration): full `notes[]`.
 > Recommend winding down early; absent that, the loop continues to the 19:56 UTC deadline. 91 tests green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
@@ -637,6 +637,11 @@ DB change. Bounded to `components/tasks/artifact-card.tsx`. Verify tsc/lint/buil
   Shipped the coupled next-best: dropped the misleading "(optional)" from the URL/Content labels (iter
   119 made at least one required) and removed the now-dead either-or check in the dialog's `onSubmit`
   (the zod refine + resolver handle it). `submit-artifact-dialog.tsx`. tsc/lint/build ✓.
+- **Iteration 121 (13:46 UTC) — Validation verdict now states the "why" in one line.**
+  A failed `ArtifactCard` showed a score but no reason. Imported `PASS_THRESHOLD` and render a one-line
+  verdict under the score bar — passed → "Meets the 80/100 pass threshold.", failed → "Below the 80/100
+  pass threshold." — reconstructed from the stored status, so the buyer sees why with no schema change.
+  `components/tasks/artifact-card.tsx`. tsc/lint/build ✓.
 
 ---
 
