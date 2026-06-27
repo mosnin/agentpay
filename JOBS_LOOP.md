@@ -27,12 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 69 — Round out `lib/utils` formatter test coverage.**
-A safe quality win after the heavier triage feature. `formatNumber`, `formatCompactNumber`, and
-`formatRelativeTime` are untested. Add focused tests in `lib/__tests__/utils.test.ts` (thousands
-separators; compact 1.2k/3.4M; relative time returns a suffixed string). Skip `formatDate`/`formatDateTime`
-exact-match (timezone-dependent). Keeps the CI suite growing with zero runtime risk. Verify test +
-tsc/lint, push.
+**Step 70 — "All caught up" affirmation on the dashboard (inbox-zero delight).**
+`NeedsAttention` correctly renders nothing when empty (iter 5), but an *active* operator with no
+pending moves just sees it vanish. A small reassuring "You're all caught up — nothing needs your move"
+card (only when the operator has activity, i.e. the first-run "Get started" card is NOT shown) answers
+"what's my next move?" with a positive "nothing." A touch of delight that rewards inbox-zero. Bounded
+to `app/dashboard/page.tsx` (+ a tiny presentational piece); reuse the existing first-run/stats signal
+to avoid showing it to brand-new users. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -343,6 +344,10 @@ tsc/lint, push.
   so the union is unambiguous — with seller action labels (Accept / Start / Submit artifact) added to
   `NEXT_ACTION`, ordered by the existing `urgencyRank`. Verified against seed data (2 seller + 3 buyer
   items surfaced). `lib/queries.ts` + `components/dashboard/needs-attention.tsx`. tsc/lint/build ✓.
+- **Iteration 69 (12:40 UTC) — Rounded out utils formatter test coverage.**
+  Added focused tests for `formatNumber` (thousands), `formatCompactNumber` (1.2K / 3.4M), and
+  `formatRelativeTime` (suffixed past/future) — skipping timezone-dependent date formatters. Suite now
+  60 tests / 8 files, all green; zero runtime risk. `lib/__tests__/utils.test.ts`. test/tsc/lint ✓.
 
 ---
 

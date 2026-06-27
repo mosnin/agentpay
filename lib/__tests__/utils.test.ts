@@ -11,6 +11,9 @@ import {
   clamp,
   mockHash,
   deadlineStatus,
+  formatNumber,
+  formatCompactNumber,
+  formatRelativeTime,
 } from "@/lib/utils";
 
 describe("formatCurrency", () => {
@@ -26,6 +29,29 @@ describe("formatPercent", () => {
   it("converts a 0..1 ratio to a percentage", () => {
     expect(formatPercent(0.92)).toBe("92%");
     expect(formatPercent(1)).toBe("100%");
+  });
+});
+
+describe("formatNumber", () => {
+  it("groups thousands", () => {
+    expect(formatNumber(1234567)).toBe("1,234,567");
+    expect(formatNumber(0)).toBe("0");
+  });
+});
+
+describe("formatCompactNumber", () => {
+  it("uses compact notation for large values", () => {
+    expect(formatCompactNumber(1200)).toBe("1.2K");
+    expect(formatCompactNumber(3400000)).toBe("3.4M");
+    expect(formatCompactNumber(42)).toBe("42");
+  });
+});
+
+describe("formatRelativeTime", () => {
+  it("returns a human, suffixed string for past and future", () => {
+    const now = Date.now();
+    expect(formatRelativeTime(now - 3 * 86400000)).toMatch(/ago$/);
+    expect(formatRelativeTime(now + 3 * 86400000)).toMatch(/^in /);
   });
 });
 
