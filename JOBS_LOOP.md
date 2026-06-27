@@ -27,17 +27,20 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 122 — Pay-step receipt: confirm the payment release clearly on a completed task.**
-Walk the *pay* step: when validation passes and the task completes, escrow releases payment (mock x402,
-`mockHash` tx ref in `payments.ts`). Check the task-detail payment UI — does the buyer/seller see a clear
-confirmation (amount, payment mode, and the mock tx reference)? If the release isn't surfaced as a
-concise "Payment released" receipt, add one (bounded to the payment/task-actions component); a tidy
-receipt is the trust payoff of the loop. Read the payment UI first. If it's already clear, ship the
-next-best small win and note it. Verify tsc/lint/build, push.
+**Step 123 — Persist & show the full validation `notes[]` (the deferred verify feature; now CI-safe).**
+CI applies the schema with `prisma db push` (ci.yml L51), so adding a column needs no migration file —
+the blocker is gone. Persist the validator's reasons: add `validationNotes String[] @default([])` to the
+`Artifact` model, run `prisma db push` + `prisma generate` locally, store `outcome.notes` in the validate
+action's artifact update (`lib/actions/tasks.ts` ~L206), and render the notes as a small list in
+`ArtifactCard` (add `validationNotes` to its `ArtifactLike` interface; the task query's `artifacts`
+include returns scalars automatically). Keep the iter-121 derived verdict line as the fallback when notes
+are empty (seeded/legacy artifacts). So each validation shows its actual reasons. VERIFY THOROUGHLY:
+db push + generate, then tsc/lint/build; if anything is red, revert schema + `db push` and fall back to a
+safe win. Push.
 
-> Status: CONVERGED on UI/feature scope; working the core loop end-to-end for last-mile polish (verify
-> step done: status + score bar + verdict line + content). Deferred (needs a migration): full `notes[]`.
-> Recommend winding down early; absent that, the loop continues to the 19:56 UTC deadline. 91 tests green.
+> Status: CONVERGED on UI/feature scope; walking the core loop end-to-end. This is the one substantive
+> deferred feature (now unblocked: CI uses db push, not migrations). Recommend winding down early; absent
+> that, the loop continues to the 19:56 UTC deadline. 91 tests green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -642,6 +645,11 @@ next-best small win and note it. Verify tsc/lint/build, push.
   verdict under the score bar — passed → "Meets the 80/100 pass threshold.", failed → "Below the 80/100
   pass threshold." — reconstructed from the stored status, so the buyer sees why with no schema change.
   `components/tasks/artifact-card.tsx`. tsc/lint/build ✓.
+- **Iteration 122 (13:51 UTC) — Pay step confirmed; humanized the receipt's provider.**
+  Audited the *pay* step: the task page already shows a complete receipt (Amount, Status badge, Mode,
+  Provider, copyable Transaction hash) and the dashboard reputation feed already shows color-coded ±score
+  deltas with labels — both polished. Shipped a small next-best: the receipt showed the raw `x402_mock`
+  provider id → now reads "x402 (mock)". `app/tasks/[id]/page.tsx`. tsc/lint/build ✓.
 
 ---
 

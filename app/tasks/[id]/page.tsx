@@ -112,6 +112,12 @@ export default async function TaskDetailPage({
     PAYMENT_MODES.find(
       (m) => m.value === (payment?.mode ?? contract?.paymentMode),
     )?.label ?? "—";
+  // Humanize the raw provider identifier for the receipt.
+  const providerLabel = payment?.provider
+    ? payment.provider === "x402_mock"
+      ? "x402 (mock)"
+      : payment.provider
+    : "—";
 
   const hasValidationRules =
     contract?.validationRules != null &&
@@ -400,7 +406,7 @@ export default async function TaskDetailPage({
               </Row>
               <Row label="Provider">
                 <span className="font-mono text-xs text-muted-foreground">
-                  {payment?.provider ?? "—"}
+                  {providerLabel}
                 </span>
               </Row>
               {payment?.transactionHash && (
