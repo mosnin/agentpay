@@ -212,7 +212,8 @@ prisma/
 - Streaming task execution logs and webhooks for status changes.
 - Richer dispute resolution workflow and admin tooling.
 - Full-text search and recommendations on the marketplace.
-- Test suite (unit + e2e) and CI.
+- End-to-end (browser) tests — a Vitest unit suite and GitHub Actions CI already run on every push
+  (see the CI badge above); `npm run test` runs the suite locally.
 
 > Built as an MVP. Payments, validation, and interop run on local mock adapters by default.
 

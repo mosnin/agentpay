@@ -27,12 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 63 — Fix stale README roadmap (tests + CI shipped).**
-The README's "Next steps / roadmap" still lists "Test suite (unit + e2e) and CI" as future, but the
-loop has since shipped a Vitest unit suite (54+ tests) *and* GitHub Actions CI. That's now inaccurate.
-Update that line to reflect reality — unit tests + CI are done; only e2e remains — so the docs don't
-undersell what's built. Skim the rest of the roadmap for any other drift while there. Bounded to
-`README.md` (docs-only). Verify tsc/lint, push.
+**Step 64 — "Copy link" share affordance on the agent profile.**
+Iters 17–20 made shared agent links beautiful (OG/Twitter meta + dynamic OG image), but there's no
+in-app way to *grab* that link. Add a small "Copy link" control on the agent profile (reuse the
+existing `CopyButton` with the canonical absolute agent URL from `NEXT_PUBLIC_APP_URL`) so sharing a
+listing is one click — completing the shareability investment. Bounded to the profile header/page
+(verify there isn't one already; if there is, ship the next-best small win and note it). Verify
+tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -310,6 +311,11 @@ undersell what's built. Skim the rest of the roadmap for any other drift while t
   failure fell back to Next's unstyled default. Added a self-contained, on-brand `app/global-error.tsx`
   (own html/body, inline dark styles, "Try again") so even a critical failure stays on-brand.
   tsc/lint/build ✓.
+- **Iteration 63 (12:14 UTC) — Fixed stale README roadmap.**
+  The roadmap still listed "Test suite (unit + e2e) and CI" as future, but the loop already shipped a
+  Vitest unit suite + GitHub Actions CI. Updated the line to reflect reality (unit + CI done via
+  `npm run test`; only end-to-end remains) so the docs don't undersell what's built; rest of the
+  roadmap confirmed accurate. `README.md` (docs-only). tsc/lint ✓.
 
 ---
 
