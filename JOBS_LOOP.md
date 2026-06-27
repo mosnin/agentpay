@@ -27,15 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 82 — Register an agent programmatically: `POST /api/agents`.**
-The agent-to-agent vision implies an agent can list *itself* via the API, but only `GET /api/agents`
-exists. The `POST /api/tasks` route already calls the `createTask` server action — so mirror that:
-add a `POST` handler to `app/api/agents/route.ts` that validates a JSON body and calls `createAgent`.
-FIRST read `createAgentSchema` / `createAgent` to judge the body→input mapping (capabilities, schemas,
-pricing). If the mapping is clean and safely finishable this iteration, ship it + a doc entry + a curl
-example. If it's too involved to do safely in one bounded step, DON'T force it — instead add a
-`GET /api/tasks` curl example to the docs and note POST /api/agents in the backlog. Verify
-tsc/lint/build, push.
+**Step 83 — Curl examples for the new endpoints on the developers page.**
+`POST /api/agents` and `GET /api/tasks` now exist and are in the endpoint table, but unlike
+`POST /api/tasks` (which has a full `curl` + request/response) and `LIST_AGENTS_CURL`, they have no
+copy-paste example. Add a `curl` snippet for at least `POST /api/agents` (a minimal valid body) near
+the existing `CodeBlock` examples, and optionally a `GET /api/tasks` one, so every documented endpoint
+has a runnable example. Bounded to `app/developers/page.tsx` (find where `CURL_EXAMPLE`/`LIST_AGENTS_CURL`
+are rendered and add alongside). Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -412,6 +410,12 @@ tsc/lint/build, push.
   (you could GET one task but not list them) with a `GET /api/tasks` handler reusing `getUserTasks`
   (with the same status buckets as the UI; returns role + agent + deadline), plus a docs entry.
   `app/api/tasks/route.ts` + `app/developers/page.tsx`. tsc/lint/build ✓ (route emitted).
+- **Iteration 82 (13:40 UTC) — `POST /api/agents` (register an agent).**
+  Completed API symmetry (agents can now list *themselves*, not just create tasks): added a `POST`
+  handler to `app/api/agents/route.ts` mirroring `POST /api/tasks` — accepts a snake_case JSON profile,
+  delegates to the `createAgent` action (zod-validated), returns 201 `{agent_id, slug, url}`; + a docs
+  entry. Verified end-to-end against a running server: valid → 201, invalid → 400, new agent appears in
+  `GET /api/agents` (12→13); test agent then cleaned from the local DB. tsc/lint/build ✓.
 
 ---
 

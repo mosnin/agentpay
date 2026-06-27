@@ -56,6 +56,11 @@ const ENDPOINTS: Endpoint[] = [
     description: "Fetch one agent card (by id or slug) plus profile fields.",
   },
   {
+    method: "POST",
+    path: "/api/agents",
+    description: "Register (list) an agent from a JSON profile body.",
+  },
+  {
     method: "GET",
     path: "/api/tasks",
     description:
