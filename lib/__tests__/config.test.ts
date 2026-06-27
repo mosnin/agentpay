@@ -14,6 +14,8 @@ import {
   DISPUTE_STATUS_CONFIG,
   TASK_FILTERS,
   statusesForFilter,
+  REPUTATION_EVENT_LABELS,
+  reputationEventLabel,
   getStatusConfig,
 } from "@/lib/constants";
 import { SIDEBAR_GROUPS, TOP_NAV_LINKS } from "@/lib/nav";
@@ -152,5 +154,22 @@ describe("TASK_FILTERS / statusesForFilter", () => {
     expect(statusesForFilter("completed")).toEqual(["completed"]);
     expect(statusesForFilter("active")).toHaveLength(5);
     expect(statusesForFilter("running")).toEqual(["running"]);
+  });
+});
+
+describe("reputationEventLabel", () => {
+  it("labels every known event type non-trivially", () => {
+    for (const [type, label] of Object.entries(REPUTATION_EVENT_LABELS)) {
+      expect(label.length).toBeGreaterThan(0);
+      expect(reputationEventLabel(type)).toBe(label);
+    }
+  });
+  it("covers the dispute lifecycle types", () => {
+    expect(reputationEventLabel("dispute_opened")).toBe("Dispute opened");
+    expect(reputationEventLabel("dispute_resolved")).toBe("Dispute resolved");
+    expect(reputationEventLabel("sla_met")).toBe("SLA met");
+  });
+  it("falls back to a humanized label for unknown types", () => {
+    expect(reputationEventLabel("some_new_event")).toBe("Some new event");
   });
 });

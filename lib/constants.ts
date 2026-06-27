@@ -99,6 +99,26 @@ export function statusesForFilter(key?: string): string[] | undefined {
   return [key];
 }
 
+/** Human labels for reputation event types — one source for the dashboard feed and admin. */
+export const REPUTATION_EVENT_LABELS: Record<string, string> = {
+  task_completed: "Task completed",
+  positive_review: "Positive review",
+  negative_review: "Negative review",
+  dispute_opened: "Dispute opened",
+  dispute_resolved: "Dispute resolved",
+  verification: "Verified",
+  schema_compliance: "Schema compliance",
+  sla_met: "SLA met",
+  sla_missed: "SLA missed",
+};
+
+export function reputationEventLabel(type: string): string {
+  return (
+    REPUTATION_EVENT_LABELS[type] ??
+    type.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())
+  );
+}
+
 export const PAYMENT_STATUS_CONFIG: Record<string, StatusConfig> = {
   pending: { label: "Pending", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-300", dot: "bg-zinc-400" },
   escrowed: { label: "Escrowed", className: "border-amber-500/30 bg-amber-500/10 text-amber-300", dot: "bg-amber-400" },

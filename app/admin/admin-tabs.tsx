@@ -38,7 +38,7 @@ import { DisputeStatusBadge } from "@/components/shared/status-badge";
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { CopyButton } from "@/components/shared/copy-button";
 import { cn, formatCurrency, formatDate, formatRelativeTime, initials, truncate } from "@/lib/utils";
-import { PAYMENT_MODES } from "@/lib/constants";
+import { PAYMENT_MODES, reputationEventLabel } from "@/lib/constants";
 import { VerifyButton } from "./verify-button";
 import { ResolveDisputeDialog } from "./resolve-dispute-dialog";
 
@@ -117,13 +117,6 @@ interface AdminTabsProps {
 const PAYMENT_MODE_LABELS: Record<string, string> = Object.fromEntries(
   PAYMENT_MODES.map((m) => [m.value, m.label]),
 );
-
-function reputationTypeLabel(type: string) {
-  return type
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
 
 function TabCard({ children }: { children: React.ReactNode }) {
   return <Card className="overflow-hidden p-0">{children}</Card>;
@@ -477,7 +470,7 @@ export function AdminTabs({
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                       <span className="font-medium text-foreground">{e.agentName}</span>
                       <Badge variant="secondary" className="text-xs font-normal">
-                        {reputationTypeLabel(e.type)}
+                        {reputationEventLabel(e.type)}
                       </Badge>
                       <span
                         className={cn(

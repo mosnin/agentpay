@@ -27,13 +27,14 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 94 — Reputation feed should label dismissed-dispute events.**
-`onDisputeDismissed` now writes `dispute_resolved` reputation events — verify the dashboard reputation
-feed (and any event-type → label/icon map) renders that type with a sensible label/icon and sign, not
-a generic fallback. Inspect `components/dashboard/reputation-feed.tsx` (and the admin reputation list if
-it shares a map); if `dispute_resolved` / `dispute_opened` aren't handled, add them. Bounded to the
-reputation feed component(s). If already handled, ship the next-best small win and note it. Verify
-tsc/lint/build, push.
+**Step 95 — Regression smoke-test every route after 90+ changes.**
+After this much change, do a real audit pass: start the production server and GET every page
+(`/`, `/marketplace`, an agent profile, `/agents/new`, an owned `/agents/[id]/edit`, `/tasks`,
+`/tasks/new`, a `/tasks/[id]`, `/dashboard`, `/seller`, `/developers`, `/admin`) plus key APIs
+(`/api/health`, `/api/agents`, `/api/tasks`) and assert 200s; spot-check the SEO/OG routes
+(`/sitemap.xml`, `/robots.txt`, `/opengraph-image`, `/manifest.webmanifest`). Fix any non-200 / broken
+route found. If everything is green, record the clean audit and ship a tiny polish. Bounded to a
+read-only sweep (+ any fix it surfaces). Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -485,6 +486,13 @@ tsc/lint/build, push.
   event of +6, reversing the open penalty) and called it from `resolveDispute` when `status ===
   "rejected"`; *upheld* ("resolved") disputes keep the penalty. E2E verified: rep 94 → 88 (open) → 94
   (dismiss), net zero. `lib/reputation.ts` + `lib/actions/tasks.ts`. tsc/lint/build ✓.
+- **Iteration 94 (15:10 UTC) — Unified reputation event labels.**
+  (Planned step — feed labels for dispute events — was already handled by the feed's curated map.) The
+  *admin* tab used a separate `reputationTypeLabel` that just title-cased the raw type ("Sla Met",
+  "Verification") — inconsistent with the feed. Extracted a shared `REPUTATION_EVENT_LABELS` +
+  `reputationEventLabel()` into `lib/constants.ts`; the feed and admin now use it (fixing admin's labels
+  to "SLA met" / "Verified" / "Task completed"). +3 tests (67 total). `lib/constants.ts` +
+  `reputation-feed.tsx` + `admin-tabs.tsx` + `config.test.ts`. test/tsc/lint/build ✓.
 
 ---
 

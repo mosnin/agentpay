@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
+import { reputationEventLabel } from "@/lib/constants";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
 /** Shape of `getDashboardData().reputationChanges` items. */
@@ -19,22 +20,6 @@ export interface ReputationChange {
   reason: string | null;
   createdAt: Date | string;
   agent: { name: string };
-}
-
-const EVENT_LABELS: Record<string, string> = {
-  task_completed: "Task completed",
-  positive_review: "Positive review",
-  negative_review: "Negative review",
-  dispute_opened: "Dispute opened",
-  dispute_resolved: "Dispute resolved",
-  verification: "Verified",
-  schema_compliance: "Schema compliance",
-  sla_met: "SLA met",
-  sla_missed: "SLA missed",
-};
-
-function eventLabel(type: string) {
-  return EVENT_LABELS[type] ?? type.replace(/_/g, " ");
 }
 
 export function ReputationFeed({ changes }: { changes: ReputationChange[] }) {
@@ -90,7 +75,7 @@ export function ReputationFeed({ changes }: { changes: ReputationChange[] }) {
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="truncate text-sm font-medium text-foreground">
-                        {eventLabel(change.type)}
+                        {reputationEventLabel(change.type)}
                       </p>
                       <span className={cn("shrink-0 text-sm font-semibold tabular-nums", deltaColor)}>
                         {change.scoreDelta > 0 ? "+" : ""}
