@@ -27,12 +27,14 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 96 — Loading skeleton for the `/tasks` index.**
-Consistency/perceived-perf: the data-heavy routes (`/marketplace`, `/dashboard`, `/seller`, `/admin`,
-`/agents/[id]`, `/tasks/[id]`) each have a `loading.tsx`, but the new `/tasks` index (iter 72) doesn't,
-so it flashes blank on navigation. Add `app/tasks/loading.tsx` — a skeleton matching the page (header +
-filter-pill row + a few list rows), modeled on an existing `loading.tsx`. Bounded to one new file.
-Verify tsc/lint/build, push.
+**Step 97 — Loading skeleton for the agent editor.**
+`/agents/[id]/edit` (iter 84) is a data route (awaits the agent + orgs + ownership before rendering the
+form) but has no `loading.tsx`, so navigating to it flashes blank. Add `app/agents/[id]/edit/loading.tsx`
+— a header + a couple of form-card skeletons (modeled on an existing `loading.tsx`). Bounded to one new
+file. Verify tsc/lint/build, push.
+
+> Status: the product is comprehensively complete, regression-audited (iter 95, all routes green), and
+> these are now fine-polish/consistency items. Standing offer to the user to wind the loop down early.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -498,6 +500,10 @@ Verify tsc/lint/build, push.
   behavior; low impact since the sitemap lists only real agents). Mitigated + polished by adding
   `metadata` to `app/not-found.tsx` (title "Page not found" + `robots: noindex`, so crawlers won't index
   it). tsc/lint/build ✓.
+- **Iteration 96 (15:26 UTC) — Loading skeleton for the `/tasks` index.**
+  The new `/tasks` index lacked the `loading.tsx` its data-route siblings have, so it flashed blank on
+  nav. Added `app/tasks/loading.tsx` (header + filter-pill row + 6 list-row skeletons) matching the
+  page layout, for consistent perceived performance. tsc/lint/build ✓.
 
 ---
 
