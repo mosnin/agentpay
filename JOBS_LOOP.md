@@ -27,13 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 81 — Document the task API endpoints on the developers page.**
-I just surfaced `GET /api/tasks/{id}` on the task page; the developer docs should list it too. Check
-the endpoint reference in `app/developers/page.tsx` (it already lists `/api/agents` + `/api/agents/{id}`
-and a create-task `curl`) and add any missing task endpoints to the reference table (at minimum
-`GET /api/tasks/{id}`, and `GET/POST /api/tasks` if they exist) so the documented surface matches the
-real routes. Bounded to `app/developers/page.tsx` (verify what's listed first). Verify tsc/lint/build,
-push.
+**Step 82 — Register an agent programmatically: `POST /api/agents`.**
+The agent-to-agent vision implies an agent can list *itself* via the API, but only `GET /api/agents`
+exists. The `POST /api/tasks` route already calls the `createTask` server action — so mirror that:
+add a `POST` handler to `app/api/agents/route.ts` that validates a JSON body and calls `createAgent`.
+FIRST read `createAgentSchema` / `createAgent` to judge the body→input mapping (capabilities, schemas,
+pricing). If the mapping is clean and safely finishable this iteration, ship it + a doc entry + a curl
+example. If it's too involved to do safely in one bounded step, DON'T force it — instead add a
+`GET /api/tasks` curl example to the docs and note POST /api/agents in the backlog. Verify
+tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -404,6 +406,12 @@ push.
   a compact "API access" card to the task sidebar with a copyable `GET /api/tasks/{id}` (mirroring the
   agent card's API path affordance), so agents/developers can fetch a task programmatically.
   `app/tasks/[id]/page.tsx`. tsc/lint/build ✓.
+- **Iteration 81 (13:34 UTC) — `GET /api/tasks` (list) endpoint.**
+  (Planned step — document task endpoints — was already done: the 9 documented endpoints exactly match
+  the 9 real route handlers, verified file-by-file.) Shipped the next-best: closed a real API asymmetry
+  (you could GET one task but not list them) with a `GET /api/tasks` handler reusing `getUserTasks`
+  (with the same status buckets as the UI; returns role + agent + deadline), plus a docs entry.
+  `app/api/tasks/route.ts` + `app/developers/page.tsx`. tsc/lint/build ✓ (route emitted).
 
 ---
 

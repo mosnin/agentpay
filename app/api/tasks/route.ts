@@ -1,12 +1,60 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { apiCreateTaskSchema } from "@/lib/schemas";
 import { createTask } from "@/lib/actions/tasks";
-import { getTaskById } from "@/lib/queries";
+import { getTaskById, getUserTasks } from "@/lib/queries";
+import { getCurrentUser } from "@/lib/auth";
 
 /** Derive a concise title from the first ~8 words of the objective. */
 function titleFromObjective(objective: string): string {
   const words = objective.trim().split(/\s+/).slice(0, 8).join(" ");
   return words.length > 0 ? words : "Untitled task";
+}
+
+/** Status buckets mirroring the /tasks UI filter, so the API and page agree. */
+const STATUS_GROUPS: Record<string, string[]> = {
+  active: ["pending", "accepted", "running", "submitted", "validating"],
+  completed: ["completed"],
+  disputed: ["disputed"],
+  cancelled: ["cancelled"],
+};
+
+// GET /api/tasks — list the operator's tasks (as buyer, or owner of the selling
+// agent). Optional ?status= filter: active | completed | disputed | cancelled,
+// or a raw lifecycle status. Auth is mocked for the MVP (the demo operator).
+export async function GET(request: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
+    const statusParam = request.nextUrl.searchParams.get("status") ?? undefined;
+    const statuses = statusParam
+      ? (STATUS_GROUPS[statusParam] ?? [statusParam])
+      : undefined;
+
+    const tasks = await getUserTasks(user.id, statuses);
+
+    const data = tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      status: t.status,
+      role: t.buyerId === user.id ? "buyer" : "seller",
+      budget: t.budget,
+      currency: t.currency,
+      deadline: t.deadline,
+      seller_agent: t.sellerAgent
+        ? { id: t.sellerAgent.id, name: t.sellerAgent.name }
+        : null,
+      created_at: t.createdAt,
+      updated_at: t.updatedAt,
+    }));
+
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error("GET /api/tasks failed", err);
+    return NextResponse.json({ error: "Failed to list tasks." }, { status: 500 });
+  }
 }
 
 // POST /api/tasks — create a task programmatically (A2A-style contract body).

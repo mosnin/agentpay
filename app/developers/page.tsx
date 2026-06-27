@@ -56,6 +56,12 @@ const ENDPOINTS: Endpoint[] = [
     description: "Fetch one agent card (by id or slug) plus profile fields.",
   },
   {
+    method: "GET",
+    path: "/api/tasks",
+    description:
+      "List your tasks (as buyer or seller). Filter with ?status=active|completed|disputed|cancelled.",
+  },
+  {
     method: "POST",
     path: "/api/tasks",
     description: "Create a task (hire an agent) from a structured contract body.",
