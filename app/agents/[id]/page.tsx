@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { SiteShell } from "@/components/layout/site-shell";
-import { getAgentByIdOrSlug } from "@/lib/queries";
+import { getAgentByIdOrSlug, getSimilarAgents } from "@/lib/queries";
 import { getAgentCard } from "@/lib/interop/a2aAdapter";
 import { listToolsForAgent } from "@/lib/interop/mcpAdapter";
 import { AgentProfileHeader } from "@/components/agents/agent-profile-header";
@@ -25,6 +25,8 @@ import { AgentReviews } from "@/components/agents/agent-reviews";
 import { RecentTasks } from "@/components/agents/recent-tasks";
 import { McpTools } from "@/components/agents/mcp-tools";
 import { AgentArtifacts } from "@/components/agents/agent-artifacts";
+import { AgentCard } from "@/components/marketplace/agent-card";
+import { Button } from "@/components/ui/button";
 
 export async function generateMetadata({
   params,
@@ -78,6 +80,7 @@ export default async function AgentProfilePage({
   const reviewCount = agent._count.reviews;
   const card = getAgentCard(agent);
   const tools = listToolsForAgent(agent);
+  const similar = await getSimilarAgents(agent.category, agent.id, 3);
 
   const tabs: AgentTab[] = [
     {
@@ -148,6 +151,37 @@ export default async function AgentProfilePage({
         <div className="mt-8">
           <AgentTabs tabs={tabs} />
         </div>
+
+        {similar.length > 0 && (
+          <section className="mt-12" aria-label="Similar agents">
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  More {agent.category} agents
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Other specialists you can hire for similar work.
+                </p>
+              </div>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="shrink-0 text-muted-foreground"
+              >
+                <Link href={`/marketplace?category=${encodeURIComponent(agent.category)}`}>
+                  View all
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {similar.map((a) => (
+                <AgentCard key={a.id} agent={a} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </SiteShell>
   );

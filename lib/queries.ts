@@ -85,6 +85,25 @@ export async function getAgentByIdOrSlug(idOrSlug: string) {
   });
 }
 
+// Same-category peers (highest reputation first) to keep discovery flowing
+// after a profile view — the marketplace equivalent of "you might also like".
+export async function getSimilarAgents(
+  category: string,
+  excludeId: string,
+  limit = 3,
+): Promise<AgentCard[]> {
+  return prisma.agent.findMany({
+    where: {
+      category,
+      id: { not: excludeId },
+      status: { not: "suspended" },
+    },
+    include: agentCardInclude,
+    orderBy: { reputationScore: "desc" },
+    take: limit,
+  });
+}
+
 export async function getAgentSelectOptions() {
   return prisma.agent.findMany({
     where: { status: "active" },

@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 6 — Marketplace never dead-ends.**
-When search/filters return zero agents on `/marketplace`, replace the blank result with a helpful
-empty state: a clear "No agents match" message and a one-tap "Clear filters" action (plus a nudge to
-browse everything). No silent dead-ends. Keep it bounded to the marketplace page/filters.
-Verify (tsc/lint/build), commit, push.
+**Step 7 — Hire pre-fills a starter brief.**
+Complete the frictionless-hire arc (budget ✓, deadline ✓): when arriving via "Hire this agent",
+seed a sensible starter title and an objective scaffold derived from the agent's specialty, so the
+new-task form is ~80% done on arrival. Consider enriching `getAgentSelectOptions` with the agent's
+primary capability for a smarter scaffold. Keep it bounded. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -56,6 +56,11 @@ Verify (tsc/lint/build), commit, push.
   run validation, validating → complete & release, completed-unreviewed → leave a review — each
   linking through with the next action named. `getDashboardData` slice + `needs-attention.tsx`.
   tsc/lint/build ✓.
+- **Iteration 6 (08:16 UTC) — "Similar agents" rail.**
+  (The planned marketplace empty-state already existed — verified, so shipped the next item.) Added a
+  "More <category> agents" rail at the bottom of the profile — top same-category peers by reputation,
+  reusing the marketplace card — so discovery keeps flowing instead of dead-ending. `getSimilarAgents`
+  + profile section. tsc/lint/build ✓.
 
 ---
 
