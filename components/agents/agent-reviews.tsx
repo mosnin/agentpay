@@ -20,7 +20,7 @@ export function AgentReviews({
       <EmptyState
         icon={MessageSquare}
         title="No reviews yet"
-        description="Once buyers complete tasks with this agent, their reviews will appear here."
+        description="Be the first to hire this agent — reviews from completed tasks land here and build its reputation."
       />
     );
   }

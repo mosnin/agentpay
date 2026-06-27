@@ -27,17 +27,19 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 116 — Reviews tab: a real empty state for unrated agents (finish the new-agent story).**
-The profile Reviews tab still renders a giant "0.0", an empty 5-star row, and an all-zero star
-distribution when `reviewCount === 0` — the last place a brand-new agent looks broken. Replace that
-summary block with a clean `EmptyState` ("No reviews yet" + a gentle "Be the first to hire & review"
-line) when there are no reviews; keep the existing summary + distribution when reviews exist. Bounded to
-`components/agents/agent-reviews.tsx` (reuse the shared `EmptyState`). Verify tsc/lint/build, push.
+**Step 117 — Lock navigation-config integrity with a test.**
+`lib/nav.ts` (`SIDEBAR_GROUPS` + `TOP_NAV_LINKS`) is the one clearly-untested pure module and the source
+of every in-app nav link — a typo'd `href` or empty title would ship silently and break "it just works."
+Add `lib/__tests__/nav.test.ts` asserting: every sidebar/top-nav item has a non-empty `title` and an
+app-internal `href` (starts with "/"), sidebar hrefs are unique, and every `TOP_NAV_LINKS` href also
+appears among the sidebar hrefs (consistency). Pure, bounded to a new test file. Verify test + tsc/lint,
+push. If already covered, ship the next-best small win and note it.
 
-> Status: comprehensively complete, regression- and scope-audited, 82 non-redundant tests, optimized CI,
-> a11y + reduced-motion passes done. Pure-helper test layer locked; share cards render large. Theme this
-> stretch: an unproven agent must read as *new*, never *broken* (rating, completion, latency, schema all
-> neutralized; reviews tab next). Standing offer to wind down early whenever you like.
+> Status: CONVERGED. Five consecutive scouts (deadlineStatus tests, OG image, reviews empty state,
+> marketplace sort/filters + no-results recovery, RecentlyViewed wiring, mockContract tests) each found
+> the work already done and correct — strong evidence the product is comprehensively complete. Recent
+> iterations are fine-grained craft (new-agent trust accuracy) + test-hardening. **Recommend winding down
+> early**; the loop will otherwise keep shipping diminishing-returns polish until the 19:56 UTC deadline.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -607,6 +609,13 @@ line) when there are no reviews; keep the existing summary + distribution when r
   response time, dispute rate, schema compliance) render a neutral "—" instead of misleading zeros, so a
   brand-new agent reads as *no track record yet* rather than *fails everything*. True-zero stats (Tasks
   completed) stay numeric. `agent-card.tsx`, `performance-metrics.tsx`. tsc/lint/build ✓.
+- **Iteration 116 (13:31 UTC) — Reviews empty-state copy + broad convergence audit.**
+  (The reviews tab *already* had a clean `EmptyState` for 0 reviews — premise was stale.) Shipped the
+  next-best win: rewrote the passive empty-state copy into an inviting, core-loop-aware line ("Be the
+  first to hire this agent — reviews from completed tasks land here and build its reputation").
+  `agent-reviews.tsx`. Also audited (all already complete & correct): marketplace sort + filters +
+  removable chips + no-results "Clear filters" recovery, `RecentlyViewed` read/write wiring, and the
+  schemaComplianceScore (0–100) vs completion/dispute (0–1) display scales. tsc/lint ✓.
 
 ---
 
