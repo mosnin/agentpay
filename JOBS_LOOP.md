@@ -27,15 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 98 — Finish loading-state coverage (`/agents/new`, `/tasks/new`).**
-With `/agents/[id]/edit` skeletoned, the two create-form routes are the last data routes without a
-`loading.tsx` (each server-fetches orgs / agent options before rendering). Add `app/agents/new/loading.tsx`
-and `app/tasks/new/loading.tsx` (header + form-card skeletons, reusing the edit skeleton shape) so
-every route has a loading state. After this, loading-state coverage is complete app-wide — stop the
-skeleton thread. Bounded to two small files. Verify tsc/lint/build, push.
+**Step 99 — Code-hygiene sweep (stray debug / TODOs).**
+A real audit: grep `app/`, `lib/`, `components/` for `console.log`, `debugger`, and `TODO`/`FIXME`
+(keep legit `console.error` in server-action catch blocks). Remove any stray debug logging and resolve
+or convert any TODO into a tracked note. If the tree is already clean, record that and ship a tiny
+next-best polish. Bounded to whatever the sweep surfaces. Verify tsc/lint/build, push.
 
-> Status: the product is comprehensively complete, regression-audited (iter 95, all routes green), and
-> these are now fine-polish/consistency items. Standing offer to the user to wind the loop down early.
+> Status: the product is comprehensively complete, regression-audited (iter 95, all routes green), with
+> full loading-state coverage and 67 tests. Remaining items are fine-polish/hygiene. Standing offer to
+> the user to wind the loop down early.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -509,6 +509,10 @@ skeleton thread. Bounded to two small files. Verify tsc/lint/build, push.
   Added `app/agents/[id]/edit/loading.tsx` (header + 3 form-card skeletons + action buttons) so the
   editor — which awaits the agent + orgs + ownership before rendering — no longer flashes blank on nav.
   tsc/lint/build ✓.
+- **Iteration 98 (15:42 UTC) — Completed loading-state coverage.**
+  Added `app/agents/new/loading.tsx` and `app/tasks/new/loading.tsx` (form-card skeletons; the task one
+  mirrors the two-column form + sticky contract-preview layout). Every data/form route now has a
+  `loading.tsx` — loading-state coverage is complete app-wide; skeleton thread closed. tsc/lint/build ✓.
 
 ---
 
