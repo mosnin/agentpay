@@ -14,6 +14,7 @@ interface ArtifactLike {
   content: string | null;
   validationStatus: string;
   validationScore: number | null;
+  validationNotes?: string[];
   createdAt: Date | string;
 }
 
@@ -65,13 +66,27 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
             value={score}
             className={cn("h-1.5 bg-muted", scoreTone(score))}
           />
-          {(artifact.validationStatus === "passed" ||
-            artifact.validationStatus === "failed") && (
-            <p className="text-xs text-muted-foreground">
-              {artifact.validationStatus === "passed"
-                ? `Meets the ${PASS_THRESHOLD}/100 pass threshold.`
-                : `Below the ${PASS_THRESHOLD}/100 pass threshold.`}
-            </p>
+          {artifact.validationNotes && artifact.validationNotes.length > 0 ? (
+            <ul className="space-y-1 pt-0.5">
+              {artifact.validationNotes.map((note, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-xs text-muted-foreground"
+                >
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
+                  <span>{note}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            (artifact.validationStatus === "passed" ||
+              artifact.validationStatus === "failed") && (
+              <p className="text-xs text-muted-foreground">
+                {artifact.validationStatus === "passed"
+                  ? `Meets the ${PASS_THRESHOLD}/100 pass threshold.`
+                  : `Below the ${PASS_THRESHOLD}/100 pass threshold.`}
+              </p>
+            )
           )}
         </div>
       )}

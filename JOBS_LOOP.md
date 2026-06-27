@@ -27,20 +27,18 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 123 — Persist & show the full validation `notes[]` (the deferred verify feature; now CI-safe).**
-CI applies the schema with `prisma db push` (ci.yml L51), so adding a column needs no migration file —
-the blocker is gone. Persist the validator's reasons: add `validationNotes String[] @default([])` to the
-`Artifact` model, run `prisma db push` + `prisma generate` locally, store `outcome.notes` in the validate
-action's artifact update (`lib/actions/tasks.ts` ~L206), and render the notes as a small list in
-`ArtifactCard` (add `validationNotes` to its `ArtifactLike` interface; the task query's `artifacts`
-include returns scalars automatically). Keep the iter-121 derived verdict line as the fallback when notes
-are empty (seeded/legacy artifacts). So each validation shows its actual reasons. VERIFY THOROUGHLY:
-db push + generate, then tsc/lint/build; if anything is red, revert schema + `db push` and fall back to a
-safe win. Push.
+**Step 124 — Seed validation notes so the demo shows the new feature.**
+Iter 123 persists `validationNotes`, but seeded artifacts have `[]`, so the demo data falls back to the
+one-line verdict instead of showing the richer reasons. Read `prisma/seed.ts`; for any artifact it
+creates with a `passed`/`failed` `validationStatus` + `validationScore`, set `validationNotes` to a
+sensible, status-consistent set (mirror `evaluateArtifact`'s phrasing: "Artifact present.", schema line,
+and the score verdict line). Re-seed locally to confirm. Bounded to `prisma/seed.ts`. If the seed creates
+no validated artifacts (notes wouldn't show anyway), ship the next-best small win and note it. Verify
+tsc/lint + `npm run db:seed`, push.
 
-> Status: CONVERGED on UI/feature scope; walking the core loop end-to-end. This is the one substantive
-> deferred feature (now unblocked: CI uses db push, not migrations). Recommend winding down early; absent
-> that, the loop continues to the 19:56 UTC deadline. 91 tests green.
+> Status: CONVERGED; just shipped the one substantive deferred feature (validationNotes, verified with a
+> Prisma round-trip). This makes it visible in the demo. Recommend winding down early; absent that, the
+> loop continues to the 19:56 UTC deadline. 91 tests green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -650,6 +648,12 @@ safe win. Push.
   Provider, copyable Transaction hash) and the dashboard reputation feed already shows color-coded ±score
   deltas with labels — both polished. Shipped a small next-best: the receipt showed the raw `x402_mock`
   provider id → now reads "x402 (mock)". `app/tasks/[id]/page.tsx`. tsc/lint/build ✓.
+- **Iteration 123 (13:55 UTC) — Persisted & surfaced the full validation notes (substantive feature).**
+  Added `validationNotes String[] @default([])` to `Artifact` (CI-safe — CI uses `db push`), stored
+  `outcome.notes` in the validate action, and rendered them as a list in `ArtifactCard` (iter-121 derived
+  line kept as fallback for empty/legacy notes). `db push` + `generate` applied; verified with a Prisma
+  round-trip (write→read→match→restore). Each validation now shows its actual reasons, not just a score.
+  91 tests green; tsc/lint/build ✓.
 
 ---
 

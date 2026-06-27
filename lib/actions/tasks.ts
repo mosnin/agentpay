@@ -203,7 +203,11 @@ export async function runValidation(taskId: string): Promise<ActionResult<{ scor
 
     await prisma.artifact.update({
       where: { id: artifact.id },
-      data: { validationStatus: outcome.status, validationScore: outcome.score },
+      data: {
+        validationStatus: outcome.status,
+        validationScore: outcome.score,
+        validationNotes: outcome.notes,
+      },
     });
 
     if (task.sellerAgentId) {
