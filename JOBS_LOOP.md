@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 29 — Smooth hover on mobile nav links.**
-The mobile Sheet nav links in `top-nav` and `landing-nav` use `hover:bg-muted`/color without
-`transition-colors`, so they snap rather than ease (desktop links transition). Add `transition-colors`
-to match. Read the nav components first; bounded. Verify (tsc/lint/build), commit, push.
+**Step 30 — Complete the keyboard-focus pass.**
+Extend Step 28's `focus-visible:ring` treatment to the remaining raw link rows: the agent profile's
+"Recent tasks" rows (`components/agents/recent-tasks.tsx`) and the artifact URL link
+(`components/tasks/artifact-card.tsx`), so keyboard focus is visible app-wide. Read them first; bounded.
+Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -153,6 +154,9 @@ to match. Read the nav components first; bounded. Verify (tsc/lint/build), commi
   Added consistent `focus-visible:ring` to the interactive row links in the dashboard cards
   (recent-tasks, recent-payments, needs-attention), which previously relied on the browser default
   outline — so keyboard focus is clearly visible. tsc/lint/build ✓.
+- **Iteration 29 (09:50 UTC) — Smooth hover on mobile nav links.**
+  Added `transition-colors` to the mobile Sheet nav links in `top-nav` and `landing-nav`, so their
+  hover eases like the desktop links instead of snapping. tsc/lint/build ✓.
 
 ---
 
