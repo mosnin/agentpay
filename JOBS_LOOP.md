@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 51 — SECURITY.md.**
-Add a short `SECURITY.md`: note the MVP uses mock auth + mock payments and is not production-secure as
-shipped (don't deploy with real funds/PII until x402/Clerk are wired), and give a basic report path.
-Bounded to one file. Verify (test + tsc/lint), commit, push.
+**Step 52 — CONTRIBUTING.md.**
+Add a concise `CONTRIBUTING.md`: prerequisites (Node 20 via `.nvmrc`, Postgres via docker-compose),
+setup steps, the quality gates (typecheck / lint / test / build), branch & PR conventions, and a
+pointer to the project structure. Bounded to one file. Verify (test + tsc/lint), commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -239,6 +239,10 @@ Bounded to one file. Verify (test + tsc/lint), commit, push.
   alongside the other API routes. `app/developers/page.tsx`. tsc/lint ✓.
 - **Iteration 50 (11:22 UTC) — Synced the README Scripts table.**
   Added the `npm run test` row so the documented scripts match `package.json`. `README.md`. tsc/lint ✓.
+- **Iteration 51 (11:26 UTC) — SECURITY.md.**
+  Added a security policy: the MVP's mock auth (`lib/auth.ts`) and mock payments (x402 adapter) are not
+  production-secure as shipped (don't deploy with real funds/PII until Clerk + x402 are wired), plus a
+  report path and the safeguards already in place (Zod validation, env secrets, CI gates). tsc/lint ✓.
 
 ---
 
