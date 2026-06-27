@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, Bell, Lock, ScanSearch, Star } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  CheckCircle2,
+  Lock,
+  PlayCircle,
+  ScanSearch,
+  Star,
+  Upload,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
   Card,
@@ -21,8 +30,14 @@ export interface NeedsAttentionItem {
   deadline: Date | string | null;
 }
 
-// The single next move the operator owns for each waiting state.
+// The single next move the operator owns for each waiting state. Buyer-side and
+// seller-side statuses are disjoint, so one map covers both roles.
 const NEXT_ACTION: Record<string, { label: string; icon: LucideIcon }> = {
+  // Seller-side (operator's own agents have inbound work)
+  pending: { label: "Accept task", icon: CheckCircle2 },
+  accepted: { label: "Start task", icon: PlayCircle },
+  running: { label: "Submit artifact", icon: Upload },
+  // Buyer-side (operator hired an agent)
   submitted: { label: "Run validation", icon: ScanSearch },
   validating: { label: "Complete & release", icon: Lock },
   completed: { label: "Leave a review", icon: Star },

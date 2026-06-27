@@ -232,6 +232,7 @@ export async function getDashboardData(userId: string) {
     reputationChanges,
     recentTaskDates,
     attentionRaw,
+    sellerInboundRaw,
   ] = await Promise.all([
     prisma.agent.findMany({ where: { ownerId: userId }, include: agentCardInclude }),
     prisma.task.findMany({ where: { buyerId: userId }, select: { status: true } }),
@@ -276,6 +277,16 @@ export async function getDashboardData(userId: string) {
         sellerAgent: { select: { name: true } },
         reviews: { where: { userId }, select: { id: true } },
       },
+      orderBy: { updatedAt: "desc" },
+      take: 8,
+    }),
+    // Seller-side: inbound work on the operator's own agents awaiting their move.
+    prisma.task.findMany({
+      where: {
+        sellerAgent: { ownerId: userId },
+        status: { in: ["pending", "accepted", "running"] },
+      },
+      include: { sellerAgent: { select: { name: true } } },
       orderBy: { updatedAt: "desc" },
       take: 8,
     }),
@@ -326,8 +337,10 @@ export async function getDashboardData(userId: string) {
     return { date: d.date, score: Math.max(0, Math.min(100, running)) };
   });
 
-  // Tasks awaiting the operator's own next move: validate, complete, or review.
-  const needsAttention = attentionRaw
+  // Tasks awaiting the operator's own next move. Buyer-side (validate, complete,
+  // review) and seller-side (accept, start, submit) statuses are disjoint, so the
+  // two sets merge cleanly into a single triage list.
+  const buyerAttention = attentionRaw
     .filter((t) => t.status !== "completed" || t.reviews.length === 0)
     .map((t) => ({
       id: t.id,
@@ -337,7 +350,17 @@ export async function getDashboardData(userId: string) {
       budget: t.budget,
       currency: t.currency,
       deadline: t.deadline,
-    }))
+    }));
+  const sellerAttention = sellerInboundRaw.map((t) => ({
+    id: t.id,
+    title: t.title,
+    status: t.status as string,
+    agentName: t.sellerAgent?.name ?? null,
+    budget: t.budget,
+    currency: t.currency,
+    deadline: t.deadline,
+  }));
+  const needsAttention = [...buyerAttention, ...sellerAttention]
     // Most time-critical first: earliest deadline → no-deadline → completed
     // (no time pressure). Stable, so the updatedAt order holds within a tier.
     .sort((a, b) => urgencyRank(a) - urgencyRank(b));

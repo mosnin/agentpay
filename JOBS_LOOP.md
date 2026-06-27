@@ -27,16 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 68 — Dashboard triage also covers the seller's court.**
-"Always know your next move" currently only covers buyer-side moves (submitted→validate,
-validating→complete, completed→review). When the operator's *own* agents have inbound work, the
-seller-side moves (pending→accept, accepted→start, running→submit) aren't surfaced on the dashboard —
-only on the seller page. The status sets are disjoint by role, so merging is clean: add a seller-side
-query in `getDashboardData` (tasks where `sellerAgent.ownerId === userId`, status in
-pending/accepted/running, with deadline), map with seller action labels, merge into `needsAttention`,
-and let the existing `urgencyRank` sort handle ordering. Extend `NEXT_ACTION` in `needs-attention.tsx`
-with the three seller statuses. Bounded to `lib/queries.ts` + `needs-attention.tsx`. Verify
-tsc/lint/build, push.
+**Step 69 — Round out `lib/utils` formatter test coverage.**
+A safe quality win after the heavier triage feature. `formatNumber`, `formatCompactNumber`, and
+`formatRelativeTime` are untested. Add focused tests in `lib/__tests__/utils.test.ts` (thousands
+separators; compact 1.2k/3.4M; relative time returns a suffixed string). Skip `formatDate`/`formatDateTime`
+exact-match (timezone-dependent). Keeps the CI suite growing with zero runtime risk. Verify test +
+tsc/lint, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -341,6 +337,12 @@ tsc/lint/build, push.
   "Recently viewed" group at the top of the command palette, refreshed each time it opens — so you can
   jump back to agents you were comparing from anywhere ("⌘K reaches everything").
   `recently-viewed.tsx` + `search-command.tsx`. tsc/lint/build ✓.
+- **Iteration 68 (12:36 UTC) — Dashboard triage now covers the seller's court.**
+  "Needs your attention" only surfaced buyer moves; added a seller-side query (operator's own agents,
+  status pending/accepted/running, with deadline) and merged it in — buyer/seller statuses are disjoint
+  so the union is unambiguous — with seller action labels (Accept / Start / Submit artifact) added to
+  `NEXT_ACTION`, ordered by the existing `urgencyRank`. Verified against seed data (2 seller + 3 buyer
+  items surfaced). `lib/queries.ts` + `components/dashboard/needs-attention.tsx`. tsc/lint/build ✓.
 
 ---
 
