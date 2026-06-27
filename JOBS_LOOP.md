@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 47 — PR template.**
-Add `.github/pull_request_template.md` with a concise structure (Summary, Changes, and a Testing
-checklist for typecheck / lint / test / build) so contributions are described consistently and
-reviewers can verify the gates. Bounded to one file. Verify (test + tsc/lint), commit, push.
+**Step 48 — Health/readiness endpoint.**
+Add `app/api/health/route.ts` — a `GET` that checks DB connectivity (`SELECT 1` via Prisma) and returns
+`{ status, db, time }` with 200/503, for deploy health checks and uptime monitors
+(`export const dynamic = "force-dynamic"`). Bounded to one route. Verify (tsc/lint/build + curl), commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -227,6 +227,9 @@ reviewers can verify the gates. Bounded to one file. Verify (test + tsc/lint), c
   unique + well-formed, `CATEGORY_VALUES` mirrors `CATEGORIES`, every status-config entry has
   label/class/dot, every lifecycle status has a config, `getStatusConfig` fallback works, and nav
   hrefs are rooted + unique. 54 tests / 8 files pass. tsc/lint ✓.
+- **Iteration 47 (11:10 UTC) — PR template.**
+  Added `.github/pull_request_template.md` (Summary, Changes, and a typecheck/lint/test/build testing
+  checklist) so PRs are described consistently and reviewers can confirm the gates. tsc/lint ✓.
 
 ---
 
