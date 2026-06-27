@@ -27,14 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 87 — A paused listing must actually leave the marketplace.**
-Pause/resume only *means* something if a paused agent disappears from public discovery. Verify
-`getAgents` (the marketplace/landing query) and `getSimilarAgents`/featured filter to `status: active`
-(not just "not suspended"); if paused agents still surface publicly, exclude them. Align `app/sitemap.ts`
-too (it currently allows everything except `suspended`, so paused profiles would still be advertised).
-The owner's seller studio + the (owner-only) profile should still show paused listings. Bounded to
-`lib/queries.ts` (+ `app/sitemap.ts`). Verify tsc/lint/build (+ a quick check that a paused agent is
-absent from `GET /api/agents`), push.
+**Step 88 — Coherent profile CTA for a non-active agent.**
+Loose end from pausing: a paused agent is gone from discovery, but its profile is still reachable by
+direct link and shows an active "Hire this agent" button — yet the new-task form only offers *active*
+agents, so hiring would silently fail to preselect it. On the profile header, when `status !== "active"`
+and the viewer is NOT the owner, replace the Hire CTA with a clear "This agent is currently
+unavailable" state (keep "View agent card"). Owners still see Hire + the edit/owner cue. The header
+already has `status` + `isOwner`. Bounded to `agent-profile-header.tsx`. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -443,6 +442,13 @@ absent from `GET /api/agents`), push.
   ownership guard is identical to the e2e-verified `updateAgent` check (full click-e2e needs Playwright,
   not a project dep). `lib/actions/agents.ts` + `components/seller/agent-status-toggle.tsx` +
   `seller-agents.tsx`. tsc/lint/build ✓.
+- **Iteration 87 (14:14 UTC) — Paused/draft agents leave public discovery.**
+  `getAgents`, `getSimilarAgents`, `getCategoryCounts`, and the marketplace-stats agent count used
+  `status: { not: "suspended" }` (leaking paused *and* draft into the public marketplace/API/landing);
+  switched all four to `status: "active"`, and the sitemap likewise — so a paused listing actually goes
+  offline. Owner surfaces unaffected (seller studio queries by ownerId; admin uses its own query;
+  profile direct-access kept). E2E verified: pausing an agent dropped `GET /api/agents` 12→11 with it
+  absent; DB restored after. `lib/queries.ts` + `app/sitemap.ts`. tsc/lint/build ✓.
 
 ---
 

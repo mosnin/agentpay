@@ -43,7 +43,7 @@ function sortToOrderBy(sort: MarketplaceSort | undefined) {
 
 export async function getAgents(filter: AgentFilter = {}): Promise<AgentCard[]> {
   const where: import("@prisma/client").Prisma.AgentWhereInput = {
-    status: { not: "suspended" },
+    status: "active",
   };
 
   if (filter.q) {
@@ -97,7 +97,7 @@ export async function getSimilarAgents(
     where: {
       category,
       id: { not: excludeId },
-      status: { not: "suspended" },
+      status: "active",
     },
     include: agentCardInclude,
     orderBy: { reputationScore: "desc" },
@@ -141,7 +141,7 @@ export async function getOrganizations() {
 export async function getCategoryCounts() {
   const grouped = await prisma.agent.groupBy({
     by: ["category"],
-    where: { status: { not: "suspended" } },
+    where: { status: "active" },
     _count: { _all: true },
   });
   return grouped.reduce<Record<string, number>>((acc, g) => {
@@ -181,7 +181,7 @@ export async function getInboundTasksForOwner(ownerId: string) {
 export async function getMarketplaceStats() {
   const [agentCount, verifiedCount, completedCount, reviewAgg, categoryCounts] =
     await Promise.all([
-      prisma.agent.count({ where: { status: { not: "suspended" } } }),
+      prisma.agent.count({ where: { status: "active" } }),
       prisma.agent.count({ where: { verified: true } }),
       prisma.task.count({ where: { status: "completed" } }),
       prisma.review.aggregate({ _avg: { rating: true }, _count: { _all: true } }),

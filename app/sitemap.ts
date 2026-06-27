@@ -7,7 +7,7 @@ const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 // agent profile, so the marketplace and its listings are indexable.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const agents = await prisma.agent.findMany({
-    where: { status: { not: "suspended" } },
+    where: { status: "active" },
     select: { slug: true, updatedAt: true },
     orderBy: { reputationScore: "desc" },
   });
