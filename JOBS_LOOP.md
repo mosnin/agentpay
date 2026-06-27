@@ -27,12 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 66 — Visible ⌘K search trigger in the top nav.**
-"Instant discovery" via ⌘K (iter 4) is only discoverable to people who already know the shortcut.
-Confirm whether the app nav shows a *clickable* search affordance (a "Search agents… ⌘K" button that
-opens the palette); if it's keyboard-only, add a visible trigger with a `kbd` hint so mouse users find
-it too. Bounded to the nav/search components (`components/layout/`). Verify first; if a visible trigger
-already exists, ship the next-best small win and note it. Verify tsc/lint/build, push.
+**Step 67 — Surface recently-viewed agents in the ⌘K palette.**
+"⌘K reaches everything" (Jobs lens #6): the marketplace has a localStorage "Recently viewed" rail
+(iter 23), but the palette doesn't use it. Read the same recents key in `search-command.tsx` and, when
+the palette opens, show a "Recently viewed" group at the top (filter the already-loaded agent hits by
+the recent slugs/ids, preserve recency order) so you can jump back to agents you were comparing from
+anywhere. Bounded to `search-command.tsx` (reuse the recents storage key from
+`components/agents/recently-viewed.tsx`). Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -326,6 +327,12 @@ already exists, ship the next-best small win and note it. Verify tsc/lint/build,
   CSS-drawn diamond mark — no dynamic font fetch) with the product headline + Discover/Hire/Verify/Pay
   chips, so every page now shows a premium share preview. Build emits `/opengraph-image` (static, no
   warnings). tsc/lint/build ✓.
+- **Iteration 66 (12:26 UTC) — Platform-aware ⌘K shortcut hint.**
+  (Planned step — visible search trigger — was already done: both shells render the full "Search
+  agents, pages… ⌘K" button + an icon-only variant. Verified.) The hint always showed the Mac glyph
+  "⌘K" though the handler also accepts Ctrl+K, so Windows/Linux users saw a wrong shortcut. Made the
+  label platform-aware (SSR-safe default ⌘K, corrected to "Ctrl K" on non-Mac after mount).
+  `components/layout/search-command.tsx`. tsc/lint/build ✓.
 
 ---
 

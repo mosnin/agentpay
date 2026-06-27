@@ -28,8 +28,16 @@ interface AgentHit {
 export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const [agents, setAgents] = React.useState<AgentHit[]>([]);
+  // Default to the ⌘ glyph (matches SSR); correct to "Ctrl" on non-Mac after
+  // mount so Windows/Linux users see the shortcut that actually works for them.
+  const [shortcut, setShortcut] = React.useState("⌘K");
   const loadedRef = React.useRef(false);
   const router = useRouter();
+
+  React.useEffect(() => {
+    const platform = navigator.platform || navigator.userAgent;
+    if (!/Mac|iPhone|iPad|iPod/i.test(platform)) setShortcut("Ctrl K");
+  }, []);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -105,7 +113,7 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
           <Search className="h-4 w-4" />
           <span className="flex-1 text-left">Search agents, pages…</span>
           <kbd className="pointer-events-none hidden items-center gap-1 rounded border border-border/60 bg-background px-1.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
-            ⌘K
+            {shortcut}
           </kbd>
         </button>
       )}
