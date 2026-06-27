@@ -12,11 +12,15 @@ import {
 import { EmptyState } from "@/components/shared/empty-state";
 import { TaskStatusBadge } from "@/components/shared/task-status-badge";
 import { PaymentStatusBadge } from "@/components/shared/payment-status-badge";
+import { DeadlineBadge } from "@/components/shared/deadline-badge";
 import type { TaskListItem } from "@/lib/types";
 import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
 
 /** Statuses where the seller (agent owner) has work to do. */
 const ACTION_STATUSES = new Set(["pending", "accepted", "submitted"]);
+
+/** Terminal statuses where a deadline no longer carries urgency. */
+const TERMINAL_STATUSES = new Set(["completed", "cancelled", "disputed"]);
 
 function buyerName(task: TaskListItem) {
   return task.buyer.name ?? task.buyer.email;
@@ -70,6 +74,13 @@ export function InboundTasks({ tasks }: { tasks: TaskListItem[] }) {
                       >
                         {task.title}
                       </Link>
+                      {task.deadline && !TERMINAL_STATUSES.has(task.status) && (
+                        <DeadlineBadge
+                          deadline={task.deadline}
+                          urgentOnly
+                          className="shrink-0"
+                        />
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{buyerName(task)}</TableCell>
@@ -122,15 +133,20 @@ export function InboundTasks({ tasks }: { tasks: TaskListItem[] }) {
                   {formatCurrency(task.budget, task.currency)}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 {task.payment ? (
                   <PaymentStatusBadge status={task.payment.status} />
                 ) : (
                   <span className="text-xs text-muted-foreground">No payment yet</span>
                 )}
-                <span className="text-xs text-muted-foreground">
-                  {formatRelativeTime(task.createdAt)}
-                </span>
+                <div className="flex items-center gap-2">
+                  {task.deadline && !TERMINAL_STATUSES.has(task.status) && (
+                    <DeadlineBadge deadline={task.deadline} urgentOnly />
+                  )}
+                  <span className="text-xs text-muted-foreground">
+                    {formatRelativeTime(task.createdAt)}
+                  </span>
+                </div>
               </div>
             </div>
           );

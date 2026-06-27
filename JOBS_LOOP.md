@@ -27,13 +27,16 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 59 — Deadline urgency on the seller's inbound tasks.**
-Completes the deadline story on the *delivering* side — the seller has the strongest reason to see
-"due soon / overdue." Reuse the shared `DeadlineBadge` (`urgentOnly`) on the rows in
-`app/seller/inbound-tasks.tsx` for active inbound tasks (confirm `TaskListItem` carries `deadline`;
-add to the include/type if missing). Bounded to the seller inbound list (+ type/query if needed).
-Verify tsc/lint/build, push. After this, deadlines "just work" everywhere they matter — pivot the next
-step to a fresh core-loop surface (e.g. a delight moment on task completion, or a copy pass).
+**Step 60 — Make reputation transparent at the hire decision.**
+Trust is the core of a marketplace. The agent profile shows the reputation *score* (header) and its
+*components* (completion, rating, disputes, schema compliance, latency, tasks) in `PerformanceMetrics`
+— but nothing connects them, so the score reads as opaque. Add a concise explainer beneath the
+metrics: one line naming the score and stating it blends these signals and updates after every task.
+Bounded to the profile metrics section (`app/agents/[id]/page.tsx` and/or `performance-metrics.tsx`).
+Verify tsc/lint/build, push.
+
+> The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
+> user: say the word to pause, change direction, or wind down early.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -283,6 +286,11 @@ step to a fresh core-loop surface (e.g. a delight moment on task completion, or 
   undated, then completed-awaiting-review (no time pressure) last — as a stable secondary to the
   existing `updatedAt` order, so the most time-critical task is always on top. `lib/queries.ts`.
   tsc/lint/build ✓.
+- **Iteration 59 (11:58 UTC) — Deadline urgency on the seller's inbound tasks.**
+  Reused the shared `DeadlineBadge` (`urgentOnly`) on `app/seller/inbound-tasks.tsx` rows (desktop
+  table + mobile cards) for active inbound tasks, so the *delivering* side sees due-soon / overdue at a
+  glance — completing the deadline story on both sides of the marketplace. `TaskListItem` already
+  carried `deadline` (no query change). tsc/lint/build ✓.
 
 ---
 
