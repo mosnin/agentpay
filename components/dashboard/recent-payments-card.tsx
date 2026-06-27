@@ -84,7 +84,7 @@ export function RecentPaymentsCard({ payments }: { payments: RecentPayment[] }) 
                   {payment.task ? (
                     <Link
                       href={`/tasks/${payment.task.id}`}
-                      className="-mx-2 flex items-center justify-between gap-4 rounded-lg px-2 py-3 transition-colors hover:bg-muted/40"
+                      className="-mx-2 flex items-center justify-between gap-4 rounded-lg px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {row}
                     </Link>

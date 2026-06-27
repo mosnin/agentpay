@@ -47,7 +47,7 @@ export function RecentTasksCard({ tasks }: { tasks: TaskListItem[] }) {
               <li key={task.id}>
                 <Link
                   href={`/tasks/${task.id}`}
-                  className="group -mx-2 flex items-center justify-between gap-4 rounded-lg px-2 py-3 transition-colors hover:bg-muted/40"
+                  className="group -mx-2 flex items-center justify-between gap-4 rounded-lg px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="min-w-0 space-y-1">
                     <p className="truncate text-sm font-medium text-foreground group-hover:text-foreground">

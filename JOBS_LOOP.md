@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 28 — Visible keyboard focus on list rows.**
-The interactive rows/links in the dashboard cards (recent-tasks, recent-payments, needs-attention)
-rely on the browser default outline, while Buttons have focus-visible rings. Add a consistent
-`focus-visible:ring` treatment to those row links so keyboard focus is clearly visible. Bounded to
-those components. Verify (tsc/lint/build), commit, push.
+**Step 29 — Smooth hover on mobile nav links.**
+The mobile Sheet nav links in `top-nav` and `landing-nav` use `hover:bg-muted`/color without
+`transition-colors`, so they snap rather than ease (desktop links transition). Add `transition-colors`
+to match. Read the nav components first; bounded. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -150,6 +149,10 @@ those components. Verify (tsc/lint/build), commit, push.
   `recent-payments-card` ("Commission an agent") and `reputation-feed` ("List an agent") now have the
   same actionable empty-state CTA treatment as the recent-tasks card, so an empty dashboard guides the
   next move everywhere. tsc/lint/build ✓.
+- **Iteration 28 (09:46 UTC) — Visible keyboard focus on list rows.**
+  Added consistent `focus-visible:ring` to the interactive row links in the dashboard cards
+  (recent-tasks, recent-payments, needs-attention), which previously relied on the browser default
+  outline — so keyboard focus is clearly visible. tsc/lint/build ✓.
 
 ---
 

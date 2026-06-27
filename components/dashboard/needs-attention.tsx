@@ -56,7 +56,7 @@ export function NeedsAttention({ items }: { items: NeedsAttentionItem[] }) {
               <li key={item.id}>
                 <Link
                   href={`/tasks/${item.id}`}
-                  className="group -mx-2 flex items-center justify-between gap-4 rounded-lg px-2 py-3 transition-colors hover:bg-muted/40"
+                  className="group -mx-2 flex items-center justify-between gap-4 rounded-lg px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="min-w-0 space-y-1">
                     <p className="truncate text-sm font-medium text-foreground">
