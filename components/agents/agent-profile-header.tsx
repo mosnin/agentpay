@@ -6,6 +6,7 @@ import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { ReputationScore } from "@/components/shared/reputation-score";
 import { AgentStatusBadge } from "@/components/shared/status-badge";
 import { StarRating } from "@/components/shared/star-rating";
+import { CopyButton } from "@/components/shared/copy-button";
 import { PRICING_MODELS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import type { AgentDetail } from "@/lib/types";
@@ -22,6 +23,8 @@ export function AgentProfileHeader({
   reviewCount: number;
 }) {
   const hireHref = `/tasks/new?agent=${agent.id}&category=${encodeURIComponent(agent.category)}`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const shareUrl = `${baseUrl}/agents/${agent.slug}`;
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40">
@@ -96,6 +99,11 @@ export function AgentProfileHeader({
               </Link>
             </Button>
           </div>
+          <CopyButton
+            value={shareUrl}
+            label="Copy link"
+            className="px-2.5 py-1.5"
+          />
         </div>
       </div>
     </div>

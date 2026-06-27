@@ -27,13 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 64 — "Copy link" share affordance on the agent profile.**
-Iters 17–20 made shared agent links beautiful (OG/Twitter meta + dynamic OG image), but there's no
-in-app way to *grab* that link. Add a small "Copy link" control on the agent profile (reuse the
-existing `CopyButton` with the canonical absolute agent URL from `NEXT_PUBLIC_APP_URL`) so sharing a
-listing is one click — completing the shareability investment. Bounded to the profile header/page
-(verify there isn't one already; if there is, ship the next-best small win and note it). Verify
-tsc/lint/build, push.
+**Step 65 — Branded default OG image for the whole site.**
+Only agent profiles have a dynamic OG image; the landing, marketplace, and developers pages fall back
+to meta tags with no preview image, so those shared links look plain. Add a root
+`app/opengraph-image.tsx` (`next/og`, 1200×630, dark brand) reusing the agent OG image's CSS-drawn mark
+(no dynamic font fetch — that failed before for glyphs) so every page without a specific image still
+shows a premium preview. Pairs with the iter-64 Copy link + the OG investment. Bounded to one new file
+(confirm no root one exists). Verify tsc/lint/build (route emitted), push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -316,6 +316,11 @@ tsc/lint/build, push.
   Vitest unit suite + GitHub Actions CI. Updated the line to reflect reality (unit + CI done via
   `npm run test`; only end-to-end remains) so the docs don't undersell what's built; rest of the
   roadmap confirmed accurate. `README.md` (docs-only). tsc/lint ✓.
+- **Iteration 64 (12:18 UTC) — "Copy link" share affordance on the agent profile.**
+  Iters 17–20 made shared agent links render rich previews, but nothing let you grab the link. Added a
+  subtle `CopyButton`-based "Copy link" tertiary action in the profile header, copying the canonical
+  slug URL (`NEXT_PUBLIC_APP_URL/agents/<slug>`) — sharing a listing is now one click.
+  `components/agents/agent-profile-header.tsx`. tsc/lint/build ✓.
 
 ---
 
