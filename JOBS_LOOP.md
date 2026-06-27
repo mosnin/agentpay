@@ -27,13 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 70 — "All caught up" affirmation on the dashboard (inbox-zero delight).**
-`NeedsAttention` correctly renders nothing when empty (iter 5), but an *active* operator with no
-pending moves just sees it vanish. A small reassuring "You're all caught up — nothing needs your move"
-card (only when the operator has activity, i.e. the first-run "Get started" card is NOT shown) answers
-"what's my next move?" with a positive "nothing." A touch of delight that rewards inbox-zero. Bounded
-to `app/dashboard/page.tsx` (+ a tiny presentational piece); reuse the existing first-run/stats signal
-to avoid showing it to brand-new users. Verify tsc/lint/build, push.
+**Step 71 — Sitemap freshness (`lastModified`) + route completeness.**
+`app/sitemap.ts` lists routes but (likely) without `lastModified`, so crawlers get no freshness signal.
+Add `lastModified` — `agent.updatedAt` for each agent profile, and a sensible date for the static
+public routes — and confirm every public route is present (home, marketplace, developers; keep
+admin/dashboard/seller out, matching robots). Small, real SEO hygiene. Bounded to `app/sitemap.ts`
+(verify what's there first). Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -348,6 +347,11 @@ to avoid showing it to brand-new users. Verify tsc/lint/build, push.
   Added focused tests for `formatNumber` (thousands), `formatCompactNumber` (1.2K / 3.4M), and
   `formatRelativeTime` (suffixed past/future) — skipping timezone-dependent date formatters. Suite now
   60 tests / 8 files, all green; zero runtime risk. `lib/__tests__/utils.test.ts`. test/tsc/lint ✓.
+- **Iteration 70 (12:44 UTC) — "All caught up" inbox-zero affirmation.**
+  Added an `AllCaughtUp` card (calm success-tinted, "You're all caught up · nothing needs your move
+  right now") shown on the dashboard when an *active* operator's triage list is empty (hidden for
+  brand-new users, who still get "Get started"), so inbox-zero reads as an accomplishment instead of an
+  empty space. `components/dashboard/needs-attention.tsx` + `app/dashboard/page.tsx`. tsc/lint/build ✓.
 
 ---
 

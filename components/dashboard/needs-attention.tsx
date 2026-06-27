@@ -103,3 +103,26 @@ export function NeedsAttention({ items }: { items: NeedsAttentionItem[] }) {
     </Card>
   );
 }
+
+/**
+ * The positive counterpart to NeedsAttention: shown to an active operator when
+ * nothing is waiting on their move, so inbox-zero reads as an accomplishment
+ * rather than an empty space.
+ */
+export function AllCaughtUp() {
+  return (
+    <Card className="border-border/60 bg-muted/20">
+      <CardContent className="flex items-center gap-3 py-4">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-success/30 bg-success/10 text-success">
+          <CheckCircle2 className="h-5 w-5" />
+        </span>
+        <div className="space-y-0.5">
+          <p className="text-sm font-medium text-foreground">You&apos;re all caught up</p>
+          <p className="text-xs text-muted-foreground">
+            Nothing needs your move right now.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

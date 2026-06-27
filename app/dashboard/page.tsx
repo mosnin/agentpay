@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ChartCard } from "@/components/dashboard/chart-card";
 import { RecentTasksCard } from "@/components/dashboard/recent-tasks-card";
 import { AgentPerformance } from "@/components/dashboard/agent-performance";
-import { NeedsAttention } from "@/components/dashboard/needs-attention";
+import { NeedsAttention, AllCaughtUp } from "@/components/dashboard/needs-attention";
 import { GetStarted } from "@/components/dashboard/get-started";
 import {
   RecentPaymentsCard,
@@ -135,8 +135,13 @@ export default async function DashboardPage() {
           ))}
         </section>
 
-        {/* Needs your attention — tasks waiting on the operator's next move */}
-        <NeedsAttention items={needsAttention} />
+        {/* Needs your attention — tasks waiting on the operator's next move.
+            For an active operator with nothing pending, affirm inbox-zero. */}
+        {needsAttention.length > 0 ? (
+          <NeedsAttention items={needsAttention} />
+        ) : (
+          !isNewUser && <AllCaughtUp />
+        )}
 
         {/* Charts */}
         <section aria-label="Trends" className="space-y-6">
