@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 43 — Test the MCP adapter.**
-Add unit tests for `lib/interop/mcpAdapter.ts` — `listToolsForAgent` (deterministic, well-formed tool
-list derived from the agent) and `validateMcpServer` (its verdict for set vs missing server URLs).
-Read it first; bounded to a new `lib/__tests__/*` file. Verify (test + tsc/lint/build), commit, push.
+**Step 44 — Test the Zod form schemas.**
+Add unit tests for `lib/schemas.ts` (createTaskSchema, createAgentSchema, reviewSchema,
+submitArtifactSchema, disputeSchema): valid payloads parse and invalid ones fail (missing required
+fields, out-of-range rating/budget, bad URL/enum). Read `lib/schemas.ts` first; bounded to a new
+`lib/__tests__/*` file. Verify (test + tsc/lint), commit, push.
 
 ---
 
@@ -207,6 +208,10 @@ Read it first; bounded to a new `lib/__tests__/*` file. Verify (test + tsc/lint/
   isLive), the A2A adapter (getAgentCard mapping, parseArtifactMessage defaults, task envelope), and
   the contract generator (title, category schema, constraints, empty input). 29 tests / 5 files pass.
   tsc/lint/build ✓.
+- **Iteration 43 (10:54 UTC) — MCP adapter tests.**
+  Added tests for `lib/interop/mcpAdapter.ts`: `listToolsForAgent` (one snake_cased tool per
+  capability, well-formed schema, deterministic) and `validateMcpServer` (missing / invalid / https /
+  unsupported-protocol verdicts). 35 tests / 6 files pass. tsc/lint ✓.
 
 ---
 
