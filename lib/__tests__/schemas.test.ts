@@ -45,6 +45,15 @@ describe("createAgentSchema", () => {
       createAgentSchema.safeParse({ ...valid, inputSchema: "{not json" }).success,
     ).toBe(false);
   });
+
+  it("rejects an unknown category", () => {
+    expect(createAgentSchema.safeParse({ ...valid, category: "Bogus" }).success).toBe(false);
+  });
+
+  it("accepts a valid JSON string for inputSchema", () => {
+    const r = createAgentSchema.safeParse({ ...valid, inputSchema: '{"type":"object"}' });
+    expect(r.success).toBe(true);
+  });
 });
 
 describe("createTaskSchema", () => {
@@ -67,6 +76,11 @@ describe("createTaskSchema", () => {
     expect(createTaskSchema.safeParse({ ...valid, sellerAgentId: "" }).success).toBe(false);
     expect(createTaskSchema.safeParse({ ...valid, objective: "short" }).success).toBe(false);
     expect(createTaskSchema.safeParse({ ...valid, paymentMode: "free" }).success).toBe(false);
+  });
+
+  it("rejects an unknown category and a negative budget", () => {
+    expect(createTaskSchema.safeParse({ ...valid, category: "Bogus" }).success).toBe(false);
+    expect(createTaskSchema.safeParse({ ...valid, budget: -5 }).success).toBe(false);
   });
 });
 

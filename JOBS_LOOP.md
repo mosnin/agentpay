@@ -27,19 +27,19 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 118 — Harden the hire/list input validation tests (`schemas.test.ts`).**
-`lib/schemas.ts` validates the two core-loop *entry points* — `createTask` (hire) and `createAgent`
-(list). Read `lib/__tests__/schemas.test.ts`; for any untested edge that would let bad input through or
-wrongly reject good input, add a focused case: e.g. budget must be > 0, a too-short title/description is
-rejected, an invalid category is rejected, a valid minimal payload passes, and (if present) JSON-schema
-string fields parse. Bounded to the test file. If the edges are already covered, ship the next-best small
-win and note it. Verify test + tsc/lint, push.
+**Step 119 — Require a submitted artifact to actually have content or a URL (verify-step hardening).**
+Real gap found in iter 118: `submitArtifactSchema` makes both `content` and `url` optional, so a
+title-only (empty) artifact passes validation — yet `evaluateArtifact` hard-fails a no-body artifact.
+Tighten the schema with a `.refine` requiring at least one of `content`/`url` (non-empty), so an empty
+deliverable is rejected at submit time ("it just works" — you can't submit nothing). Add a test asserting
+title-only is rejected while content-only and url-only still pass. IMPORTANT: first check the callers —
+`simulateTask` (the demo auto-submit), the seed, and `/api/tasks/[id]/artifacts` — and ensure they
+supply content/url so nothing breaks; fix any that don't. Bounded to `schemas.ts` + its test (+ a 1-line
+caller fix if needed). Verify tsc/lint/build, push.
 
-> Status: CONVERGED. Six consecutive scouts (deadlineStatus tests, OG image, reviews empty state,
-> marketplace sort/filters + no-results recovery, RecentlyViewed wiring, mockContract tests, not-found
-> recovery CTAs) each found the work already done and correct — the product is comprehensively complete.
-> Recent iterations are fine-grained craft + test-hardening (now 87 tests). **Recommend winding down
-> early**; absent that, the loop keeps shipping diminishing-returns polish until the 19:56 UTC deadline.
+> Status: CONVERGED on UI/feature scope; now finding *substantive* small hardening (this one is a real
+> behavior fix, not polish). Six prior scouts found their targets already done. Recommend winding down
+> early; absent that, the loop continues to the 19:56 UTC deadline. 90 tests, all green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -621,6 +621,12 @@ win and note it. Verify test + tsc/lint, push.
   non-empty title + app-internal `href` + icon, sidebar hrefs are unique, and every top-nav destination
   also exists in the sidebar — so a typo'd route or empty label fails CI instead of shipping a dead nav
   link. 87 tests pass (was 82). tsc/lint ✓. (Also confirmed not-found.tsx already has recovery CTAs.)
+- **Iteration 118 (13:36 UTC) — Hardened hire/list validation tests.**
+  `schemas.test.ts` was already solid; added the genuinely-missing edges: `createAgentSchema` and
+  `createTaskSchema` both reject an unknown category (the `categoryEnum` path), `createTaskSchema`
+  rejects a negative budget, and `inputSchema` accepts a valid JSON string (the positive `jsonString`
+  branch). 90 tests pass (was 87). tsc/lint ✓. Spotted a real gap for next step: `submitArtifactSchema`
+  permits a title-only (empty) artifact.
 
 ---
 
