@@ -30,13 +30,17 @@ export default async function LandingPage() {
           <FeaturedAgents agents={featuredAgents} />
         </Reveal>
 
-        <HowItWorks />
+        <Reveal>
+          <HowItWorks />
+        </Reveal>
 
         <Reveal>
           <CategoriesSection />
         </Reveal>
 
-        <TrustSection />
+        <Reveal>
+          <TrustSection />
+        </Reveal>
 
         <Reveal>
           <Audiences />

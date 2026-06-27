@@ -27,13 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 61 — One-click copy of the machine-readable Agent Card.**
-The product is agent-to-agent, so the profile's machine-readable Agent Card (A2A JSON) should be
-trivially grabbable. Confirm whether the Agent Card / JSON block on `app/agents/[id]` already has a
-copy-to-clipboard control; if not, add one (reuse the existing `CopyButton` + `formatJson`) so a
-developer or agent can copy the full card in one click. Bounded to the profile's agent-card / JSON
-component (verify first; if already present, ship the next-best small win and note it). Verify
-tsc/lint/build, push.
+**Step 62 — Copyable, ready-to-run API example on the developers page.**
+The marketplace is agent-to-agent, so the public API needs a one-paste starting point. Check the
+developers page (`app/developers/page.tsx`) for the endpoint reference; if there's no copyable example
+request (e.g. a `curl` for `GET /api/agents`), add one using the existing `JsonViewer`/`CopyButton`
+pattern so an integrator can copy a working call in one click. Bounded to the developers page (+ reuse
+existing copy primitives). Verify first; if already present, ship the next-best small win and note it.
+Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -296,6 +296,14 @@ tsc/lint/build, push.
   score: "Reputation NN/100 blends these signals — completion, ratings, disputes, and schema
   compliance — and updates after every task." So the score reads as earned, not arbitrary, right where
   buyers decide. `components/agents/performance-metrics.tsx`. tsc/lint/build ✓.
+- **Iteration 61 (12:06 UTC) — Consistent scroll-reveal across landing sections.**
+  (Planned step — Agent Card copy — was already done: `JsonViewer` renders the card with a built-in
+  `CopyButton` that copies the full `agent_card.json`. Verified.) Tried adding the marketplace's
+  staggered card entrance to the landing's featured grid, but it sits inside a `<Reveal>` (framer
+  `whileInView`, hidden until scrolled) so a mount-time CSS animation would finish unseen — reverted it
+  (wouldn't earn its place). Instead fixed a real inconsistency: `HowItWorks` and `TrustSection` were
+  the only below-the-fold sections not wrapped in `Reveal`; wrapped them so every section enters
+  consistently. `app/page.tsx`. tsc/lint/build ✓.
 
 ---
 
