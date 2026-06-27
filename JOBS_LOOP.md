@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 45 — Automated dependency updates (dependabot).**
-Add `.github/dependabot.yml` covering the `npm` and `github-actions` ecosystems (weekly, minor/patch
-grouped) so dependencies and CI action versions stay current with minimal PR noise. Bounded to one
-file. Verify (test + tsc/lint), commit, push.
+**Step 46 — Config integrity tests.**
+Add a test asserting the marketplace config is internally consistent: `CATEGORIES` ↔ `CATEGORY_VALUES`
+agree; `PAYMENT_MODES` / `PRICING_MODELS` / `MARKETPLACE_SORTS` / visibility options have unique values
+and non-empty labels; nav (`SIDEBAR_GROUPS`) hrefs are unique and non-empty. Read `lib/constants.ts` +
+`lib/nav.ts` first; bounded to a new test file. Verify (test + tsc/lint), commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -219,6 +220,9 @@ file. Verify (test + tsc/lint), commit, push.
   the API create-task schema): valid payloads parse with defaults applied; invalid ones fail (short
   fields, empty capabilities, bad URL/enum, out-of-range/non-integer rating, coercion). 46 tests /
   7 files pass. tsc/lint ✓.
+- **Iteration 45 (11:02 UTC) — Automated dependency updates.**
+  Added `.github/dependabot.yml` (npm + github-actions, weekly, minor/patch grouped, PR limit 5) so
+  dependencies and CI action versions stay current with minimal noise. yaml/tsc/lint ✓.
 
 ---
 
