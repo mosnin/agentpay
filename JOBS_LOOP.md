@@ -27,15 +27,16 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 100 — Cache npm in CI for faster, cheaper runs.**
-The CI workflow (`.github/workflows/ci.yml`) runs `npm ci` on every push/PR. If the `actions/setup-node`
-step doesn't set `cache: "npm"`, installs re-download the whole dependency tree each run. Add npm
-caching to the setup-node step (a one-line `cache: npm`) so CI is faster and lighter. Confirm it's not
-already cached. Bounded to `ci.yml`. Verify the YAML + tsc/lint, push.
+**Step 101 — Boundary tests for `deadlineStatus`.**
+`deadlineStatus` (used by every `DeadlineBadge` across detail/triage/seller/tasks) has overdue/soon/
+normal tests but not the exact thresholds. Add boundary cases in `lib/__tests__/utils.test.ts`: diff
+`0` → overdue, exactly `24h` → soon, just over `24h` → normal — passing an injected `now` for
+determinism. Hardens the urgency logic that drives multiple surfaces. Bounded to the test file. Verify
+test + tsc/lint, push.
 
 > Status: the product is comprehensively complete, regression-audited (iter 95), with full loading-state
-> coverage, 67 tests, and a clean hygiene sweep. Remaining items are fine-polish/infra. Standing offer
-> to the user to wind the loop down early.
+> coverage, 67 tests, clean hygiene, and optimized CI. Remaining items are fine-polish/coverage.
+> Standing offer to the user to wind the loop down early.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -517,6 +518,10 @@ already cached. Bounded to `ci.yml`. Verify the YAML + tsc/lint, push.
   Swept `app/`/`lib/`/`components/` — no `console.log`/`debugger`/`TODO`/`FIXME` (only 24 legit
   `console.error` in catch blocks). Shipped a tiny polish: declared `"engines": { "node": ">=20" }` in
   `package.json` (matches `.nvmrc` + CI; helps deploy platforms pick the right Node). tsc/lint/build ✓.
+- **Iteration 100 (15:58 UTC) — CI concurrency (cancel superseded runs).**
+  (Planned step — npm cache — was already in `ci.yml`.) Added a `concurrency` group
+  (`cancel-in-progress`) so the frequent loop pushes don't pile up stale CI runs, and corrected the job
+  name to "Typecheck, lint, test, build". `.github/workflows/ci.yml`. yaml/tsc/lint ✓.
 
 ---
 

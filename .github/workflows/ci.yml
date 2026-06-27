@@ -5,9 +5,14 @@ on:
     branches: ["**"]
   pull_request:
 
+# Cancel superseded runs on the same ref so rapid pushes don't queue stale builds.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
-    name: Typecheck, lint, build
+    name: Typecheck, lint, test, build
     runs-on: ubuntu-latest
 
     services:
