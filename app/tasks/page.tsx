@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ListChecks, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, ListChecks, Plus } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -9,9 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TaskStatusBadge } from "@/components/shared/task-status-badge";
 import { DeadlineBadge } from "@/components/shared/deadline-badge";
 import { requireUser } from "@/lib/auth";
-import { getUserTasks } from "@/lib/queries";
+import { getUserTasksPaginated, TASKS_PAGE_SIZE } from "@/lib/queries";
 import { TASK_FILTERS, statusesForFilter } from "@/lib/constants";
-import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { cn, formatCurrency, formatNumber, formatRelativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Your tasks",
@@ -23,12 +23,27 @@ const TERMINAL = new Set(["completed", "cancelled", "disputed"]);
 export default async function TasksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
   const user = await requireUser();
-  const { status } = await searchParams;
+  const { status, page: pageRaw } = await searchParams;
   const active = TASK_FILTERS.find((f) => f.key === status) ?? TASK_FILTERS[0];
-  const tasks = await getUserTasks(user.id, statusesForFilter(active.key));
+  const page = Math.max(1, parseInt(pageRaw ?? "1", 10) || 1);
+  const { tasks, total } = await getUserTasksPaginated(
+    user.id,
+    statusesForFilter(active.key),
+    page,
+  );
+  const totalPages = Math.ceil(total / TASKS_PAGE_SIZE);
+  const offset = (page - 1) * TASKS_PAGE_SIZE;
+
+  const hrefWithPage = (p: number) => {
+    const params = new URLSearchParams();
+    if (active.key !== "all") params.set("status", active.key);
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    return qs ? `/tasks?${qs}` : "/tasks";
+  };
 
   return (
     <AppShell>
@@ -66,7 +81,14 @@ export default async function TasksPage({
             );
           })}
           <span className="ml-auto text-xs text-muted-foreground">
-            {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
+            {total === 0 ? (
+              "0 tasks"
+            ) : (
+              <>
+                {formatNumber(offset + 1)}–{formatNumber(offset + tasks.length)} of{" "}
+                {formatNumber(total)} {total === 1 ? "task" : "tasks"}
+              </>
+            )}
           </span>
         </div>
 
@@ -142,6 +164,43 @@ export default async function TasksPage({
               </ul>
             </CardContent>
           </Card>
+        )}
+
+        {totalPages > 1 && (
+          <nav
+            aria-label="Pagination"
+            className="flex items-center justify-center gap-3 pt-2"
+          >
+            {page > 1 ? (
+              <Button asChild variant="outline" size="sm">
+                <Link href={hrefWithPage(page - 1)}>
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+            )}
+            <span className="text-xs text-muted-foreground">
+              Page {page} of {totalPages}
+            </span>
+            {page < totalPages ? (
+              <Button asChild variant="outline" size="sm">
+                <Link href={hrefWithPage(page + 1)}>
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
+          </nav>
         )}
       </div>
     </AppShell>

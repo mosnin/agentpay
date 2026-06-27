@@ -8,7 +8,7 @@ import { AgentCard } from "@/components/marketplace/agent-card";
 import { RecentlyViewed } from "@/components/agents/recently-viewed";
 import { Button } from "@/components/ui/button";
 import { MarketplaceFilters } from "@/components/marketplace/marketplace-filters";
-import { getAgents, getCategoryCounts } from "@/lib/queries";
+import { getAgentsPaginated, AGENTS_PAGE_SIZE, getCategoryCounts } from "@/lib/queries";
 import type { AgentFilter } from "@/lib/queries";
 import { CATEGORY_VALUES, MARKETPLACE_SORTS, PRICING_MODELS } from "@/lib/constants";
 import type { MarketplaceSort } from "@/lib/constants";
@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   title: "Marketplace · Agent Market",
   description: "Discover, compare, and hire specialized AI agents.",
 };
+
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
@@ -45,6 +47,8 @@ export default async function MarketplacePage({
   const minRatingRaw = one(sp.minRating);
   const sortRaw = one(sp.sort);
   const verified = one(sp.verified) === "true";
+  const pageRaw = one(sp.page);
+  const page = Math.max(1, parseInt(pageRaw ?? "1", 10) || 1);
 
   // Validate against known values so a hand-edited URL can't break the query.
   const category =
@@ -68,18 +72,20 @@ export default async function MarketplacePage({
     sort,
   };
 
-  const [agents, categoryCounts] = await Promise.all([
-    getAgents(filter),
+  const [{ agents, total: agentTotal }, categoryCounts] = await Promise.all([
+    getAgentsPaginated(filter, page),
     getCategoryCounts(),
   ]);
 
   const total = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
+  const totalPages = Math.ceil(agentTotal / AGENTS_PAGE_SIZE);
+  const offset = (page - 1) * AGENTS_PAGE_SIZE;
   const hasFilters = Boolean(
     q || category || pricingModel || minRating || verified || (sort && sort !== "reputation"),
   );
   const pricingLabel = (v: string) =>
     PRICING_MODELS.find((p) => p.value === v)?.label ?? v;
-  // Build a marketplace URL with one filter removed and the rest preserved.
+  // Build a marketplace URL with one filter removed and the rest preserved (resets to page 1).
   const hrefWithout = (omit: string) => {
     const sp = new URLSearchParams();
     if (q && omit !== "q") sp.set("q", q);
@@ -88,6 +94,19 @@ export default async function MarketplacePage({
     if (minRating && omit !== "minRating") sp.set("minRating", String(minRating));
     if (verified && omit !== "verified") sp.set("verified", "true");
     if (sort && sort !== "reputation") sp.set("sort", sort);
+    const qs = sp.toString();
+    return qs ? `/marketplace?${qs}` : "/marketplace";
+  };
+  // Build a marketplace URL changing only the page, preserving all other params.
+  const hrefWithPage = (p: number) => {
+    const sp = new URLSearchParams();
+    if (q) sp.set("q", q);
+    if (category) sp.set("category", category);
+    if (pricingModel) sp.set("pricingModel", pricingModel);
+    if (minRating) sp.set("minRating", String(minRating));
+    if (verified) sp.set("verified", "true");
+    if (sort && sort !== "reputation") sp.set("sort", sort);
+    if (p > 1) sp.set("page", String(p));
     const qs = sp.toString();
     return qs ? `/marketplace?${qs}` : "/marketplace";
   };
@@ -138,10 +157,20 @@ export default async function MarketplacePage({
 
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground" aria-live="polite">
-              <span className="font-medium text-foreground">
-                {formatNumber(agents.length)}
-              </span>{" "}
-              {agents.length === 1 ? "agent" : "agents"}
+              {agentTotal === 0 ? (
+                <span className="font-medium text-foreground">0</span>
+              ) : (
+                <>
+                  <span className="font-medium text-foreground">
+                    {formatNumber(offset + 1)}–{formatNumber(offset + agents.length)}
+                  </span>
+                  {" of "}
+                  <span className="font-medium text-foreground">
+                    {formatNumber(agentTotal)}
+                  </span>
+                </>
+              )}{" "}
+              {agentTotal === 1 ? "agent" : "agents"}
               {category && (
                 <>
                   {" "}
@@ -180,16 +209,54 @@ export default async function MarketplacePage({
               }
             />
           ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {agents.map((agent, i) => (
-                <AgentCard
-                  key={agent.id}
-                  agent={agent}
-                  className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-3 motion-safe:fill-mode-both motion-safe:duration-500"
-                  style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {agents.map((agent, i) => (
+                  <AgentCard
+                    key={agent.id}
+                    agent={agent}
+                    className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-3 motion-safe:fill-mode-both motion-safe:duration-500"
+                    style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
+                  />
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <nav
+                  aria-label="Pagination"
+                  className="flex items-center justify-center gap-3 pt-2"
+                >
+                  {page > 1 ? (
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={hrefWithPage(page - 1)}>
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" disabled>
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                  )}
+                  <span className="text-xs text-muted-foreground">
+                    Page {page} of {totalPages}
+                  </span>
+                  {page < totalPages ? (
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={hrefWithPage(page + 1)}>
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" disabled>
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </nav>
+              )}
+            </>
           )}
         </div>
       </div>

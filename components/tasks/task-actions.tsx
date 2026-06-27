@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useOptimistic } from "react";
 import {
   Ban,
   CheckCircle2,
@@ -14,6 +15,7 @@ import {
   Star,
   ThumbsUp,
   Upload,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -63,20 +65,26 @@ const STATUS_GUIDE: Record<string, string> = {
 export function TaskActions({ task }: TaskActionsProps) {
   const [pending, startTransition] = React.useTransition();
   const [busyKey, setBusyKey] = React.useState<string | null>(null);
+  const [actionError, setActionError] = React.useState<string | null>(null);
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic(task.status);
 
-  const { id, status } = task;
+  const id = task.id;
 
   function run(
     key: string,
     action: () => Promise<ActionResult<unknown>>,
     successMessage: string,
+    nextStatus?: string,
   ) {
     setBusyKey(key);
+    setActionError(null);
     startTransition(async () => {
+      if (nextStatus) setOptimisticStatus(nextStatus);
       const res = await action();
       if (res.ok) {
         toast.success(successMessage);
       } else {
+        setActionError(res.error ?? "Action failed. Please try again.");
         toast.error(res.error);
       }
       setBusyKey(null);
@@ -85,7 +93,9 @@ export function TaskActions({ task }: TaskActionsProps) {
 
   function onRunValidation() {
     setBusyKey("validate");
+    setActionError(null);
     startTransition(async () => {
+      setOptimisticStatus("validating");
       const res = await runValidation(id);
       if (res.ok) {
         const score = res.data?.score ?? 0;
@@ -94,6 +104,7 @@ export function TaskActions({ task }: TaskActionsProps) {
         if (passed) toast.success(message);
         else toast.error(message);
       } else {
+        setActionError(res.error ?? "Validation failed to run.");
         toast.error(res.error);
       }
       setBusyKey(null);
@@ -102,17 +113,17 @@ export function TaskActions({ task }: TaskActionsProps) {
 
   const isBusy = (key: string) => pending && busyKey === key;
 
-  const showAccept = status === "pending";
-  const showStart = status === "accepted";
-  const showSubmit = ["accepted", "running", "submitted"].includes(status);
-  const showValidate = status === "submitted";
-  const showComplete = ["submitted", "validating"].includes(status);
-  const showReview = status === "completed";
-  const showDispute = ACTIVE_STATUSES.has(status);
-  const showCancel = ["draft", "pending", "accepted", "running"].includes(status);
-  const showDemo = ACTIVE_STATUSES.has(status);
+  const showAccept = optimisticStatus === "pending";
+  const showStart = optimisticStatus === "accepted";
+  const showSubmit = ["accepted", "running", "submitted"].includes(optimisticStatus);
+  const showValidate = optimisticStatus === "submitted";
+  const showComplete = ["submitted", "validating"].includes(optimisticStatus);
+  const showReview = optimisticStatus === "completed";
+  const showDispute = ACTIVE_STATUSES.has(optimisticStatus);
+  const showCancel = ["draft", "pending", "accepted", "running"].includes(optimisticStatus);
+  const showDemo = ACTIVE_STATUSES.has(optimisticStatus);
 
-  const isTerminal = status === "completed" || status === "cancelled";
+  const isTerminal = optimisticStatus === "completed" || optimisticStatus === "cancelled";
 
   // Primary actions advance the lifecycle; secondary actions are escapes.
   const hasPrimary =
@@ -120,10 +131,23 @@ export function TaskActions({ task }: TaskActionsProps) {
 
   return (
     <div className="space-y-4">
-      {STATUS_GUIDE[status] && (
+      {actionError && (
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs text-red-300">
+          <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400" />
+          <span className="flex-1">{actionError}</span>
+          <button
+            onClick={() => setActionError(null)}
+            className="text-muted-foreground hover:text-foreground"
+            aria-label="Dismiss error"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+      {STATUS_GUIDE[optimisticStatus] && (
         <p className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-          <span>{STATUS_GUIDE[status]}</span>
+          <span>{STATUS_GUIDE[optimisticStatus]}</span>
         </p>
       )}
       <div className="space-y-2.5">
@@ -131,7 +155,7 @@ export function TaskActions({ task }: TaskActionsProps) {
           <Button
             className="w-full justify-start"
             disabled={pending}
-            onClick={() => run("accept", () => acceptTask(id), "Task accepted")}
+            onClick={() => run("accept", () => acceptTask(id), "Task accepted", "accepted")}
           >
             {isBusy("accept") ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
             {isBusy("accept") ? "Accepting…" : "Accept task"}
@@ -142,7 +166,7 @@ export function TaskActions({ task }: TaskActionsProps) {
           <Button
             className="w-full justify-start"
             disabled={pending}
-            onClick={() => run("start", () => startTask(id), "Task started")}
+            onClick={() => run("start", () => startTask(id), "Task started", "running")}
           >
             {isBusy("start") ? <Loader2 className="animate-spin" /> : <PlayCircle />}
             {isBusy("start") ? "Starting…" : "Start task"}
@@ -183,6 +207,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 "complete",
                 () => completeTask(id),
                 "Task completed · payment released",
+                "completed",
               )
             }
           >
@@ -213,6 +238,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                   "demo",
                   () => simulateTask(id),
                   "Demo complete · task auto-advanced and payment released",
+                  "completed",
                 )
               }
             >
@@ -248,7 +274,7 @@ export function TaskActions({ task }: TaskActionsProps) {
               className="w-full justify-start text-muted-foreground hover:text-destructive"
               disabled={pending}
               onClick={() =>
-                run("cancel", () => cancelTask(id), "Task cancelled · payment refunded")
+                run("cancel", () => cancelTask(id), "Task cancelled · payment refunded", "cancelled")
               }
             >
               {isBusy("cancel") ? <Loader2 className="animate-spin" /> : <Ban />}
@@ -265,7 +291,7 @@ export function TaskActions({ task }: TaskActionsProps) {
         </p>
       )}
 
-      {status === "disputed" && (
+      {optimisticStatus === "disputed" && (
         <p className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-xs text-red-300">
           <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
           A dispute is open. Resolution is handled from the admin console.

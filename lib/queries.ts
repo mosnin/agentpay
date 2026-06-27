@@ -41,11 +41,12 @@ function sortToOrderBy(sort: MarketplaceSort | undefined) {
   }
 }
 
-export async function getAgents(filter: AgentFilter = {}): Promise<AgentCard[]> {
+function buildAgentWhere(
+  filter: AgentFilter,
+): import("@prisma/client").Prisma.AgentWhereInput {
   const where: import("@prisma/client").Prisma.AgentWhereInput = {
     status: "active",
   };
-
   if (filter.q) {
     where.OR = [
       { name: { contains: filter.q, mode: "insensitive" } },
@@ -62,12 +63,35 @@ export async function getAgents(filter: AgentFilter = {}): Promise<AgentCard[]> 
   if (filter.pricingModel) where.pricingModel = filter.pricingModel as never;
   if (filter.minRating) where.averageRating = { gte: filter.minRating };
   if (filter.verified) where.verified = true;
+  return where;
+}
 
+export async function getAgents(filter: AgentFilter = {}): Promise<AgentCard[]> {
   return prisma.agent.findMany({
-    where,
+    where: buildAgentWhere(filter),
     include: agentCardInclude,
     orderBy: sortToOrderBy(filter.sort),
   });
+}
+
+export const AGENTS_PAGE_SIZE = 24;
+
+export async function getAgentsPaginated(
+  filter: AgentFilter = {},
+  page = 1,
+): Promise<{ agents: AgentCard[]; total: number }> {
+  const where = buildAgentWhere(filter);
+  const [agents, total] = await Promise.all([
+    prisma.agent.findMany({
+      where,
+      include: agentCardInclude,
+      orderBy: sortToOrderBy(filter.sort),
+      skip: (page - 1) * AGENTS_PAGE_SIZE,
+      take: AGENTS_PAGE_SIZE,
+    }),
+    prisma.agent.count({ where }),
+  ]);
+  return { agents, total };
 }
 
 export async function getFeaturedAgents(limit = 6): Promise<AgentCard[]> {
@@ -229,6 +253,32 @@ export async function getUserTasks(userId: string, statuses?: string[]) {
     orderBy: { updatedAt: "desc" },
     take: 100,
   });
+}
+
+export const TASKS_PAGE_SIZE = 25;
+
+export async function getUserTasksPaginated(
+  userId: string,
+  statuses: string[] | undefined,
+  page = 1,
+): Promise<{ tasks: Awaited<ReturnType<typeof getUserTasks>>; total: number }> {
+  const where: import("@prisma/client").Prisma.TaskWhereInput = {
+    OR: [{ buyerId: userId }, { sellerAgent: { ownerId: userId } }],
+    ...(statuses && statuses.length > 0
+      ? { status: { in: statuses as TaskStatus[] } }
+      : {}),
+  };
+  const [tasks, total] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      include: taskListInclude,
+      orderBy: { updatedAt: "desc" },
+      skip: (page - 1) * TASKS_PAGE_SIZE,
+      take: TASKS_PAGE_SIZE,
+    }),
+    prisma.task.count({ where }),
+  ]);
+  return { tasks, total };
 }
 
 /** Triage sort key: earliest deadline first, undated next, completed (no time pressure) last. */
