@@ -42,6 +42,18 @@ export function ChartCard({
 }: ChartCardProps) {
   const hasData = data.length > 0;
 
+  // Screen-reader summary of the (otherwise visual-only) chart.
+  const yValues = data
+    .map((d) => Number(d[yKey]))
+    .filter((v) => Number.isFinite(v));
+  const fmt = (n: number) =>
+    `${valuePrefix ?? ""}${Math.round(n * 100) / 100}${valueSuffix ?? ""}`;
+  const ariaLabel = yValues.length
+    ? `${title}: ${data.length} data points, total ${fmt(
+        yValues.reduce((s, v) => s + v, 0),
+      )}, peak ${fmt(Math.max(...yValues))}.`
+    : `${title}: no data.`;
+
   return (
     <Card className={cn("flex flex-col", className)}>
       <CardHeader>
@@ -50,16 +62,18 @@ export function ChartCard({
       </CardHeader>
       <CardContent className="flex-1">
         {hasData ? (
-          <DashboardChart
-            variant={variant}
-            data={data}
-            xKey={xKey}
-            yKey={yKey}
-            color={color}
-            height={height}
-            valuePrefix={valuePrefix}
-            valueSuffix={valueSuffix}
-          />
+          <div role="img" aria-label={ariaLabel}>
+            <DashboardChart
+              variant={variant}
+              data={data}
+              xKey={xKey}
+              yKey={yKey}
+              color={color}
+              height={height}
+              valuePrefix={valuePrefix}
+              valueSuffix={valueSuffix}
+            />
+          </div>
         ) : (
           <EmptyState
             icon={emptyIcon}

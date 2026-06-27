@@ -27,15 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 103 — Accessible labels for the dashboard charts.**
-Likely the last real a11y gap: the Recharts charts (`ChartCard`) are visual-only, so screen-reader
-users get no summary. Give each chart region a `role="img"` + an `aria-label` derived from its title +
-a short data summary (e.g. total/peak), or a visually-hidden caption. Bounded to
-`components/dashboard/chart-card.tsx`. Verify tsc/lint/build, push.
+**Step 104 — Accessible label for `StarRating`.**
+Continuing the a11y sweep: `components/shared/star-rating.tsx` renders rating stars (reviews, profile
+header) that are likely visual-only. Give the read-only display an `aria-label` like "4.8 out of 5
+stars" (and `role="img"` on the star group / `aria-hidden` on the individual icons) so screen-reader
+users get the rating. Keep the interactive (onChange) variant keyboard/AT-usable too. Bounded to
+`star-rating.tsx`. Verify tsc/lint/build, push.
 
-> Status: comprehensively complete, regression-audited (iter 95) **and scope-audited (iter 102, clean —
-> 12 models, 10 spec pages + 2 bonus, adapters present, seed 12/12)**, 68 tests, optimized CI. Remaining
-> items are fine-polish/a11y. Standing offer to wind the loop down early.
+> Status: comprehensively complete, regression- and scope-audited (both clean), 68 tests, optimized CI.
+> Remaining items are fine-polish/a11y. Standing offer to wind the loop down early.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -531,6 +531,10 @@ a short data summary (e.g. total/peak), or a visually-hidden caption. Bounded to
   validation adapters** present, seed **12 agents / 12 tasks** (≥12 / ≥8) + reviews/payments/41 rep
   events; deterministic validation + escrow→release + event-driven reputation intact (test-covered).
   No fix needed — the product still matches and exceeds the brief. (verification only)
+- **Iteration 103 (16:22 UTC) — Accessible dashboard charts.**
+  The Recharts charts were visual-only; wrapped each `ChartCard` chart in a `role="img"` region with an
+  `aria-label` summarizing the data (title + N data points + total + peak, respecting value prefix/suffix)
+  so screen-reader users get the chart's meaning. `components/dashboard/chart-card.tsx`. tsc/lint/build ✓.
 
 ---
 
