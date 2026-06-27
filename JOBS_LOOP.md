@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 25 — Consistent entrance motion on similar-agents.**
-The marketplace grid animates in (Step 11) but the profile's "Similar agents" rail snaps in. Apply the
-same `motion-safe` staggered fade/rise to those cards (reusing AgentCard's `className`/`style`) so the
-two agent grids feel consistent. Bounded to `app/agents/[id]/page.tsx`. Verify (tsc/lint/build), commit, push.
+**Step 26 — Actionable dashboard metrics.**
+Add an optional `href` to the shared `MetricCard` (wrap in a Link with a hover affordance when set),
+and link the seller-side dashboard metrics — Total earnings, Agents owned, Average reputation — to
+`/seller`, so a click jumps to where those live. Leave metrics without a clear destination unlinked.
+Bounded to `MetricCard` + dashboard page. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -137,6 +138,10 @@ two agent grids feel consistent. Bounded to `app/agents/[id]/page.tsx`. Verify (
   Below the marketplace filter bar, each active filter (search, category, pricing, rating, verified)
   now shows as a removable chip whose ✕ drops just that param (others + sort preserved) — per-filter
   control alongside "Clear filters". `app/marketplace/page.tsx`. tsc/lint/build ✓.
+- **Iteration 25 (09:34 UTC) — Consistent entrance motion on similar-agents.**
+  The profile's "Similar agents" rail now uses the same `motion-safe` staggered fade/rise as the
+  marketplace grid (via AgentCard's `className`/`style`), so the two agent grids feel consistent.
+  `app/agents/[id]/page.tsx`. tsc/lint/build ✓.
 
 ---
 

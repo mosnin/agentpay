@@ -195,8 +195,13 @@ export default async function AgentProfilePage({
               </Button>
             </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {similar.map((a) => (
-                <AgentCard key={a.id} agent={a} />
+              {similar.map((a, i) => (
+                <AgentCard
+                  key={a.id}
+                  agent={a}
+                  className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-3 motion-safe:fill-mode-both motion-safe:duration-500"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                />
               ))}
             </div>
           </section>
