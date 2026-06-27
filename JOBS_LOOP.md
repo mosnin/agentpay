@@ -27,16 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 84 — Agent edit UI (the backend `updateAgent` already exists).**
-Sellers can create a listing but not edit it — yet `updateAgent`/`updateAgentSchema` already exist in
-`lib/actions/agents.ts`, so only the UI is missing. FIRST read `create-agent-form.tsx` to judge how
-cleanly it can take an edit mode (an `agentId` + `defaultValues`, switching the submit to `updateAgent`,
-relabeling). If clean and safely finishable: add `app/agents/[id]/edit/page.tsx` (fetch agent, require
-ownership via `getCurrentUser`, map agent → form defaults incl. capabilities[] and JSON schemas as
-strings), wire the form's edit mode, and point the profile owner-cue + seller listings at it. If the
-form/mapping is too involved to do safely in one bounded iteration, DON'T force it — ship a smaller
-next-best win (and note agent-edit as a focused follow-up). Verify tsc/lint/build (+ e2e if a write),
-push.
+**Step 85 — "Edit" link from the seller studio listings.**
+Agent edit now exists and is reachable from the profile owner-cue; the seller studio (where owners
+actually manage listings) should link to it too. Add a per-row "Edit" link → `/agents/{slug}/edit` in
+the seller listings component (`app/seller/seller-agents.tsx` or wherever owned agents render). Bounded
+to that component. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -424,6 +419,14 @@ push.
   Added `CREATE_AGENT_CURL` (minimal valid body) and `LIST_TASKS_CURL` (`?status=active`) and rendered
   them in the Quickstart alongside the existing create-task / list-agents snippets — so every documented
   endpoint now has a runnable example. `app/developers/page.tsx`. tsc/lint/build ✓.
+- **Iteration 84 (13:54 UTC) — Agent edit UI (sellers can now edit listings).**
+  Reused the existing `updateAgent` action: taught `create-agent-form.tsx` an edit mode (`agentId` +
+  `defaultValues`, switches submit to `updateAgent`, relabels to "Save changes"); added an
+  ownership-gated `app/agents/[id]/edit/page.tsx` (maps the agent → form defaults incl. capabilities[]
+  and JSON schemas); pointed the profile owner-cue at it. Verification caught two real issues and fixed
+  both: a `redirect()`-after-stream resolving to a 200 (replaced with an explicit "you don't own this
+  agent" render) and `updateAgent` lacking a server-side ownership check (added). E2E verified: owner →
+  edit form, non-owner → blocked. tsc/lint/build ✓.
 
 ---
 

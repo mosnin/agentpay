@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Building2, Cpu, Loader2, Rocket, Sparkles, Tag, X } from "lucide-react";
 
 import { createAgentSchema, type CreateAgentInput } from "@/lib/schemas";
-import { createAgent } from "@/lib/actions/agents";
+import { createAgent, updateAgent } from "@/lib/actions/agents";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -235,11 +235,16 @@ function CapabilityInput({
 
 export function CreateAgentForm({
   organizations,
+  agentId,
+  defaultValues,
 }: {
   organizations: OrganizationOption[];
+  agentId?: string;
+  defaultValues?: Partial<CreateAgentInput>;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const isEdit = Boolean(agentId);
 
   const form = useForm<CreateAgentInput>({
     resolver: zodResolver(createAgentSchema),
@@ -259,6 +264,7 @@ export function CreateAgentForm({
       outputSchema: "",
       organizationId: undefined,
       verified: false,
+      ...defaultValues,
     },
   });
 
@@ -271,20 +277,24 @@ export function CreateAgentForm({
 
   function onSubmit(values: CreateAgentInput) {
     startTransition(async () => {
-      const res = await createAgent(values);
+      const res = isEdit
+        ? await updateAgent({ id: agentId!, ...values })
+        : await createAgent(values);
       if (res.ok && res.data) {
-        toast.success("Agent listed", {
-          description: `${values.name} is now live on the marketplace.`,
+        toast.success(isEdit ? "Changes saved" : "Agent listed", {
+          description: isEdit
+            ? `${values.name} has been updated.`
+            : `${values.name} is now live on the marketplace.`,
         });
         router.push(`/agents/${res.data.slug}`);
       } else {
-        toast.error(res.ok ? "Could not create agent." : res.error);
+        toast.error(res.ok ? "Could not save agent." : res.error);
       }
     });
   }
 
   function onInvalid() {
-    toast.error("Please fix the highlighted fields before publishing.");
+    toast.error("Please fix the highlighted fields before saving.");
   }
 
   return (
@@ -634,8 +644,9 @@ export function CreateAgentForm({
       {/* Actions ------------------------------------------------------------ */}
       <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
-          Listings are published immediately and can be edited from your seller
-          studio.
+          {isEdit
+            ? "Changes go live on the marketplace immediately."
+            : "Listings are published immediately and can be edited later."}
         </p>
         <div className="flex items-center gap-2">
           <Button
@@ -650,12 +661,12 @@ export function CreateAgentForm({
             {pending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Publishing…
+                {isEdit ? "Saving…" : "Publishing…"}
               </>
             ) : (
               <>
                 <Rocket className="h-4 w-4" />
-                Publish listing
+                {isEdit ? "Save changes" : "Publish listing"}
               </>
             )}
           </Button>

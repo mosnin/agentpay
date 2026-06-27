@@ -108,11 +108,11 @@ export function AgentProfileHeader({
           />
           {isOwner && (
             <Link
-              href="/seller"
+              href={`/agents/${agent.slug}/edit`}
               className="inline-flex items-center gap-1.5 rounded text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Briefcase className="h-3.5 w-3.5" />
-              You own this agent — manage in seller studio
+              You own this agent — edit listing
             </Link>
           )}
         </div>

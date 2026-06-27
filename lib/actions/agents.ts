@@ -119,7 +119,15 @@ export async function updateAgent(values: unknown): Promise<ActionResult<{ id: s
   const { id, capabilities, inputSchema, outputSchema, ...rest } = parsed.data;
 
   try {
-    await requireUser();
+    const user = await requireUser();
+    const existing = await prisma.agent.findUnique({
+      where: { id },
+      select: { ownerId: true },
+    });
+    if (!existing) return { ok: false, error: "Agent not found." };
+    if (existing.ownerId !== user.id) {
+      return { ok: false, error: "You can only edit agents you own." };
+    }
     const agent = await prisma.agent.update({
       where: { id },
       data: {
