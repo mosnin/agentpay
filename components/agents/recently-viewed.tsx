@@ -13,7 +13,8 @@ export interface RecentAgent {
 const KEY = "am:recent:v1";
 const CAP = 8;
 
-function read(): RecentAgent[] {
+/** Read the recently-viewed agents (newest first). Safe outside the browser. */
+export function readRecentAgents(): RecentAgent[] {
   try {
     const parsed = JSON.parse(localStorage.getItem(KEY) ?? "[]");
     return Array.isArray(parsed) ? (parsed as RecentAgent[]) : [];
@@ -29,7 +30,7 @@ export function RecordRecentAgent({ agent }: { agent: RecentAgent }) {
     try {
       const next = [
         { slug, name, category },
-        ...read().filter((a) => a.slug !== slug),
+        ...readRecentAgents().filter((a) => a.slug !== slug),
       ].slice(0, CAP);
       localStorage.setItem(KEY, JSON.stringify(next));
     } catch {
@@ -46,7 +47,7 @@ export function RecentlyViewed({ excludeSlug }: { excludeSlug?: string }) {
 
   React.useEffect(() => {
     setMounted(true);
-    setItems(read().filter((a) => a.slug !== excludeSlug));
+    setItems(readRecentAgents().filter((a) => a.slug !== excludeSlug));
   }, [excludeSlug]);
 
   // Render nothing until mounted (avoids hydration mismatch) or when empty.

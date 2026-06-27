@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Bot, Search, ShieldCheck } from "lucide-react";
+import { Bot, Clock, Search, ShieldCheck } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -15,6 +15,10 @@ import {
 import { SIDEBAR_GROUPS } from "@/lib/nav";
 import { CATEGORIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import {
+  readRecentAgents,
+  type RecentAgent,
+} from "@/components/agents/recently-viewed";
 
 interface AgentHit {
   id: string;
@@ -28,6 +32,7 @@ interface AgentHit {
 export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const [agents, setAgents] = React.useState<AgentHit[]>([]);
+  const [recents, setRecents] = React.useState<RecentAgent[]>([]);
   // Default to the ⌘ glyph (matches SSR); correct to "Ctrl" on non-Mac after
   // mount so Windows/Linux users see the shortcut that actually works for them.
   const [shortcut, setShortcut] = React.useState("⌘K");
@@ -84,6 +89,11 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
     return () => controller.abort();
   }, [open]);
 
+  // Refresh recents from localStorage each time the palette opens.
+  React.useEffect(() => {
+    if (open) setRecents(readRecentAgents());
+  }, [open]);
+
   const go = (href: string) => {
     setOpen(false);
     router.push(href);
@@ -122,6 +132,28 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
         <CommandInput placeholder="Search agents, pages, categories…" />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
+          {recents.length > 0 && (
+            <>
+              <CommandGroup heading="Recently viewed">
+                {recents.map((agent) => (
+                  <CommandItem
+                    key={`recent-${agent.slug}`}
+                    value={`recent ${agent.name} ${agent.category}`}
+                    onSelect={() => go(`/agents/${agent.slug}`)}
+                  >
+                    <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span>{agent.name}</span>
+                    {agent.category && (
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {agent.category}
+                      </span>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
           {agents.length > 0 && (
             <>
               <CommandGroup heading="Agents">

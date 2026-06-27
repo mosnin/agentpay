@@ -27,13 +27,16 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 67 — Surface recently-viewed agents in the ⌘K palette.**
-"⌘K reaches everything" (Jobs lens #6): the marketplace has a localStorage "Recently viewed" rail
-(iter 23), but the palette doesn't use it. Read the same recents key in `search-command.tsx` and, when
-the palette opens, show a "Recently viewed" group at the top (filter the already-loaded agent hits by
-the recent slugs/ids, preserve recency order) so you can jump back to agents you were comparing from
-anywhere. Bounded to `search-command.tsx` (reuse the recents storage key from
-`components/agents/recently-viewed.tsx`). Verify tsc/lint/build, push.
+**Step 68 — Dashboard triage also covers the seller's court.**
+"Always know your next move" currently only covers buyer-side moves (submitted→validate,
+validating→complete, completed→review). When the operator's *own* agents have inbound work, the
+seller-side moves (pending→accept, accepted→start, running→submit) aren't surfaced on the dashboard —
+only on the seller page. The status sets are disjoint by role, so merging is clean: add a seller-side
+query in `getDashboardData` (tasks where `sellerAgent.ownerId === userId`, status in
+pending/accepted/running, with deadline), map with seller action labels, merge into `needsAttention`,
+and let the existing `urgencyRank` sort handle ordering. Extend `NEXT_ACTION` in `needs-attention.tsx`
+with the three seller statuses. Bounded to `lib/queries.ts` + `needs-attention.tsx`. Verify
+tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -333,6 +336,11 @@ anywhere. Bounded to `search-command.tsx` (reuse the recents storage key from
   "⌘K" though the handler also accepts Ctrl+K, so Windows/Linux users saw a wrong shortcut. Made the
   label platform-aware (SSR-safe default ⌘K, corrected to "Ctrl K" on non-Mac after mount).
   `components/layout/search-command.tsx`. tsc/lint/build ✓.
+- **Iteration 67 (12:30 UTC) — Recently-viewed agents in the ⌘K palette.**
+  Exported a shared `readRecentAgents()` (one source of truth for the `am:recent:v1` key) and added a
+  "Recently viewed" group at the top of the command palette, refreshed each time it opens — so you can
+  jump back to agents you were comparing from anywhere ("⌘K reaches everything").
+  `recently-viewed.tsx` + `search-command.tsx`. tsc/lint/build ✓.
 
 ---
 
