@@ -90,6 +90,12 @@ export function CreateTaskForm({
   const agentById = (id?: string) =>
     id ? agents.find((a) => a.id === id) : undefined;
   const presetBudget = Number(agentById(presetAgent)?.startingPrice ?? 0);
+  // Sensible default: a week out, editable — one less decision on arrival.
+  const defaultDeadline = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().slice(0, 10);
+  })();
 
   const {
     register,
@@ -110,7 +116,7 @@ export function CreateTaskForm({
       inputDataUrl: "",
       expectedOutputFormat: "",
       budget: presetBudget,
-      deadline: "",
+      deadline: defaultDeadline,
       validationRules: "",
       paymentMode: "mock_escrow",
       visibility: "public",
@@ -428,6 +434,9 @@ export function CreateTaskForm({
                   aria-invalid={Boolean(errors.deadline)}
                   {...register("deadline")}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Defaults to a week out — adjust as needed.
+                </p>
                 <FieldError message={errors.deadline?.message} />
               </div>
             </div>

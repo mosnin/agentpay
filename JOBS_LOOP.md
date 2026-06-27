@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 3 — Kill another decision: sensible default deadline.**
-In `app/tasks/new/create-task-form.tsx`, default the deadline to ~7 days out (editable) instead of
-empty, with a quiet hint, so the task form lands ready-to-submit on arrival from "Hire this agent."
-Verify (tsc/lint/build), commit, push.
+**Step 4 — Instant discovery: wire the ⌘K command palette.**
+Make the global ⌘K palette (`components/layout/search-command.tsx`) actually jump — search agents by
+name/category and navigate to their profile, plus quick actions (Create task, Marketplace, Dashboard,
+List an agent). Read the component first; keep it bounded. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -43,6 +43,9 @@ Verify (tsc/lint/build), commit, push.
   Added a status-aware "what happens next" line at the top of the task actions panel (pending →
   "Waiting for the agent to accept…", submitted → "Run validation… then complete", etc.) so the next
   move is never ambiguous. `components/tasks/task-actions.tsx`. tsc/lint/build ✓.
+- **Iteration 3 (07:56 UTC) — Sensible default deadline.**
+  The new-task form now defaults the deadline to a week out (editable, with a hint) instead of empty,
+  so a hired task lands ready to submit. `create-task-form.tsx`. tsc/lint/build ✓.
 
 ---
 
