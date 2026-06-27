@@ -27,13 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 65 — Branded default OG image for the whole site.**
-Only agent profiles have a dynamic OG image; the landing, marketplace, and developers pages fall back
-to meta tags with no preview image, so those shared links look plain. Add a root
-`app/opengraph-image.tsx` (`next/og`, 1200×630, dark brand) reusing the agent OG image's CSS-drawn mark
-(no dynamic font fetch — that failed before for glyphs) so every page without a specific image still
-shows a premium preview. Pairs with the iter-64 Copy link + the OG investment. Bounded to one new file
-(confirm no root one exists). Verify tsc/lint/build (route emitted), push.
+**Step 66 — Visible ⌘K search trigger in the top nav.**
+"Instant discovery" via ⌘K (iter 4) is only discoverable to people who already know the shortcut.
+Confirm whether the app nav shows a *clickable* search affordance (a "Search agents… ⌘K" button that
+opens the palette); if it's keyboard-only, add a visible trigger with a `kbd` hint so mouse users find
+it too. Bounded to the nav/search components (`components/layout/`). Verify first; if a visible trigger
+already exists, ship the next-best small win and note it. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -321,6 +320,12 @@ shows a premium preview. Pairs with the iter-64 Copy link + the OG investment. B
   subtle `CopyButton`-based "Copy link" tertiary action in the profile header, copying the canonical
   slug URL (`NEXT_PUBLIC_APP_URL/agents/<slug>`) — sharing a listing is now one click.
   `components/agents/agent-profile-header.tsx`. tsc/lint/build ✓.
+- **Iteration 65 (12:22 UTC) — Branded default OG image for the whole site.**
+  Only agent profiles had a dynamic OG image; landing / marketplace / developers fell back to meta with
+  no preview image. Added a static root `app/opengraph-image.tsx` (`next/og`, 1200×630, dark brand,
+  CSS-drawn diamond mark — no dynamic font fetch) with the product headline + Discover/Hire/Verify/Pay
+  chips, so every page now shows a premium share preview. Build emits `/opengraph-image` (static, no
+  warnings). tsc/lint/build ✓.
 
 ---
 
