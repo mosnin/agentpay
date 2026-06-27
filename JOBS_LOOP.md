@@ -27,18 +27,18 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 110 — Lock the `/tasks` filter map (`statusesForFilter` / `TASK_FILTERS`) with tests.**
-The `/tasks` index pills depend on `statusesForFilter(key)` (lib/constants.ts) returning the right
-status set per tab — most importantly `active` = exactly the in-progress statuses (pending, accepted,
-running, submitted, validating) and `all` = no status constraint, while completed/disputed/cancelled
-each map to their single status. A regression here would silently show the wrong tasks under a tab.
-Add `lib/__tests__/task-filters.test.ts` asserting: every `TASK_FILTERS` key resolves; `active` is
-exactly those 5 statuses; single-status tabs map 1:1; `all` returns no constraint; and every returned
-status is a valid `TaskStatus`. Pure, bounded to a new test file. Verify test + tsc/lint, push.
+**Step 111 — Lock `reputationEventLabel` (humanized reputation-history labels) with tests.**
+The reputation timeline shows a human-readable label per event via `reputationEventLabel(type)`
+(lib/constants.ts), backed by `REPUTATION_EVENT_LABELS` with a humanized fallback for unmapped types
+(e.g. snake_case → Title Case). It's user-facing string logic with a fallback branch and no test. Add
+`lib/__tests__/reputation-labels.test.ts` asserting: every key in `REPUTATION_EVENT_LABELS` round-trips
+to its exact label; an unknown type like `"some_new_event"` humanizes to `"Some New Event"`; and the
+result is always a non-empty string. Pure, bounded to a new test file. Verify test + tsc/lint, push.
 
-> Status: comprehensively complete, regression- and scope-audited, 78 tests, optimized CI, a11y +
-> reduced-motion passes done. The loop has effectively converged — remaining items are fine-polish.
-> Standing offer to the user to wind it down early.
+> Status: comprehensively complete, regression- and scope-audited, 84 tests, optimized CI, a11y +
+> reduced-motion passes done. The loop has converged; current iterations are locking the pure-helper
+> layer with regression tests. After this sweep the remaining work is fine-polish — standing offer to
+> the user to wind it down early whenever you like.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -571,6 +571,12 @@ status is a valid `TaskStatus`. Pure, bounded to a new test file. Verify test + 
   (7 cases): past/at-now → `overdue`, within-24h → `soon` (incl. the exact 24h boundary), past-24h and
   days-out → `normal`, and Date/string/number inputs treated equivalently. A boundary regression now
   fails CI instead of shipping. 78 tests pass (was 71). tsc/lint ✓.
+- **Iteration 110 (13:11 UTC) — Locked the `/tasks` filter map with tests.**
+  `statusesForFilter`/`TASK_FILTERS` decide which tasks each tab shows but had no test. Added
+  `lib/__tests__/task-filters.test.ts` (6 cases): `all`/no-key → no constraint, `active` → exactly the
+  5 in-progress statuses, single-status tabs map 1:1, every filter key resolves to statuses that exist
+  in `TASK_STATUS_CONFIG`, an unknown key falls back to a raw status, and the result is a fresh copy
+  (mutation can't corrupt the config). 84 tests pass (was 78). tsc/lint ✓.
 
 ---
 
