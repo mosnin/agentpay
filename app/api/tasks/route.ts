@@ -82,7 +82,11 @@ export async function POST(request: Request) {
       objective: body.objective,
       category: body.category,
       sellerAgentId,
-      inputInstructions: "",
+      // Preserve the structured input_payload on the contract (it was previously
+      // accepted by the schema but silently dropped here).
+      inputInstructions: body.input_payload
+        ? JSON.stringify(body.input_payload, null, 2)
+        : "",
       inputDataUrl: "",
       expectedOutputFormat: body.output_schema
         ? JSON.stringify(body.output_schema)

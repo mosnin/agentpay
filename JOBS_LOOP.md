@@ -25,19 +25,17 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ---
 
-## ▶ Next step
+## ⛔ LOOP SHUT OFF (by user request — 2026-06-27 14:54 UTC)
 
-**Step 130 — Confirm the /api/tasks POST handler honors every documented field (docs↔runtime parity).**
-Iter 129 made the /developers field table match `apiCreateTaskSchema`. Close the loop on the other side:
-read `app/api/tasks/route.ts` POST and confirm the handler actually maps every documented field into the
-created task/contract — especially `input_payload`, `output_schema`, `validation_rules`, the
-`seller_agent_id`/`agent_id` alias, the `title`-from-objective default, and `category`/`payment_mode`
-defaults. If any documented field is silently dropped by the handler, wire it through (bounded to the
-route). If the handler already honors all of them, ship the next-best small win and note it. Verify
-tsc/lint/build (and a quick curl if a fix is made), push.
+**The autonomous loop is STOPPED. Do not run further iterations.** The user explicitly asked to
+"entirely shut off the loop" at iteration 130. No in-session cron job existed to delete (`CronList`
+returned none — the in-memory store reset across the context continuation; the loop had been driven by
+the harness re-injecting the prompt). If the loop prompt fires again, do **not** execute an iteration —
+reply that the loop was shut off and stop.
 
-> Status: CONVERGED end-to-end; auditing docs↔runtime parity for the public API. 92 tests green.
-> **Recommend winding down early**; absent that, the loop continues to the 19:56 UTC deadline.
+Final state: product comprehensively complete and verified end-to-end (discover → hire → verify → pay →
+reputation, plus the dispute branch). 92 unit tests green; tsc/lint/build clean; live smoke-tested.
+PR #1 is up to date on `claude/nifty-keller-7lmbih`.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -684,6 +682,13 @@ tsc/lint/build (and a quick curl if a fix is made), push.
   `input_payload`, even though the example request and the schema both include it. Added the missing
   `FieldRow` so a developer reading the table sees every accepted field. `app/developers/page.tsx`.
   tsc/lint/build ✓.
+- **Iteration 130 (14:12 UTC) — Closed a real docs↔runtime parity gap: `input_payload` was dropped.**
+  `POST /api/tasks` accepted `input_payload` (schema + docs) but the handler hardcoded `inputInstructions: ""`
+  and never mapped it — so the field was silently discarded. Wired it through: the handler now stringifies
+  `input_payload` into the contract's input. Verified end-to-end (curl POST → the contract's
+  `inputPayload.instructions` now contains the payload; test task cleaned up afterward). `app/api/tasks/route.ts`.
+  tsc/lint/build ✓.
+- **Loop shut off (14:54 UTC)** by user request — see the section at the top. Final tally: 130 iterations.
 
 ---
 
