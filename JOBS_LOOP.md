@@ -27,18 +27,17 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 126 — Runtime smoke-test the verify feature end-to-end (post-schema-change safety).**
-Iter 123 changed the DB schema (`validationNotes`); build + a Prisma round-trip passed, but confirm it
-renders at runtime. Bring up the app (`next build` already done → `next start -p <port>`), then curl a
-handful of key routes for HTTP 200 — landing, /marketplace, an agent profile, and a task-detail page that
-has a validated artifact (so the notes list actually renders). Grep the task-detail HTML for a seeded note
-string ("Validation passed with score") to prove the notes reach the page. If any route is non-200 or the
-notes don't render, fix it; otherwise report all-green (a legitimate verification iteration). Then stop
-the server. No code change unless a defect surfaces.
+**Step 127 — Dispute flow transparency (verify→dispute path).**
+Walk the dispute path (iter earlier added dispute-resolve reputation fairness, but re-check the UI): when
+a buyer opens a dispute, is the dispute *reason* shown on the task page, and once resolved is the outcome
+clear (e.g. task lifted out of "disputed", reputation restored on dismissal)? Read the task-detail dispute
+UI + `resolveDispute`. If the reason or resolution isn't surfaced where buyer/seller see it, add a concise
+display; keep it bounded to the relevant component. If it's already clear, ship the next-best small win and
+note it. Verify tsc/lint/build, push.
 
-> Status: CONVERGED; validation-reasons feature complete (persisted + surfaced + seeded + labeled/a11y).
-> This iteration verifies it live. **Recommend winding down early**; absent that, the loop continues to
-> the 19:56 UTC deadline. 91 tests green.
+> Status: CONVERGED; verify step is live-verified (smoke test iter 126: all routes 200, seeded notes
+> render, "Validation checks" label present). Now re-walking the dispute branch. **Recommend winding down
+> early**; absent that, the loop continues to the 19:56 UTC deadline. 91 tests green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -663,6 +662,12 @@ the server. No code change unless a defect surfaces.
   Added a small muted "Validation checks" heading above the `validationNotes` list in `ArtifactCard` so
   it's self-explanatory, and marked the decorative bullet dots `aria-hidden` so screen readers announce
   only the note text. Zero behavior change. `components/tasks/artifact-card.tsx`. tsc/lint/build ✓.
+- **Iteration 126 (14:03 UTC) — Live smoke test of the verify feature (all green).**
+  Brought up `next start` and curled the key routes: `/`, `/marketplace`, `/agents/seo-audit-agent`, a
+  task-detail page with a validated artifact, `/dashboard`, `/developers` — all **HTTP 200**. The task
+  page rendered the seeded note "Validation passed with score 96" and the "Validation checks" label,
+  proving the iter-123 schema change works end-to-end at runtime. Stopped the server and cleaned up 9
+  orphaned `next-server` processes left from earlier build/start runs. No code change (verification).
 
 ---
 
