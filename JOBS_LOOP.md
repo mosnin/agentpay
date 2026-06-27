@@ -27,11 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 74 — Connect the dashboard to the `/tasks` index.**
-The dashboard's "Recent tasks" card shows 6 and has only a "New task" link — now that `/tasks` exists,
-it should offer "View all." Add a subtle "View all →" link (to `/tasks`) in the `RecentTasksCard`
-header or footer so the full index is discoverable from where users already look at recent tasks.
-Bounded to `components/dashboard/recent-tasks-card.tsx`. Verify tsc/lint/build, push.
+**Step 75 — robots: keep the private `/tasks` surface out of search.**
+`/tasks` is an operator-only, authed surface (their own task list) but `app/robots.ts` only disallows
+`/admin`, `/dashboard`, `/seller`, `/api` — it predates the new index. Add `/tasks` to the disallow
+list for consistency, so operator task lists don't land in search results. (Social/OG unfurls are
+unaffected — robots governs crawling/indexing, not link previews; the sitemap already omits task
+pages.) Bounded to `app/robots.ts` (verify current rules first). Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -369,6 +370,10 @@ Bounded to `components/dashboard/recent-tasks-card.tsx`. Verify tsc/lint/build, 
   a result count and a contextual empty state ("No completed tasks" → View all). `getUserTasks` gained
   an optional `statuses` arg (filtered at the DB, cast to the `TaskStatus` enum); page is now dynamic
   (ƒ) like `/marketplace`. `app/tasks/page.tsx` + `lib/queries.ts`. tsc/lint/build ✓.
+- **Iteration 74 (13:06 UTC) — Dashboard → `/tasks` discoverability.**
+  Added a subtle "View all tasks →" footer link to the dashboard's Recent tasks card (shown when there
+  are tasks), connecting the 6-item recent view to the full new index.
+  `components/dashboard/recent-tasks-card.tsx`. tsc/lint/build ✓.
 
 ---
 

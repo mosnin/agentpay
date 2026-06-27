@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, ListChecks } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ListChecks } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -42,6 +42,7 @@ export function RecentTasksCard({ tasks }: { tasks: TaskListItem[] }) {
             }
           />
         ) : (
+          <>
           <ul className="divide-y divide-border/60">
             {tasks.map((task) => (
               <li key={task.id}>
@@ -71,6 +72,16 @@ export function RecentTasksCard({ tasks }: { tasks: TaskListItem[] }) {
               </li>
             ))}
           </ul>
+          <div className="mt-3 border-t border-border/60 pt-3">
+            <Link
+              href="/tasks"
+              className="inline-flex items-center gap-1 rounded text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              View all tasks
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          </>
         )}
       </CardContent>
     </Card>
