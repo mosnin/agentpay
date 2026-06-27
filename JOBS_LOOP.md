@@ -27,15 +27,18 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 125 — Label the validation checks + a11y-clean the notes list.**
-Polish the feature shipped in iter 123–124: in `ArtifactCard`, add a small muted "Validation checks"
-label above the `validationNotes` list so it's self-explanatory (not just an unlabeled list under the
-score bar), and mark the decorative bullet dots `aria-hidden` so screen readers read only the note text.
-Tiny, bounded to `components/tasks/artifact-card.tsx`, zero behavior change. Verify tsc/lint/build, push.
+**Step 126 — Runtime smoke-test the verify feature end-to-end (post-schema-change safety).**
+Iter 123 changed the DB schema (`validationNotes`); build + a Prisma round-trip passed, but confirm it
+renders at runtime. Bring up the app (`next build` already done → `next start -p <port>`), then curl a
+handful of key routes for HTTP 200 — landing, /marketplace, an agent profile, and a task-detail page that
+has a validated artifact (so the notes list actually renders). Grep the task-detail HTML for a seeded note
+string ("Validation passed with score") to prove the notes reach the page. If any route is non-200 or the
+notes don't render, fix it; otherwise report all-green (a legitimate verification iteration). Then stop
+the server. No code change unless a defect surfaces.
 
-> Status: CONVERGED; the validation-reasons feature is now persisted, surfaced, and seeded. Remaining work
-> is fine-grained polish. **Recommend winding down early**; absent that, the loop continues to the 19:56
-> UTC deadline. 91 tests green.
+> Status: CONVERGED; validation-reasons feature complete (persisted + surfaced + seeded + labeled/a11y).
+> This iteration verifies it live. **Recommend winding down early**; absent that, the loop continues to
+> the 19:56 UTC deadline. 91 tests green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -656,6 +659,10 @@ Tiny, bounded to `components/tasks/artifact-card.tsx`, zero behavior change. Ver
   `validationNotes` for passed/failed artifacts mirroring `evaluateArtifact`'s phrasing (the seeded
   contract always has an output schema, so the schema-found line applies). Re-seeded: passed/failed
   artifacts now carry 3 notes each. `prisma/seed.ts`. tsc/lint ✓ + db:seed ✓.
+- **Iteration 125 (14:00 UTC) — Labeled the validation checks + a11y-cleaned the list.**
+  Added a small muted "Validation checks" heading above the `validationNotes` list in `ArtifactCard` so
+  it's self-explanatory, and marked the decorative bullet dots `aria-hidden` so screen readers announce
+  only the note text. Zero behavior change. `components/tasks/artifact-card.tsx`. tsc/lint/build ✓.
 
 ---
 

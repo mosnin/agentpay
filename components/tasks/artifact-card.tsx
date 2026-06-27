@@ -67,17 +67,25 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
             className={cn("h-1.5 bg-muted", scoreTone(score))}
           />
           {artifact.validationNotes && artifact.validationNotes.length > 0 ? (
-            <ul className="space-y-1 pt-0.5">
-              {artifact.validationNotes.map((note, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-2 text-xs text-muted-foreground"
-                >
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
-                  <span>{note}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-1 pt-0.5">
+              <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                Validation checks
+              </div>
+              <ul className="space-y-1">
+                {artifact.validationNotes.map((note, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2 text-xs text-muted-foreground"
+                  >
+                    <span
+                      aria-hidden
+                      className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50"
+                    />
+                    <span>{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : (
             (artifact.validationStatus === "passed" ||
               artifact.validationStatus === "failed") && (
