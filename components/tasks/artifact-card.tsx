@@ -88,7 +88,7 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
               maxHeight
             />
           ) : (
-            <div className="rounded-lg border border-border/60 bg-[#0a0c11] p-3">
+            <div className="rounded-lg border border-border/60 bg-code p-3">
               <div className="mb-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <FileText className="h-3 w-3" />
                 preview

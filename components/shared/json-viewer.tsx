@@ -17,7 +17,7 @@ export function JsonViewer({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border border-border/60 bg-[#0a0c11]",
+        "overflow-hidden rounded-lg border border-border/60 bg-code",
         className,
       )}
     >

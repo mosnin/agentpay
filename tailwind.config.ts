@@ -63,6 +63,8 @@ const config: Config = {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        // Shared "code surface" for JSON/code blocks.
+        code: "#0a0c11",
       },
       borderRadius: {
         lg: "var(--radius)",

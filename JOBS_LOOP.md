@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 31 — Tokenize the "code surface" color.**
-The magic hex `bg-[#0a0c11]` is repeated across `json-viewer`, `endpoint-metadata`, `artifact-card`,
-and the developers page. Add a `code` color to `tailwind.config.ts` and replace each `bg-[#0a0c11]`
-with `bg-code`, so the code/JSON surface is a single source of truth. Verify (tsc/lint/build), commit, push.
+**Step 32 — Badge consistency.**
+Add a `warning` variant to the shared `Badge` primitive (using the existing `--warning` token) and
+replace the hand-rolled amber "required" pill in `components/agents/mcp-tools.tsx` with it, so status
+pills share one shape/size instead of mixing real Badges with raw spans. Read both first; bounded.
+Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -160,6 +161,10 @@ with `bg-code`, so the code/JSON surface is a single source of truth. Verify (ts
   Added `focus-visible:ring` to the remaining raw link rows — the agent profile's "Recent tasks" title
   and arrow links, and the artifact URL link — so keyboard focus is visible app-wide.
   `components/agents/recent-tasks.tsx` + `components/tasks/artifact-card.tsx`. tsc/lint/build ✓.
+- **Iteration 31 (09:58 UTC) — Tokenized the code surface.**
+  Added a `code` color to the Tailwind config and replaced the repeated magic hex `bg-[#0a0c11]`
+  across `json-viewer`, `endpoint-metadata`, `artifact-card`, and the developers page with `bg-code` —
+  one source of truth for the JSON/code surface. tsc/lint/build ✓.
 
 ---
 

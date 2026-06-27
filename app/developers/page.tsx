@@ -765,7 +765,7 @@ function FieldRow({
 
 function CodeBlock({ label, code }: { label: string; code: string }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border/60 bg-[#0a0c11]">
+    <div className="overflow-hidden rounded-lg border border-border/60 bg-code">
       <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-3 py-2">
         <span className="font-mono text-xs text-muted-foreground">{label}</span>
         <CopyButton value={code} label="Copy" />

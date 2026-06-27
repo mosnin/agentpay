@@ -12,7 +12,7 @@ function EndpointRow({
   value: string | null;
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-border/60 bg-[#0a0c11] p-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-2 rounded-lg border border-border/60 bg-code p-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-2.5">
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40 text-muted-foreground">
           <Icon className="h-3.5 w-3.5" />
