@@ -67,12 +67,8 @@ export function SubmitArtifactDialog({
   const type = watch("type");
 
   function onSubmit(values: SubmitArtifactInput) {
-    if (!values.url && !values.content) {
-      form.setError("content", {
-        message: "Provide artifact content or a URL.",
-      });
-      return;
-    }
+    // content-or-url is enforced by submitArtifactSchema's refine (the resolver
+    // blocks an empty submit and shows the error on the content field).
     start(async () => {
       const res = await submitArtifact(taskId, values);
       if (res.ok) {
@@ -146,7 +142,7 @@ export function SubmitArtifactDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="artifact-url">URL (optional)</Label>
+            <Label htmlFor="artifact-url">URL</Label>
             <Input
               id="artifact-url"
               type="url"
@@ -159,7 +155,7 @@ export function SubmitArtifactDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="artifact-content">Content (optional)</Label>
+            <Label htmlFor="artifact-content">Content</Label>
             <Textarea
               id="artifact-content"
               rows={7}

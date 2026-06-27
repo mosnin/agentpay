@@ -27,18 +27,17 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 120 — Verify-step transparency: surface the validation verdict (score + notes) on the task page.**
-`evaluateArtifact` produces a `score`, pass/fail `status`, and human-readable `notes[]` (the reasons),
-but check whether the task page actually shows them after validation runs. If the verdict/notes aren't
-surfaced where the buyer sees the result, render them (score + pass/fail + the notes list) so validation
-feels transparent rather than a black box — the heart of the *verify* step. Read the task-detail
-validation UI first; keep it bounded to that component. If it's already surfaced well, ship the next-best
-small win (e.g. an "add content or a URL" either-or hint in the submit-artifact dialog) and note it.
-Verify tsc/lint/build, push.
+**Step 121 — Explain the validation verdict in one line (derived from score, no migration).**
+`ArtifactCard` shows the validation status badge + score bar, but a *failed* card gives no reason. The
+full `notes[]` aren't persisted (would need a schema migration — deferred), but the key reason can be
+reconstructed from stored data: import `PASS_THRESHOLD` from `lib/mockValidation` and, when a score is
+present, render a one-line verdict under the score bar — passed → "Meets the {PASS_THRESHOLD}/100 pass
+threshold.", failed → "Below the {PASS_THRESHOLD}/100 pass threshold." So a buyer sees *why* without a
+DB change. Bounded to `components/tasks/artifact-card.tsx`. Verify tsc/lint/build, push.
 
-> Status: CONVERGED on UI/feature scope; iterations now alternate substantive micro-hardening (iter 119
-> closed a real empty-artifact gap) with craft/transparency. Recommend winding down early; absent that,
-> the loop continues to the 19:56 UTC deadline. 91 tests, all green.
+> Status: CONVERGED on UI/feature scope. Verify step is now transparent (status + score bar + content);
+> this adds the "why" from existing data. Deferred (needs a migration): persisting full `notes[]`.
+> Recommend winding down early; absent that, the loop continues to the 19:56 UTC deadline. 91 tests green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -632,6 +631,12 @@ Verify tsc/lint/build, push.
   the submit dialog now flags it inline), and removed the now-redundant manual check in the `submitArtifact`
   action (schema is the single source of truth). Verified callers (`simulateTask`, seed) supply content.
   91 tests pass (was 90). tsc/lint/build ✓.
+- **Iteration 120 (13:44 UTC) — Verify step confirmed transparent; cleaned the submit dialog.**
+  Audited the verify UI: `ArtifactCard` already shows the validation status badge, a color-coded score
+  bar, and the artifact content/URL — transparent (only `notes[]` aren't persisted; needs a migration).
+  Shipped the coupled next-best: dropped the misleading "(optional)" from the URL/Content labels (iter
+  119 made at least one required) and removed the now-dead either-or check in the dialog's `onSubmit`
+  (the zod refine + resolver handle it). `submit-artifact-dialog.tsx`. tsc/lint/build ✓.
 
 ---
 
