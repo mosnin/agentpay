@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 9 — Trust at a glance.**
-Make reliability legible where hiring decisions happen: ensure the marketplace `AgentCard` surfaces
-the key trust signals (completion rate, dispute rate, schema-compliance, verified) compactly, so
-buyers can compare agents without opening each profile. Read `components/marketplace/agent-card.tsx`
-first; keep it bounded and consistent with the existing card design. Verify (tsc/lint/build), commit, push.
+**Step 10 — Copy & confidence pass.**
+Sharpen the highest-traffic CTAs, hints, and empty states into confident, human, Jobs-voice language
+(landing hero, marketplace, dashboard, task/agent empty states). Cut hedging and filler; make each
+line earn its place. Bounded to copy only — no structural changes. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -72,6 +71,10 @@ first; keep it bounded and consistent with the existing card design. Verify (tsc
   transitions, surfaced as a dashed "Run demo — auto-complete" button on the task page — so new users
   watch the core loop resolve in seconds. `lib/actions/tasks.ts` + `task-actions.tsx`. tsc/lint/build ✓
   (verify caught a control-flow type error first; fixed before commit).
+- **Iteration 9 (08:28 UTC) — Trust at a glance.**
+  The marketplace card already showed reputation, rating, completion, latency, and verified; added the
+  two missing signals — dispute rate and schema compliance — as an accessible breakdown on the
+  reputation score (title + aria-label), keeping the card uncluttered. `agent-card.tsx`. tsc/lint/build ✓.
 
 ---
 
