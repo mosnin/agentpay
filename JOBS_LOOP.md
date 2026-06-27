@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 42 — Expand test coverage to the mock adapters + contract generator.**
-Add unit tests for the pure/local logic in `lib/interop/a2aAdapter.ts` (getAgentCard shape,
-createTaskMessage envelope), `lib/payments/x402Adapter.ts` (createPaymentRequirement / releasePayment
-mock shapes), and `lib/mockContract.ts` (deterministic generateStructuredContract). Read each first;
-bounded to new `lib/__tests__/*` files. Verify (test + tsc/lint/build), commit, push.
+**Step 43 — Test the MCP adapter.**
+Add unit tests for `lib/interop/mcpAdapter.ts` — `listToolsForAgent` (deterministic, well-formed tool
+list derived from the agent) and `validateMcpServer` (its verdict for set vs missing server URLs).
+Read it first; bounded to a new `lib/__tests__/*` file. Verify (test + tsc/lint/build), commit, push.
 
 ---
 
@@ -203,6 +202,11 @@ bounded to new `lib/__tests__/*` files. Verify (test + tsc/lint/build), commit, 
   formatters/slug/hash/clamp/mockHash and `lib/mockValidation` scoring + verdict), and wired
   `npm run test` into CI. `vitest.config.ts` + `lib/__tests__/*` + `package.json` + `ci.yml`. 15/15
   pass; tsc/lint/build ✓.
+- **Iteration 42 (10:50 UTC) — Expanded test coverage.**
+  Added tests for the x402 adapter (requirement defaults + deterministic nonce/receipt, verify rules,
+  isLive), the A2A adapter (getAgentCard mapping, parseArtifactMessage defaults, task envelope), and
+  the contract generator (title, category schema, constraints, empty input). 29 tests / 5 files pass.
+  tsc/lint/build ✓.
 
 ---
 
