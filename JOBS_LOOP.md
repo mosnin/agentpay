@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 36 — Document NEXT_PUBLIC_APP_URL in .env.example.**
-The metadataBase, sitemap, robots, and manifest use `NEXT_PUBLIC_APP_URL` for absolute URLs (defaulting
-to localhost). Ensure `.env.example` documents it (and any other referenced env vars) with guidance, so
-production OG/sitemap URLs are correct. Read `.env.example` first; bounded. Verify (tsc/lint), commit, push.
+**Step 37 — Add docker-compose for local Postgres.**
+The README and `.env.example` reference "docker-compose / a local Postgres", but no compose file exists
+(confirmed). Add a minimal `docker-compose.yml` (postgres:16, db `agentmarket`, user/pass `postgres`,
+port 5432, healthcheck + named volume) matching the default `DATABASE_URL`, so `docker compose up -d`
+yields a ready database. Bounded to one file. Verify (tsc/lint), commit, push.
 
 ---
 
@@ -179,6 +180,10 @@ production OG/sitemap URLs are correct. Read `.env.example` first; bounded. Veri
   Added a "Highlights" section documenting the post-MVP enhancements (⌘K, frictionless hiring,
   run-demo, needs-attention, similar / recently-viewed, OG/sitemap/manifest, a11y/craft) and linked
   `JOBS_LOOP.md`, so the docs match the app. `README.md` (docs-only). tsc/lint ✓.
+- **Iteration 36 (10:18 UTC) — Clarified NEXT_PUBLIC_APP_URL.**
+  The var was present but documented only as "developer docs examples"; updated the comment to reflect
+  its real role — metadataBase for OG/Twitter, sitemap, robots, manifest, and canonical URLs; set to
+  the deployed origin in production. `.env.example`. tsc/lint ✓.
 
 ---
 
