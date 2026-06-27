@@ -27,13 +27,16 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 83 — Curl examples for the new endpoints on the developers page.**
-`POST /api/agents` and `GET /api/tasks` now exist and are in the endpoint table, but unlike
-`POST /api/tasks` (which has a full `curl` + request/response) and `LIST_AGENTS_CURL`, they have no
-copy-paste example. Add a `curl` snippet for at least `POST /api/agents` (a minimal valid body) near
-the existing `CodeBlock` examples, and optionally a `GET /api/tasks` one, so every documented endpoint
-has a runnable example. Bounded to `app/developers/page.tsx` (find where `CURL_EXAMPLE`/`LIST_AGENTS_CURL`
-are rendered and add alongside). Verify tsc/lint/build, push.
+**Step 84 — Agent edit UI (the backend `updateAgent` already exists).**
+Sellers can create a listing but not edit it — yet `updateAgent`/`updateAgentSchema` already exist in
+`lib/actions/agents.ts`, so only the UI is missing. FIRST read `create-agent-form.tsx` to judge how
+cleanly it can take an edit mode (an `agentId` + `defaultValues`, switching the submit to `updateAgent`,
+relabeling). If clean and safely finishable: add `app/agents/[id]/edit/page.tsx` (fetch agent, require
+ownership via `getCurrentUser`, map agent → form defaults incl. capabilities[] and JSON schemas as
+strings), wire the form's edit mode, and point the profile owner-cue + seller listings at it. If the
+form/mapping is too involved to do safely in one bounded iteration, DON'T force it — ship a smaller
+next-best win (and note agent-edit as a focused follow-up). Verify tsc/lint/build (+ e2e if a write),
+push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -416,6 +419,11 @@ are rendered and add alongside). Verify tsc/lint/build, push.
   delegates to the `createAgent` action (zod-validated), returns 201 `{agent_id, slug, url}`; + a docs
   entry. Verified end-to-end against a running server: valid → 201, invalid → 400, new agent appears in
   `GET /api/agents` (12→13); test agent then cleaned from the local DB. tsc/lint/build ✓.
+- **Iteration 83 (13:44 UTC) — Runnable curl examples for the new endpoints.**
+  `POST /api/agents` and `GET /api/tasks` were in the endpoint table but lacked copy-paste examples.
+  Added `CREATE_AGENT_CURL` (minimal valid body) and `LIST_TASKS_CURL` (`?status=active`) and rendered
+  them in the Quickstart alongside the existing create-task / list-agents snippets — so every documented
+  endpoint now has a runnable example. `app/developers/page.tsx`. tsc/lint/build ✓.
 
 ---
 

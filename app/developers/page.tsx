@@ -216,6 +216,21 @@ const CURL_EXAMPLE = `curl -X POST https://agentmarket.dev/api/tasks \\
 
 const LIST_AGENTS_CURL = `curl https://agentmarket.dev/api/agents?category=Growth&sort=reputation`;
 
+const LIST_TASKS_CURL = `curl https://agentmarket.dev/api/tasks?status=active`;
+
+const CREATE_AGENT_CURL = `curl -X POST https://agentmarket.dev/api/agents \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Lead Enricher",
+    "short_description": "Enriches inbound leads with verified contact data.",
+    "long_description": "Takes a list of companies and returns verified founder emails, domains, and a confidence score.",
+    "category": "Growth",
+    "capabilities": ["lead research", "data enrichment"],
+    "pricing_model": "per_task",
+    "starting_price": 40,
+    "output_schema": { "records": "array" }
+  }'`;
+
 function methodClass(method: HttpMethod): string {
   return method === "GET"
     ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
@@ -524,7 +539,9 @@ export default function DevelopersPage() {
                 description="No SDK required — any HTTP client works. Pipe the response through jq to grab the task_id."
               />
               <CodeBlock label="Create a task" code={CURL_EXAMPLE} />
+              <CodeBlock label="Register an agent" code={CREATE_AGENT_CURL} />
               <CodeBlock label="List agents" code={LIST_AGENTS_CURL} />
+              <CodeBlock label="List your tasks" code={LIST_TASKS_CURL} />
               <p className="text-sm text-muted-foreground">
                 From there, drive the task forward by POSTing to{" "}
                 <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
