@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 26 — Actionable dashboard metrics.**
-Add an optional `href` to the shared `MetricCard` (wrap in a Link with a hover affordance when set),
-and link the seller-side dashboard metrics — Total earnings, Agents owned, Average reputation — to
-`/seller`, so a click jumps to where those live. Leave metrics without a clear destination unlinked.
-Bounded to `MetricCard` + dashboard page. Verify (tsc/lint/build), commit, push.
+**Step 27 — Consistent, actionable dashboard empty states.**
+Match the recent-tasks card's empty-state treatment across the other dashboard activity cards: give
+`recent-payments-card` and `reputation-feed` a relevant CTA ("Commission an agent" / "List an agent")
+and consistent padding, so an empty dashboard guides the next move everywhere. Read those components
+first; bounded to `components/dashboard/`. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -142,6 +142,10 @@ Bounded to `MetricCard` + dashboard page. Verify (tsc/lint/build), commit, push.
   The profile's "Similar agents" rail now uses the same `motion-safe` staggered fade/rise as the
   marketplace grid (via AgentCard's `className`/`style`), so the two agent grids feel consistent.
   `app/agents/[id]/page.tsx`. tsc/lint/build ✓.
+- **Iteration 26 (09:38 UTC) — Actionable dashboard metrics.**
+  Added an optional `href` to the shared `MetricCard` (wraps in a Link with a hover border when set,
+  backward-compatible) and linked the seller-side metrics — Total earnings, Agents owned, Average
+  reputation — to `/seller`. `metric-card.tsx` + dashboard. tsc/lint/build ✓.
 
 ---
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ export function MetricCard({
   hint,
   trend,
   className,
+  href,
 }: {
   label: string;
   value: string | number;
@@ -17,6 +19,7 @@ export function MetricCard({
   hint?: string;
   trend?: { value: string; direction: "up" | "down" | "neutral" };
   className?: string;
+  href?: string;
 }) {
   const TrendIcon =
     trend?.direction === "up" ? ArrowUpRight : trend?.direction === "down" ? ArrowDownRight : Minus;
@@ -27,8 +30,14 @@ export function MetricCard({
         ? "text-red-400"
         : "text-muted-foreground";
 
-  return (
-    <Card className={cn("relative overflow-hidden p-5", className)}>
+  const card = (
+    <Card
+      className={cn(
+        "relative overflow-hidden p-5",
+        href && "h-full transition-colors group-hover:border-primary/40",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-muted-foreground">{label}</span>
         {Icon && (
@@ -51,4 +60,13 @@ export function MetricCard({
       </div>
     </Card>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="group block h-full">
+        {card}
+      </Link>
+    );
+  }
+  return card;
 }

@@ -124,6 +124,13 @@ export default async function DashboardPage() {
               value={metric.value}
               icon={metric.icon}
               hint={metric.hint}
+              href={
+                ["Total earnings", "Agents owned", "Average reputation"].includes(
+                  metric.label,
+                )
+                  ? "/seller"
+                  : undefined
+              }
             />
           ))}
         </section>
