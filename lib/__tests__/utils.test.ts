@@ -108,6 +108,17 @@ describe("deadlineStatus", () => {
     expect(r.tone).toBe("normal");
     expect(r.label).toMatch(/^Due /);
   });
+  it("handles the exact thresholds", () => {
+    // diff 0 → overdue (not yet due is strictly in the future)
+    expect(deadlineStatus(now, now).tone).toBe("overdue");
+    // exactly 24h out → still "soon"
+    const dayMs = 24 * 60 * 60 * 1000;
+    expect(deadlineStatus(new Date(now.getTime() + dayMs), now).tone).toBe("soon");
+    // one second past 24h → "normal"
+    expect(
+      deadlineStatus(new Date(now.getTime() + dayMs + 1000), now).tone,
+    ).toBe("normal");
+  });
 });
 
 describe("hashString / clamp / mockHash", () => {

@@ -27,16 +27,16 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 101 — Boundary tests for `deadlineStatus`.**
-`deadlineStatus` (used by every `DeadlineBadge` across detail/triage/seller/tasks) has overdue/soon/
-normal tests but not the exact thresholds. Add boundary cases in `lib/__tests__/utils.test.ts`: diff
-`0` → overdue, exactly `24h` → soon, just over `24h` → normal — passing an injected `now` for
-determinism. Hardens the urgency logic that drives multiple surfaces. Bounded to the test file. Verify
-test + tsc/lint, push.
+**Step 102 — Re-audit against `project_scope_v1.md` after 100+ changes.**
+The original brief was "make sure the product is exactly as project_scope_v1.md." After 100 iterations,
+re-verify the scope hasn't regressed: read `project_scope_v1.md`, spot-check the acceptance criteria and
+hard requirements (the 10 pages exist + render, the 12 Prisma models, seed ≥12 agents / ≥8 tasks, the
+mock x402/A2A/MCP adapters, deterministic validation 70–99 / pass ≥80, escrow→release, reputation
+logic) against the current app. Record a pass/fail per area; fix any genuine regression found (else note
+clean). Bounded to a verification pass (+ any fix). Verify tsc/lint/build, push.
 
-> Status: the product is comprehensively complete, regression-audited (iter 95), with full loading-state
-> coverage, 67 tests, clean hygiene, and optimized CI. Remaining items are fine-polish/coverage.
-> Standing offer to the user to wind the loop down early.
+> Status: comprehensively complete, regression-audited (iter 95), full loading-state coverage, 68 tests,
+> clean hygiene, optimized CI. Remaining items are verification/fine-polish. Standing offer to wind down.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -522,6 +522,10 @@ test + tsc/lint, push.
   (Planned step — npm cache — was already in `ci.yml`.) Added a `concurrency` group
   (`cancel-in-progress`) so the frequent loop pushes don't pile up stale CI runs, and corrected the job
   name to "Typecheck, lint, test, build". `.github/workflows/ci.yml`. yaml/tsc/lint ✓.
+- **Iteration 101 (16:06 UTC) — Boundary tests for `deadlineStatus`.**
+  Added exact-threshold cases (diff 0 → overdue, exactly 24h → soon, 24h+1s → normal, injected `now`)
+  hardening the urgency helper behind every `DeadlineBadge`. Suite 68 tests. `lib/__tests__/utils.test.ts`.
+  test/tsc/lint ✓.
 
 ---
 
