@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 30 — Complete the keyboard-focus pass.**
-Extend Step 28's `focus-visible:ring` treatment to the remaining raw link rows: the agent profile's
-"Recent tasks" rows (`components/agents/recent-tasks.tsx`) and the artifact URL link
-(`components/tasks/artifact-card.tsx`), so keyboard focus is visible app-wide. Read them first; bounded.
-Verify (tsc/lint/build), commit, push.
+**Step 31 — Tokenize the "code surface" color.**
+The magic hex `bg-[#0a0c11]` is repeated across `json-viewer`, `endpoint-metadata`, `artifact-card`,
+and the developers page. Add a `code` color to `tailwind.config.ts` and replace each `bg-[#0a0c11]`
+with `bg-code`, so the code/JSON surface is a single source of truth. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -157,6 +156,10 @@ Verify (tsc/lint/build), commit, push.
 - **Iteration 29 (09:50 UTC) — Smooth hover on mobile nav links.**
   Added `transition-colors` to the mobile Sheet nav links in `top-nav` and `landing-nav`, so their
   hover eases like the desktop links instead of snapping. tsc/lint/build ✓.
+- **Iteration 30 (09:54 UTC) — Completed the keyboard-focus pass.**
+  Added `focus-visible:ring` to the remaining raw link rows — the agent profile's "Recent tasks" title
+  and arrow links, and the artifact URL link — so keyboard focus is visible app-wide.
+  `components/agents/recent-tasks.tsx` + `components/tasks/artifact-card.tsx`. tsc/lint/build ✓.
 
 ---
 

@@ -42,7 +42,7 @@ export function RecentTasks({ tasks }: { tasks: AgentDetail["tasks"] }) {
               <TableCell className="max-w-[22rem]">
                 <Link
                   href={`/tasks/${task.id}`}
-                  className="font-medium text-foreground transition-colors group-hover:text-primary"
+                  className="rounded-sm font-medium text-foreground transition-colors group-hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {task.title}
                 </Link>
@@ -60,7 +60,7 @@ export function RecentTasks({ tasks }: { tasks: AgentDetail["tasks"] }) {
               <TableCell>
                 <Link
                   href={`/tasks/${task.id}`}
-                  className="inline-flex text-muted-foreground transition-colors hover:text-foreground"
+                  className="inline-flex rounded text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label={`View task ${task.title}`}
                 >
                   <ArrowUpRight className="h-4 w-4" />

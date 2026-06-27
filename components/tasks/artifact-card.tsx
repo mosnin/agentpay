@@ -72,7 +72,7 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
           href={artifact.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-flex max-w-full items-center gap-1.5 truncate text-xs font-medium text-primary hover:underline"
+          className="mt-3 inline-flex max-w-full items-center gap-1.5 truncate rounded text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ExternalLink className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{artifact.url}</span>
