@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
   ArrowRight,
+  ExternalLink,
   FileCode2,
   Loader2,
   ShieldCheck,
@@ -220,6 +222,15 @@ export function CreateTaskForm({
                   ? ` · ${selectedAgent.primaryCapability}`
                   : ""}
               </p>
+              <Link
+                href={`/agents/${selectedAgent.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 inline-flex items-center gap-1 rounded text-xs font-medium text-primary/90 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                View profile
+                <ExternalLink className="h-3 w-3" />
+              </Link>
             </div>
             <div className="shrink-0 text-right">
               <div className="text-sm font-semibold text-foreground">

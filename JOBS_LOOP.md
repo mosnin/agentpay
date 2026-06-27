@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 77 — Let buyers review the agent before committing.**
-The new "Hiring X" confirmation card is static — but before committing a budget a buyer may want to
-double-check the agent. Add a subtle "View profile ↗" link on that card to `/agents/<id>` (opens in a
-new tab so the half-filled form is preserved), completing the hire-confidence touch (see who you're
-hiring *and* be able to verify them). Bounded to `create-task-form.tsx`. Verify tsc/lint/build, push.
+**Step 78 — Personalize the dashboard greeting.**
+Small warmth / "start from the experience": the dashboard header is the generic "Dashboard · Your
+marketplace activity at a glance." Greet the operator by first name — e.g. title "Welcome back, Ada" —
+using the already-available `requireUser()` result (first token of `user.name`, falling back to the
+generic title if absent). Bounded to `app/dashboard/page.tsx`. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -383,6 +383,10 @@ hiring *and* be able to verify them). Bounded to `create-task-form.tsx`. Verify 
   change was needed; added a compact "Hiring <Name>" summary card at the top of the form (category icon,
   verified badge, primary capability, starting price) shown whenever an agent is selected — turning a
   bare dropdown value into hire confidence. `app/tasks/new/create-task-form.tsx`. tsc/lint/build ✓.
+- **Iteration 77 (13:18 UTC) — Review the agent before committing.**
+  Added a subtle "View profile ↗" link to the "Hiring <Name>" card (opens `/agents/<id>` in a new tab
+  so the half-filled form is preserved) — so a buyer can verify the agent before committing a budget,
+  completing the hire-confidence touch. `app/tasks/new/create-task-form.tsx`. tsc/lint/build ✓.
 
 ---
 
