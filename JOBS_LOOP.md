@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 46 — Config integrity tests.**
-Add a test asserting the marketplace config is internally consistent: `CATEGORIES` ↔ `CATEGORY_VALUES`
-agree; `PAYMENT_MODES` / `PRICING_MODELS` / `MARKETPLACE_SORTS` / visibility options have unique values
-and non-empty labels; nav (`SIDEBAR_GROUPS`) hrefs are unique and non-empty. Read `lib/constants.ts` +
-`lib/nav.ts` first; bounded to a new test file. Verify (test + tsc/lint), commit, push.
+**Step 47 — PR template.**
+Add `.github/pull_request_template.md` with a concise structure (Summary, Changes, and a Testing
+checklist for typecheck / lint / test / build) so contributions are described consistently and
+reviewers can verify the gates. Bounded to one file. Verify (test + tsc/lint), commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -223,6 +222,11 @@ and non-empty labels; nav (`SIDEBAR_GROUPS`) hrefs are unique and non-empty. Rea
 - **Iteration 45 (11:02 UTC) — Automated dependency updates.**
   Added `.github/dependabot.yml` (npm + github-actions, weekly, minor/patch grouped, PR limit 5) so
   dependencies and CI action versions stay current with minimal noise. yaml/tsc/lint ✓.
+- **Iteration 46 (11:06 UTC) — Config integrity tests.**
+  Added `lib/__tests__/config.test.ts`: option lists (categories/pricing/payment/visibility/sort) are
+  unique + well-formed, `CATEGORY_VALUES` mirrors `CATEGORIES`, every status-config entry has
+  label/class/dot, every lifecycle status has a config, `getStatusConfig` fallback works, and nav
+  hrefs are rooted + unique. 54 tests / 8 files pass. tsc/lint ✓.
 
 ---
 
