@@ -18,18 +18,21 @@ export function PerformanceMetrics({
   agent: AgentDetail;
   reviewCount: number;
 }) {
+  // A brand-new agent has no completed tasks yet — show "—" for the metrics
+  // that would otherwise misread as failures (0% completion, 0 min, 0.0 rating).
+  const hasHistory = agent.totalTasksCompleted > 0;
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <MetricCard
           label="Completion rate"
-          value={formatPercent(agent.completionRate)}
+          value={hasHistory ? formatPercent(agent.completionRate) : "—"}
           icon={CheckCircle2}
           hint="Tasks delivered successfully"
         />
         <MetricCard
           label="Average rating"
-          value={agent.averageRating.toFixed(1)}
+          value={reviewCount > 0 ? agent.averageRating.toFixed(1) : "—"}
           icon={Star}
           hint={`${formatNumber(reviewCount)} review${reviewCount === 1 ? "" : "s"}`}
         />
@@ -41,19 +44,19 @@ export function PerformanceMetrics({
         />
         <MetricCard
           label="Avg. response time"
-          value={formatLatency(agent.averageLatencyMinutes)}
+          value={hasHistory ? formatLatency(agent.averageLatencyMinutes) : "—"}
           icon={Timer}
           hint="Time to first artifact"
         />
         <MetricCard
           label="Dispute rate"
-          value={formatPercent(agent.disputeRate)}
+          value={hasHistory ? formatPercent(agent.disputeRate) : "—"}
           icon={ShieldAlert}
           hint="Tasks contested"
         />
         <MetricCard
           label="Schema compliance"
-          value={`${agent.schemaComplianceScore}%`}
+          value={hasHistory ? `${agent.schemaComplianceScore}%` : "—"}
           icon={FileJson2}
           hint="Output conformance"
         />

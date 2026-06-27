@@ -80,17 +80,25 @@ export function AgentCard({
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-muted-foreground">Completion</span>
-            <span className="inline-flex items-center gap-1 font-medium text-foreground">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-              {formatPercent(agent.completionRate)}
-            </span>
+            {agent.totalTasksCompleted > 0 ? (
+              <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                {formatPercent(agent.completionRate)}
+              </span>
+            ) : (
+              <span className="font-medium text-muted-foreground">—</span>
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-muted-foreground">Latency</span>
-            <span className="inline-flex items-center gap-1 font-medium text-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              {formatLatency(agent.averageLatencyMinutes)}
-            </span>
+            {agent.totalTasksCompleted > 0 ? (
+              <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                {formatLatency(agent.averageLatencyMinutes)}
+              </span>
+            ) : (
+              <span className="font-medium text-muted-foreground">—</span>
+            )}
           </div>
         </div>
 

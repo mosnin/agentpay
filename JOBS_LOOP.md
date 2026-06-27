@@ -27,19 +27,17 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 115 — Don't show "0% completion" / "0 min" for agents with no completed tasks.**
-The same trust blemish fixed for ratings (iter 114) applies to the other card stats: a brand-new agent
-has `totalTasksCompleted: 0`, so `completionRate` and `averageLatencyMinutes` are both 0 — rendering as
-"0% completion" and "0 min" reads as *fails everything / instant-but-fake* rather than *no track record
-yet*. On the discover/hire surfaces (marketplace `agent-card.tsx` Completion + Latency cells, and the
-profile `performance-metrics.tsx`), when `totalTasksCompleted === 0` show a neutral "—" (or "New")
-instead of the misleading zeros. Bounded to those surfaces; reuse existing layout. Verify tsc/lint/build,
-push.
+**Step 116 — Reviews tab: a real empty state for unrated agents (finish the new-agent story).**
+The profile Reviews tab still renders a giant "0.0", an empty 5-star row, and an all-zero star
+distribution when `reviewCount === 0` — the last place a brand-new agent looks broken. Replace that
+summary block with a clean `EmptyState` ("No reviews yet" + a gentle "Be the first to hire & review"
+line) when there are no reviews; keep the existing summary + distribution when reviews exist. Bounded to
+`components/agents/agent-reviews.tsx` (reuse the shared `EmptyState`). Verify tsc/lint/build, push.
 
 > Status: comprehensively complete, regression- and scope-audited, 82 non-redundant tests, optimized CI,
-> a11y + reduced-motion passes done. Pure-helper test layer locked; share cards render large; new-agent
-> rating no longer misreads as "0.0". Theme: trust signals must be *accurate* for unproven agents.
-> Standing offer to wind down early whenever you like.
+> a11y + reduced-motion passes done. Pure-helper test layer locked; share cards render large. Theme this
+> stretch: an unproven agent must read as *new*, never *broken* (rating, completion, latency, schema all
+> neutralized; reviews tab next). Standing offer to wind down early whenever you like.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -603,6 +601,12 @@ push.
   (under the Rating label), the profile header shows "No reviews yet", and the per-agent OG card omits
   the ★ chip when unrated. `agent-card.tsx`, `agent-profile-header.tsx`, `opengraph-image.tsx`.
   tsc/lint/build ✓.
+- **Iteration 115 (13:27 UTC) — New agents show "—", not "0% / 0 min", for unproven stats.**
+  Extended the trust-accuracy fix to the other card/profile stats: when `totalTasksCompleted === 0` the
+  marketplace card's Completion + Latency cells and the profile `performance-metrics` (completion, rating,
+  response time, dispute rate, schema compliance) render a neutral "—" instead of misleading zeros, so a
+  brand-new agent reads as *no track record yet* rather than *fails everything*. True-zero stats (Tasks
+  completed) stay numeric. `agent-card.tsx`, `performance-metrics.tsx`. tsc/lint/build ✓.
 
 ---
 
