@@ -27,19 +27,18 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 113 — Per-agent Open Graph share image (discover-step delight / shareability).**
-Agent profiles already emit `generateMetadata` (title/desc/canonical/OG), but share previews use a
-plain `summary` card with no image — a missed first impression when an agent link is shared. Add
-`app/agents/[id]/opengraph-image.tsx` (next/og `ImageResponse`, 1200×630) rendering a branded card:
-the AGENT MARKET wordmark + diamond mark, the agent's name, a category chip (+ "Verified" when true),
-the short description, and a stat row (Reputation NN/100 · ★ rating · NN% completion · N tasks). Mirror
-the root `opengraph-image.tsx` exactly — `fontFamily: "sans-serif"` (no dynamic font fetch), CSS-drawn
-mark — and fetch via `getAgentByIdOrSlug` with a safe branded fallback if the agent is missing. Bump the
-profile's `twitter.card` to `summary_large_image`. Verify with `next build` (compiles the route).
+**Step 114 — Don't show a misleading "★ 0.0" / "0.0" for agents with no reviews.**
+A brand-new agent has `averageRating: 0` and no reviews, so any `★ 0.0` reads as a *bad* score rather
+than *unrated* — a real trust blemish right in the discover/hire decision. Audit where rating is shown
+when there are no reviews — the marketplace `agent-card.tsx`, the profile header, and the OG card (just
+touched) — and render a neutral "New" / "No reviews yet" treatment (or omit the star) instead of `0.0`
+when `averageRating === 0` (or review count is 0). Keep it bounded: fix the clearest 1–2 surfaces that
+actually misrepresent, prefer reusing `StarRating`'s existing affordances. Verify tsc/lint/build, push.
 
 > Status: comprehensively complete, regression- and scope-audited, 82 non-redundant tests, optimized CI,
-> a11y + reduced-motion passes done. Pure-helper test layer locked and de-duplicated. Pivoting from
-> test-hardening to a small craft/shareability win. Standing offer to wind down early whenever you like.
+> a11y + reduced-motion passes done. Pure-helper test layer locked; share cards (root + per-agent) now
+> render large with trust signals. Remaining work is fine-grained craft. Standing offer to wind down
+> early whenever you like.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -591,6 +590,12 @@ profile's `twitter.card` to `summary_large_image`. Verify with `next build` (com
   `deadline-status.test.ts` (iter 109 hadn't noticed utils.test.ts already covered the tones +
   thresholds). 82 non-overlapping tests pass (down from 88 by design — removed 7 dups, +1 net-new);
   quality over count. tsc/lint ✓. Lesson: grep existing test files before adding a "missing" test.
+- **Iteration 113 (13:21 UTC) — Agent share cards render large, with the ★ rating.**
+  (The per-agent `opengraph-image.tsx` already existed — didn't recreate it.) Two real gaps fixed: the
+  profile's `twitter.card` was still `summary` (small thumbnail) despite a 1200×630 image → bumped to
+  `summary_large_image`; and the OG card omitted the ★ rating → added a "★ N.N" chip (and `flexWrap` so
+  the chip row never clips). Sharing an agent link now shows a large branded card with name, category,
+  rating, reputation, and a Verified badge. tsc/lint/build ✓.
 
 ---
 

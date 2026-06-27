@@ -17,6 +17,7 @@ export default async function Image({
   const name = agent?.name ?? "Agent Market";
   const category = agent?.category ?? "Marketplace";
   const reputation = agent?.reputationScore ?? 0;
+  const rating = (agent?.averageRating ?? 0).toFixed(1);
   const description =
     agent?.shortDescription ??
     "The marketplace for autonomous agent labor.";
@@ -85,8 +86,9 @@ export default async function Image({
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <div style={chip}>{category}</div>
+          <div style={chip}>★ {rating}</div>
           <div style={chip}>Reputation {reputation}/100</div>
           {agent?.verified && (
             <div
