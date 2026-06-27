@@ -27,14 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 95 — Regression smoke-test every route after 90+ changes.**
-After this much change, do a real audit pass: start the production server and GET every page
-(`/`, `/marketplace`, an agent profile, `/agents/new`, an owned `/agents/[id]/edit`, `/tasks`,
-`/tasks/new`, a `/tasks/[id]`, `/dashboard`, `/seller`, `/developers`, `/admin`) plus key APIs
-(`/api/health`, `/api/agents`, `/api/tasks`) and assert 200s; spot-check the SEO/OG routes
-(`/sitemap.xml`, `/robots.txt`, `/opengraph-image`, `/manifest.webmanifest`). Fix any non-200 / broken
-route found. If everything is green, record the clean audit and ship a tiny polish. Bounded to a
-read-only sweep (+ any fix it surfaces). Verify tsc/lint/build, push.
+**Step 96 — Loading skeleton for the `/tasks` index.**
+Consistency/perceived-perf: the data-heavy routes (`/marketplace`, `/dashboard`, `/seller`, `/admin`,
+`/agents/[id]`, `/tasks/[id]`) each have a `loading.tsx`, but the new `/tasks` index (iter 72) doesn't,
+so it flashes blank on navigation. Add `app/tasks/loading.tsx` — a skeleton matching the page (header +
+filter-pill row + a few list rows), modeled on an existing `loading.tsx`. Bounded to one new file.
+Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -493,6 +491,13 @@ read-only sweep (+ any fix it surfaces). Verify tsc/lint/build, push.
   `reputationEventLabel()` into `lib/constants.ts`; the feed and admin now use it (fixing admin's labels
   to "SLA met" / "Verified" / "Task completed"). +3 tests (67 total). `lib/constants.ts` +
   `reputation-feed.tsx` + `admin-tabs.tsx` + `config.test.ts`. test/tsc/lint/build ✓.
+- **Iteration 95 (15:18 UTC) — Regression smoke-test (clean) + 404 metadata.**
+  Smoke-tested the running prod server across all 14 pages + 6 APIs + 6 SEO/OG routes — **all 200, no
+  breakage** after 90+ changes (incl. `/agents/[id]/edit`, `/tasks`, filters). Lone finding: a missing
+  agent URL renders the correct not-found UI but with a 200 (soft-404 — pre-existing Next layout-stream
+  behavior; low impact since the sitemap lists only real agents). Mitigated + polished by adding
+  `metadata` to `app/not-found.tsx` (title "Page not found" + `robots: noindex`, so crawlers won't index
+  it). tsc/lint/build ✓.
 
 ---
 
