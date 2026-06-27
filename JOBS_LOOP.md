@@ -27,15 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 54 — License the repo (MIT).**
-The repo has no `LICENSE` file, so reuse terms are undefined — README/CONTRIBUTING invite
-contribution but nothing states the license. Add a standard MIT `LICENSE` and a one-line License
-section at the bottom of the README pointing to it. Bounded to two files. Verify (tsc/lint —
-docs-only), commit, push.
-
-> After this, the repo-hygiene track (CI, dependabot, templates, security, contributing, license) is
-> essentially complete; the next pivots should return to in-app craft on the core loop (e.g.
-> optimistic UI on task actions, or a copy/empty-state pass) unless the user redirects.
+**Step 55 — Responsive feedback on task lifecycle actions.**
+Back to in-app craft on the core loop. Audit `components/tasks/task-actions.tsx`: every lifecycle
+button (accept, start, submit, validate, complete & release, review, dispute, Run demo) should give
+*immediate* feedback on click — disabled + inline spinner + "…ing" label via `useFormStatus`/pending
+state — so the verify→pay path feels instant and double-submits are impossible. Fill any gaps with a
+shared pending-button treatment. Bounded to the task-actions component (+ a tiny shared button if
+needed). Verify tsc/lint/build, commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -258,6 +256,10 @@ docs-only), commit, push.
   `feature_request.md` (problem / proposal / alternatives, framed around the core loop), and
   `config.yml` (disable blank issues; point setup questions at the README) — so reported issues arrive
   structured, matching the PR template + CONTRIBUTING. tsc/lint ✓ (docs/config-only).
+- **Iteration 54 (11:38 UTC) — Declared the license consistently.**
+  A MIT `LICENSE` already existed but reuse terms were under-declared: added `"license": "MIT"` to
+  `package.json` and a `## License` section to the README linking the file ([MIT](./LICENSE) © 2026
+  mosnin), so the license is stated everywhere it's looked for. tsc/lint ✓ (docs/config-only).
 
 ---
 

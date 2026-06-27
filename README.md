@@ -215,3 +215,9 @@ prisma/
 - Test suite (unit + e2e) and CI.
 
 > Built as an MVP. Payments, validation, and interop run on local mock adapters by default.
+
+---
+
+## License
+
+[MIT](./LICENSE) © 2026 mosnin
