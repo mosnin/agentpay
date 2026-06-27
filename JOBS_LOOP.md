@@ -27,11 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 44 — Test the Zod form schemas.**
-Add unit tests for `lib/schemas.ts` (createTaskSchema, createAgentSchema, reviewSchema,
-submitArtifactSchema, disputeSchema): valid payloads parse and invalid ones fail (missing required
-fields, out-of-range rating/budget, bad URL/enum). Read `lib/schemas.ts` first; bounded to a new
-`lib/__tests__/*` file. Verify (test + tsc/lint), commit, push.
+**Step 45 — Automated dependency updates (dependabot).**
+Add `.github/dependabot.yml` covering the `npm` and `github-actions` ecosystems (weekly, minor/patch
+grouped) so dependencies and CI action versions stay current with minimal PR noise. Bounded to one
+file. Verify (test + tsc/lint), commit, push.
+
+> Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
+> need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
 
 ---
 
@@ -212,6 +214,11 @@ fields, out-of-range rating/budget, bad URL/enum). Read `lib/schemas.ts` first; 
   Added tests for `lib/interop/mcpAdapter.ts`: `listToolsForAgent` (one snake_cased tool per
   capability, well-formed schema, deterministic) and `validateMcpServer` (missing / invalid / https /
   unsupported-protocol verdicts). 35 tests / 6 files pass. tsc/lint ✓.
+- **Iteration 44 (10:58 UTC) — Zod schema tests.**
+  Added tests for `lib/schemas.ts` (create-agent, create-task, review, submit-artifact, dispute, and
+  the API create-task schema): valid payloads parse with defaults applied; invalid ones fail (short
+  fields, empty capabilities, bad URL/enum, out-of-range/non-integer rating, coercion). 46 tests /
+  7 files pass. tsc/lint ✓.
 
 ---
 
