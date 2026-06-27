@@ -27,18 +27,18 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 128 — Test the `submitArtifactSchema` refine + add an `apiCreateTaskSchema` budget edge.**
-Pure, zero-risk coverage for two boundary behaviors shipped recently: (1) confirm the iter-119 content-or-url
-refine on `submitArtifactSchema` is locked (title-only rejected; content-only / url-only / both pass) —
-already added in iter 119, so re-confirm and, if thin, extend; (2) `apiCreateTaskSchema` coerces/accepts a
-numeric-string budget and rejects a negative one (the public API entry point). Add the missing cases to
-`lib/__tests__/schemas.test.ts`. If both are fully covered already, ship the next-best small win and note it.
-Verify test + tsc/lint, push.
+**Step 129 — Verify the /developers API docs match `apiCreateTaskSchema` (developer-facing accuracy).**
+The public POST /api/tasks contract is `apiCreateTaskSchema` (snake_case: `objective`, `title?`,
+`category` default Growth, `budget` default 0, `seller_agent_id?`/`agent_id?`, `input_payload?`,
+`output_schema?`, `validation_rules?`, `payment_mode` default mock_escrow). Read the /developers page (and
+any code sample / docs component) and compare the documented request fields to the schema; if a field is
+misnamed, missing, or stale (e.g. camelCase or a renamed key), fix the docs so a copy-pasted example
+actually works — "it just works" for developers. Bounded to the docs/component. If already accurate, ship
+the next-best small win and note it. Verify tsc/lint/build, push.
 
-> Status: CONVERGED end-to-end. Entire core loop walked & verified — discover, hire, verify (live-tested),
-> pay, reputation, AND the full dispute branch (open dialog → admin resolve/reject UI → task lifted →
-> reputation restored; server now enforces a non-empty resolution note). **Recommend winding down early**;
-> absent that, the loop continues to the 19:56 UTC deadline. 91 tests green.
+> Status: CONVERGED end-to-end (core loop + dispute branch all walked, verified, tested — 92 tests). Now
+> auditing developer-facing docs accuracy. **Recommend winding down early**; absent that, the loop continues
+> to the 19:56 UTC deadline.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -675,6 +675,10 @@ Verify test + tsc/lint, push.
   lifts the task out of "disputed" + restores reputation on dismissal — all complete. Shipped a next-best
   hardening: `resolveDispute` now trims and **requires a non-empty resolution note at the action boundary**
   (not just the dialog), so the "resolved ⇒ has a note" invariant holds for any caller. tsc/lint/build ✓.
+- **Iteration 128 (14:09 UTC) — Locked the public-API budget edge in tests.**
+  Confirmed the iter-119 `submitArtifactSchema` content-or-url refine is fully covered (content/url pass +
+  empty reject). Added the genuinely-missing case: `apiCreateTaskSchema` coerces a numeric-string budget
+  ("50" → 50) and rejects a negative budget. 92 tests pass (was 91). tsc/lint ✓.
 
 ---
 

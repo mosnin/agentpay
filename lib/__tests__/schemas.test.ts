@@ -143,4 +143,17 @@ describe("apiCreateTaskSchema", () => {
   it("rejects an objective shorter than 3 characters", () => {
     expect(apiCreateTaskSchema.safeParse({ objective: "ab" }).success).toBe(false);
   });
+
+  it("coerces a numeric-string budget and rejects a negative one", () => {
+    const r = apiCreateTaskSchema.safeParse({
+      objective: "Do something useful",
+      budget: "50",
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.budget).toBe(50);
+    expect(
+      apiCreateTaskSchema.safeParse({ objective: "Do something useful", budget: -1 })
+        .success,
+    ).toBe(false);
+  });
 });
