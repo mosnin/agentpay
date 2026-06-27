@@ -27,11 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 97 — Loading skeleton for the agent editor.**
-`/agents/[id]/edit` (iter 84) is a data route (awaits the agent + orgs + ownership before rendering the
-form) but has no `loading.tsx`, so navigating to it flashes blank. Add `app/agents/[id]/edit/loading.tsx`
-— a header + a couple of form-card skeletons (modeled on an existing `loading.tsx`). Bounded to one new
-file. Verify tsc/lint/build, push.
+**Step 98 — Finish loading-state coverage (`/agents/new`, `/tasks/new`).**
+With `/agents/[id]/edit` skeletoned, the two create-form routes are the last data routes without a
+`loading.tsx` (each server-fetches orgs / agent options before rendering). Add `app/agents/new/loading.tsx`
+and `app/tasks/new/loading.tsx` (header + form-card skeletons, reusing the edit skeleton shape) so
+every route has a loading state. After this, loading-state coverage is complete app-wide — stop the
+skeleton thread. Bounded to two small files. Verify tsc/lint/build, push.
 
 > Status: the product is comprehensively complete, regression-audited (iter 95, all routes green), and
 > these are now fine-polish/consistency items. Standing offer to the user to wind the loop down early.
@@ -504,6 +505,10 @@ file. Verify tsc/lint/build, push.
   The new `/tasks` index lacked the `loading.tsx` its data-route siblings have, so it flashed blank on
   nav. Added `app/tasks/loading.tsx` (header + filter-pill row + 6 list-row skeletons) matching the
   page layout, for consistent perceived performance. tsc/lint/build ✓.
+- **Iteration 97 (15:34 UTC) — Loading skeleton for the agent editor.**
+  Added `app/agents/[id]/edit/loading.tsx` (header + 3 form-card skeletons + action buttons) so the
+  editor — which awaits the agent + orgs + ownership before rendering — no longer flashes blank on nav.
+  tsc/lint/build ✓.
 
 ---
 
