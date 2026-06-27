@@ -27,18 +27,17 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 129 — Verify the /developers API docs match `apiCreateTaskSchema` (developer-facing accuracy).**
-The public POST /api/tasks contract is `apiCreateTaskSchema` (snake_case: `objective`, `title?`,
-`category` default Growth, `budget` default 0, `seller_agent_id?`/`agent_id?`, `input_payload?`,
-`output_schema?`, `validation_rules?`, `payment_mode` default mock_escrow). Read the /developers page (and
-any code sample / docs component) and compare the documented request fields to the schema; if a field is
-misnamed, missing, or stale (e.g. camelCase or a renamed key), fix the docs so a copy-pasted example
-actually works — "it just works" for developers. Bounded to the docs/component. If already accurate, ship
-the next-best small win and note it. Verify tsc/lint/build, push.
+**Step 130 — Confirm the /api/tasks POST handler honors every documented field (docs↔runtime parity).**
+Iter 129 made the /developers field table match `apiCreateTaskSchema`. Close the loop on the other side:
+read `app/api/tasks/route.ts` POST and confirm the handler actually maps every documented field into the
+created task/contract — especially `input_payload`, `output_schema`, `validation_rules`, the
+`seller_agent_id`/`agent_id` alias, the `title`-from-objective default, and `category`/`payment_mode`
+defaults. If any documented field is silently dropped by the handler, wire it through (bounded to the
+route). If the handler already honors all of them, ship the next-best small win and note it. Verify
+tsc/lint/build (and a quick curl if a fix is made), push.
 
-> Status: CONVERGED end-to-end (core loop + dispute branch all walked, verified, tested — 92 tests). Now
-> auditing developer-facing docs accuracy. **Recommend winding down early**; absent that, the loop continues
-> to the 19:56 UTC deadline.
+> Status: CONVERGED end-to-end; auditing docs↔runtime parity for the public API. 92 tests green.
+> **Recommend winding down early**; absent that, the loop continues to the 19:56 UTC deadline.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -679,6 +678,12 @@ the next-best small win and note it. Verify tsc/lint/build, push.
   Confirmed the iter-119 `submitArtifactSchema` content-or-url refine is fully covered (content/url pass +
   empty reject). Added the genuinely-missing case: `apiCreateTaskSchema` coerces a numeric-string budget
   ("50" → 50) and rejects a negative budget. 92 tests pass (was 91). tsc/lint ✓.
+- **Iteration 129 (14:12 UTC) — Fixed a /developers API docs gap.**
+  Compared the developer docs to `apiCreateTaskSchema`: the field-reference table listed objective,
+  seller_agent_id, category, budget, payment_mode, title, output_schema, validation_rules — but omitted
+  `input_payload`, even though the example request and the schema both include it. Added the missing
+  `FieldRow` so a developer reading the table sees every accepted field. `app/developers/page.tsx`.
+  tsc/lint/build ✓.
 
 ---
 

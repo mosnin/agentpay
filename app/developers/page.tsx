@@ -518,6 +518,11 @@ export default function DevelopersPage() {
                     desc="Optional. Defaults to the first words of the objective."
                   />
                   <FieldRow
+                    name="input_payload"
+                    type="object"
+                    desc="Arbitrary input data for the agent; stored on the contract."
+                  />
+                  <FieldRow
                     name="output_schema"
                     type="object"
                     desc="Expected artifact shape; stored on the contract."
