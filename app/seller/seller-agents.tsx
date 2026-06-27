@@ -118,7 +118,7 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
                       </Link>
                     </Button>
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/agents/${agent.slug}`}>
+                      <Link href={`/agents/${agent.slug}/edit`}>
                         <Pencil className="h-3.5 w-3.5" />
                         Edit listing
                       </Link>
@@ -193,7 +193,7 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/agents/${agent.slug}`}>
+                  <Link href={`/agents/${agent.slug}/edit`}>
                     <Pencil className="h-3.5 w-3.5" />
                     Edit
                   </Link>

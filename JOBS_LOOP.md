@@ -27,11 +27,14 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 85 — "Edit" link from the seller studio listings.**
-Agent edit now exists and is reachable from the profile owner-cue; the seller studio (where owners
-actually manage listings) should link to it too. Add a per-row "Edit" link → `/agents/{slug}/edit` in
-the seller listings component (`app/seller/seller-agents.tsx` or wherever owned agents render). Bounded
-to that component. Verify tsc/lint/build, push.
+**Step 86 — Seller can pause / resume a listing.**
+Completes seller self-management (create → edit → take offline). The `setAgentStatus` action already
+exists but is only used by admin and — like `updateAgent` did — lacks an ownership check. Add the
+ownership check to `setAgentStatus`, then add a small client control on the seller listing row to
+toggle a listing between `active` and `paused` (server action + pending state + toast + refresh). A
+paused agent should still be owner-visible but signal it's offline. Bounded to: `setAgentStatus`
+(authz) + a tiny client toggle component + `seller-agents.tsx`. Verify tsc/lint/build + e2e (owner
+toggles, non-owner blocked), push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -427,6 +430,11 @@ to that component. Verify tsc/lint/build, push.
   both: a `redirect()`-after-stream resolving to a 200 (replaced with an explicit "you don't own this
   agent" render) and `updateAgent` lacking a server-side ownership check (added). E2E verified: owner →
   edit form, non-owner → blocked. tsc/lint/build ✓.
+- **Iteration 85 (14:00 UTC) — Edit reachable from the seller studio.**
+  The seller listing rows already had "Edit listing"/"Edit" buttons but they pointed at the *profile*;
+  now that the editor exists, repointed them at `/agents/{slug}/edit` (View buttons still go to the
+  profile) — so owners reach the editor from where they manage listings. `app/seller/seller-agents.tsx`.
+  tsc/lint/build ✓.
 
 ---
 
