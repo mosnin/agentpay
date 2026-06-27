@@ -27,12 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 105 — Accessible label for the reputation score.**
-Next in the a11y sweep: `components/shared/reputation-score.tsx` (the score shown on cards/profiles,
-incl. a "ring" variant) is likely a visual-only number/ring. Give it `role="img"` + `aria-label`
-"Reputation NN out of 100" (and `aria-hidden` on purely decorative ring SVG bits) so screen-reader
-users get the value. Verify it isn't already labeled; if it is, ship the next-best small a11y win and
-note it. Bounded to `reputation-score.tsx`. Verify tsc/lint/build, push.
+**Step 106 — Accessible label for the verified badge (likely the last a11y item).**
+`components/shared/verified-badge.tsx` shows a verification checkmark, often icon-only (no label) on
+cards/profiles — meaningful, not decorative, so screen readers should announce "Verified". Give the
+icon-only variant an `aria-label="Verified"` (`role="img"`); when it already renders the "Verified"
+text label, mark the icon `aria-hidden`. After this, the meaningful visual-only indicators (charts,
+stars, reputation, verified) are all labeled — close the a11y sweep. Bounded to `verified-badge.tsx`.
+Verify tsc/lint/build, push.
 
 > Status: comprehensively complete, regression- and scope-audited (both clean), 68 tests, optimized CI.
 > Remaining items are fine-polish/a11y. Standing offer to wind the loop down early.
@@ -539,6 +540,11 @@ note it. Bounded to `reputation-score.tsx`. Verify tsc/lint/build, push.
   The read-only star display had no accessible label and exposed decorative SVGs. Gave it `role="img"` +
   `aria-label` "X out of 5 stars" with the individual icons `aria-hidden`; the interactive variant keeps
   its labeled radiogroup. `components/shared/star-rating.tsx`. tsc/lint/build ✓.
+- **Iteration 105 (16:38 UTC) — Accessible reputation score.**
+  Both variants of `ReputationScore` lacked an accessible name (ring = decorative SVG + number; inline =
+  `title` only). Added `role="img"` + `aria-label` "Reputation NN out of 100 — <tier>" to the ring and
+  an `aria-label` to the inline badge, with the decorative SVG/dot `aria-hidden`.
+  `components/shared/reputation-score.tsx`. tsc/lint/build ✓.
 
 ---
 

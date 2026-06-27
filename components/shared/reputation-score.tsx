@@ -27,8 +27,12 @@ export function ReputationScore({
     const offset = c - (Math.min(100, Math.max(0, score)) / 100) * c;
     return (
       <div className={cn("inline-flex items-center gap-3", className)}>
-        <div className="relative h-16 w-16">
-          <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
+        <div
+          className="relative h-16 w-16"
+          role="img"
+          aria-label={`Reputation ${score} out of 100 — ${t.label}`}
+        >
+          <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90" aria-hidden>
             <circle cx="32" cy="32" r={r} className="fill-none stroke-border" strokeWidth="5" />
             <circle
               cx="32"
@@ -63,8 +67,9 @@ export function ReputationScore({
         className,
       )}
       title={`Reputation ${score} — ${t.label}`}
+      aria-label={`Reputation ${score} out of 100 — ${t.label}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
       {score}
       {showLabel && <span className="font-normal text-muted-foreground">{t.label}</span>}
     </span>
