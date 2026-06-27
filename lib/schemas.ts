@@ -102,14 +102,20 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 // Artifact / Review / Dispute
 // ---------------------------------------------------------------------------
 
-export const submitArtifactSchema = z.object({
-  title: z.string().min(2, "Add an artifact title").max(180),
-  type: z
-    .enum(["json", "file", "url", "text", "report", "dataset"])
-    .default("json"),
-  url: optionalUrl,
-  content: z.string().max(40000).optional().or(z.literal("")),
-});
+export const submitArtifactSchema = z
+  .object({
+    title: z.string().min(2, "Add an artifact title").max(180),
+    type: z
+      .enum(["json", "file", "url", "text", "report", "dataset"])
+      .default("json"),
+    url: optionalUrl,
+    content: z.string().max(40000).optional().or(z.literal("")),
+  })
+  // An artifact must carry something to validate — content or a URL.
+  .refine((v) => Boolean(v.url?.trim() || v.content?.trim()), {
+    message: "Provide artifact content or a URL.",
+    path: ["content"],
+  });
 export type SubmitArtifactInput = z.infer<typeof submitArtifactSchema>;
 
 export const reviewSchema = z.object({

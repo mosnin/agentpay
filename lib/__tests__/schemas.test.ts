@@ -113,6 +113,13 @@ describe("submitArtifactSchema", () => {
       submitArtifactSchema.safeParse({ title: "Result", url: "nope" }).success,
     ).toBe(false);
   });
+
+  it("rejects an empty artifact with neither content nor url", () => {
+    expect(submitArtifactSchema.safeParse({ title: "Result" }).success).toBe(false);
+    expect(
+      submitArtifactSchema.safeParse({ title: "Result", content: "", url: "" }).success,
+    ).toBe(false);
+  });
 });
 
 describe("disputeSchema", () => {

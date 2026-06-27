@@ -27,19 +27,18 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 119 — Require a submitted artifact to actually have content or a URL (verify-step hardening).**
-Real gap found in iter 118: `submitArtifactSchema` makes both `content` and `url` optional, so a
-title-only (empty) artifact passes validation — yet `evaluateArtifact` hard-fails a no-body artifact.
-Tighten the schema with a `.refine` requiring at least one of `content`/`url` (non-empty), so an empty
-deliverable is rejected at submit time ("it just works" — you can't submit nothing). Add a test asserting
-title-only is rejected while content-only and url-only still pass. IMPORTANT: first check the callers —
-`simulateTask` (the demo auto-submit), the seed, and `/api/tasks/[id]/artifacts` — and ensure they
-supply content/url so nothing breaks; fix any that don't. Bounded to `schemas.ts` + its test (+ a 1-line
-caller fix if needed). Verify tsc/lint/build, push.
+**Step 120 — Verify-step transparency: surface the validation verdict (score + notes) on the task page.**
+`evaluateArtifact` produces a `score`, pass/fail `status`, and human-readable `notes[]` (the reasons),
+but check whether the task page actually shows them after validation runs. If the verdict/notes aren't
+surfaced where the buyer sees the result, render them (score + pass/fail + the notes list) so validation
+feels transparent rather than a black box — the heart of the *verify* step. Read the task-detail
+validation UI first; keep it bounded to that component. If it's already surfaced well, ship the next-best
+small win (e.g. an "add content or a URL" either-or hint in the submit-artifact dialog) and note it.
+Verify tsc/lint/build, push.
 
-> Status: CONVERGED on UI/feature scope; now finding *substantive* small hardening (this one is a real
-> behavior fix, not polish). Six prior scouts found their targets already done. Recommend winding down
-> early; absent that, the loop continues to the 19:56 UTC deadline. 90 tests, all green.
+> Status: CONVERGED on UI/feature scope; iterations now alternate substantive micro-hardening (iter 119
+> closed a real empty-artifact gap) with craft/transparency. Recommend winding down early; absent that,
+> the loop continues to the 19:56 UTC deadline. 91 tests, all green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -627,6 +626,12 @@ caller fix if needed). Verify tsc/lint/build, push.
   rejects a negative budget, and `inputSchema` accepts a valid JSON string (the positive `jsonString`
   branch). 90 tests pass (was 87). tsc/lint ✓. Spotted a real gap for next step: `submitArtifactSchema`
   permits a title-only (empty) artifact.
+- **Iteration 119 (13:40 UTC) — Closed the empty-artifact gap at the schema layer.**
+  `submitArtifactSchema` allowed a title-only artifact (no content, no URL) even though `evaluateArtifact`
+  hard-fails an empty body. Added a `.refine` requiring content OR url (error on the `content` field, so
+  the submit dialog now flags it inline), and removed the now-redundant manual check in the `submitArtifact`
+  action (schema is the single source of truth). Verified callers (`simulateTask`, seed) supply content.
+  91 tests pass (was 90). tsc/lint/build ✓.
 
 ---
 

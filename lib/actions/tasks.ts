@@ -148,9 +148,7 @@ export async function submitArtifact(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const input = parsed.data;
-  if (!input.url && !input.content) {
-    return { ok: false, error: "Provide artifact content or a URL." };
-  }
+  // (content-or-url is now enforced by submitArtifactSchema's refine.)
 
   try {
     const task = await prisma.task.findUnique({
