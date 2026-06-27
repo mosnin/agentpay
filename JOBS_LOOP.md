@@ -27,18 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 124 — Seed validation notes so the demo shows the new feature.**
-Iter 123 persists `validationNotes`, but seeded artifacts have `[]`, so the demo data falls back to the
-one-line verdict instead of showing the richer reasons. Read `prisma/seed.ts`; for any artifact it
-creates with a `passed`/`failed` `validationStatus` + `validationScore`, set `validationNotes` to a
-sensible, status-consistent set (mirror `evaluateArtifact`'s phrasing: "Artifact present.", schema line,
-and the score verdict line). Re-seed locally to confirm. Bounded to `prisma/seed.ts`. If the seed creates
-no validated artifacts (notes wouldn't show anyway), ship the next-best small win and note it. Verify
-tsc/lint + `npm run db:seed`, push.
+**Step 125 — Label the validation checks + a11y-clean the notes list.**
+Polish the feature shipped in iter 123–124: in `ArtifactCard`, add a small muted "Validation checks"
+label above the `validationNotes` list so it's self-explanatory (not just an unlabeled list under the
+score bar), and mark the decorative bullet dots `aria-hidden` so screen readers read only the note text.
+Tiny, bounded to `components/tasks/artifact-card.tsx`, zero behavior change. Verify tsc/lint/build, push.
 
-> Status: CONVERGED; just shipped the one substantive deferred feature (validationNotes, verified with a
-> Prisma round-trip). This makes it visible in the demo. Recommend winding down early; absent that, the
-> loop continues to the 19:56 UTC deadline. 91 tests green.
+> Status: CONVERGED; the validation-reasons feature is now persisted, surfaced, and seeded. Remaining work
+> is fine-grained polish. **Recommend winding down early**; absent that, the loop continues to the 19:56
+> UTC deadline. 91 tests green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -654,6 +651,11 @@ tsc/lint + `npm run db:seed`, push.
   line kept as fallback for empty/legacy notes). `db push` + `generate` applied; verified with a Prisma
   round-trip (write→read→match→restore). Each validation now shows its actual reasons, not just a score.
   91 tests green; tsc/lint/build ✓.
+- **Iteration 124 (13:58 UTC) — Seeded validation notes so the demo shows the feature.**
+  Seeded artifacts had `[]` notes (fell back to the one-liner). The seed now sets status-consistent
+  `validationNotes` for passed/failed artifacts mirroring `evaluateArtifact`'s phrasing (the seeded
+  contract always has an output schema, so the schema-found line applies). Re-seeded: passed/failed
+  artifacts now carry 3 notes each. `prisma/seed.ts`. tsc/lint ✓ + db:seed ✓.
 
 ---
 

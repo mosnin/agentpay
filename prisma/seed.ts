@@ -396,6 +396,18 @@ async function main() {
 
     if (t.withArtifact) {
       const score = t.withArtifact === "passed" ? 88 + (hashString(t.title) % 10) : t.withArtifact === "failed" ? 72 : null;
+      // Mirror evaluateArtifact()'s notes so the demo shows real validation
+      // reasons (80 = PASS_THRESHOLD; the seed avoids @/ imports under tsx).
+      const validationNotes =
+        score === null
+          ? []
+          : [
+              "Artifact present.",
+              "Output schema found on contract — running schema compliance check.",
+              t.withArtifact === "passed"
+                ? `Validation passed with score ${score}.`
+                : `Validation scored ${score}, below the 80 threshold.`,
+            ];
       await prisma.artifact.create({
         data: {
           taskId: task.id,
@@ -408,6 +420,7 @@ async function main() {
           ),
           validationStatus: (t.withArtifact === "pending" ? "pending" : t.withArtifact) as never,
           validationScore: score ?? undefined,
+          validationNotes,
           createdAt: daysAgo(t.createdDaysAgo - 1),
         },
       });
