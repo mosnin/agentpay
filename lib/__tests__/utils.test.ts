@@ -119,6 +119,12 @@ describe("deadlineStatus", () => {
       deadlineStatus(new Date(now.getTime() + dayMs + 1000), now).tone,
     ).toBe("normal");
   });
+  it("treats Date, ISO-string, and epoch-number inputs equivalently", () => {
+    const due = new Date(now.getTime() + 3 * 60 * 60 * 1000); // 3h out → soon
+    expect(deadlineStatus(due, now).tone).toBe("soon");
+    expect(deadlineStatus(due.toISOString(), now.toISOString()).tone).toBe("soon");
+    expect(deadlineStatus(due.getTime(), now.getTime()).tone).toBe("soon");
+  });
 });
 
 describe("hashString / clamp / mockHash", () => {

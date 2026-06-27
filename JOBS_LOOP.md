@@ -27,18 +27,19 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 112 — Consolidate the redundant `deadlineStatus` tests (craft / no clutter).**
-Iter 109 added `lib/__tests__/deadline-status.test.ts` before noticing `lib/__tests__/utils.test.ts`
-(L94–122) already covers `deadlineStatus`'s three tones and exact thresholds. Only one assertion in the
-new file is genuinely additive: that `Date` / ISO-string / epoch-number inputs are treated equivalently.
-Fold that single case into the existing `deadlineStatus` describe block in `utils.test.ts`, then delete
-the duplicate `deadline-status.test.ts`. Net: fewer, non-overlapping tests — quality over count. Verify
-test + tsc/lint, push. (Lesson logged: grep the existing test files before adding a "missing" test.)
+**Step 113 — Per-agent Open Graph share image (discover-step delight / shareability).**
+Agent profiles already emit `generateMetadata` (title/desc/canonical/OG), but share previews use a
+plain `summary` card with no image — a missed first impression when an agent link is shared. Add
+`app/agents/[id]/opengraph-image.tsx` (next/og `ImageResponse`, 1200×630) rendering a branded card:
+the AGENT MARKET wordmark + diamond mark, the agent's name, a category chip (+ "Verified" when true),
+the short description, and a stat row (Reputation NN/100 · ★ rating · NN% completion · N tasks). Mirror
+the root `opengraph-image.tsx` exactly — `fontFamily: "sans-serif"` (no dynamic font fetch), CSS-drawn
+mark — and fetch via `getAgentByIdOrSlug` with a safe branded fallback if the agent is missing. Bump the
+profile's `twitter.card` to `summary_large_image`. Verify with `next build` (compiles the route).
 
-> Status: comprehensively complete, regression- and scope-audited, 88 tests, optimized CI, a11y +
-> reduced-motion passes done. The loop has converged; recent iterations lock the pure-helper layer with
-> regression tests (and now tidy a self-introduced duplicate). After this, remaining work is fine-polish
-> — standing offer to the user to wind it down early whenever you like.
+> Status: comprehensively complete, regression- and scope-audited, 82 non-redundant tests, optimized CI,
+> a11y + reduced-motion passes done. Pure-helper test layer locked and de-duplicated. Pivoting from
+> test-hardening to a small craft/shareability win. Standing offer to wind down early whenever you like.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -584,6 +585,12 @@ test + tsc/lint, push. (Lesson logged: grep the existing test files before addin
   fallback only uppercases the first char, not Title Case as the plan assumed), and output is always a
   non-empty string. 88 tests pass (was 84). tsc/lint ✓. (Noted: utils.test.ts already covers
   `deadlineStatus`, so iter 109's separate file is largely redundant — next step consolidates it.)
+- **Iteration 112 (13:17 UTC) — Consolidated the redundant `deadlineStatus` tests.**
+  Folded the one genuinely-additive case (Date/ISO-string/epoch-number inputs treated equivalently)
+  into the existing `deadlineStatus` block in `utils.test.ts` and deleted the duplicate
+  `deadline-status.test.ts` (iter 109 hadn't noticed utils.test.ts already covered the tones +
+  thresholds). 82 non-overlapping tests pass (down from 88 by design — removed 7 dups, +1 net-new);
+  quality over count. tsc/lint ✓. Lesson: grep existing test files before adding a "missing" test.
 
 ---
 
