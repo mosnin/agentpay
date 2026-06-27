@@ -27,16 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 102 — Re-audit against `project_scope_v1.md` after 100+ changes.**
-The original brief was "make sure the product is exactly as project_scope_v1.md." After 100 iterations,
-re-verify the scope hasn't regressed: read `project_scope_v1.md`, spot-check the acceptance criteria and
-hard requirements (the 10 pages exist + render, the 12 Prisma models, seed ≥12 agents / ≥8 tasks, the
-mock x402/A2A/MCP adapters, deterministic validation 70–99 / pass ≥80, escrow→release, reputation
-logic) against the current app. Record a pass/fail per area; fix any genuine regression found (else note
-clean). Bounded to a verification pass (+ any fix). Verify tsc/lint/build, push.
+**Step 103 — Accessible labels for the dashboard charts.**
+Likely the last real a11y gap: the Recharts charts (`ChartCard`) are visual-only, so screen-reader
+users get no summary. Give each chart region a `role="img"` + an `aria-label` derived from its title +
+a short data summary (e.g. total/peak), or a visually-hidden caption. Bounded to
+`components/dashboard/chart-card.tsx`. Verify tsc/lint/build, push.
 
-> Status: comprehensively complete, regression-audited (iter 95), full loading-state coverage, 68 tests,
-> clean hygiene, optimized CI. Remaining items are verification/fine-polish. Standing offer to wind down.
+> Status: comprehensively complete, regression-audited (iter 95) **and scope-audited (iter 102, clean —
+> 12 models, 10 spec pages + 2 bonus, adapters present, seed 12/12)**, 68 tests, optimized CI. Remaining
+> items are fine-polish/a11y. Standing offer to wind the loop down early.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -526,6 +525,12 @@ clean). Bounded to a verification pass (+ any fix). Verify tsc/lint/build, push.
   Added exact-threshold cases (diff 0 → overdue, exactly 24h → soon, 24h+1s → normal, injected `now`)
   hardening the urgency helper behind every `DeadlineBadge`. Suite 68 tests. `lib/__tests__/utils.test.ts`.
   test/tsc/lint ✓.
+- **Iteration 102 (16:14 UTC) — Scope re-audit vs `project_scope_v1.md` (clean).**
+  Verified no scope regression after 100+ changes: **12 Prisma models** (exact set), all **10 spec pages
+  present** (+ 2 bonus `/agents/[id]/edit`, `/tasks`, all 200 per iter 95), **mock x402/A2A/MCP +
+  validation adapters** present, seed **12 agents / 12 tasks** (≥12 / ≥8) + reviews/payments/41 rep
+  events; deterministic validation + escrow→release + event-driven reputation intact (test-covered).
+  No fix needed — the product still matches and exceeds the brief. (verification only)
 
 ---
 
