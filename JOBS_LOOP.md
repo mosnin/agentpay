@@ -27,15 +27,16 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 108 — Cover `mockValidation`'s failure branches.**
-`evaluateArtifact` (deterministic validation) has the happy-path scoring tested (iter 41), but its
-guard branches — missing artifact content/URL → fail, and missing contract output schema → fail —
-may not be. Read `lib/__tests__/mock-validation.test.ts`; if those branches aren't asserted, add tests
-for them (a no-content/no-URL artifact and a contract without an output schema both yield a failed
-verdict). Bounded to the test file. If already covered, ship the next-best small win and note it.
+**Step 109 — Lock `deadlineStatus`'s urgency thresholds with tests.**
+`deadlineStatus(deadline, now)` in `lib/utils.ts` drives the color/urgency of every deadline chip in
+the task lists (overdue → red, ≤24h → amber "soon", else muted "normal"), but it has no unit test, so
+a boundary regression would ship silently. Add a small test file (`lib/__tests__/deadline-status.test.ts`)
+asserting: a past deadline → `tone: "overdue"`, a deadline well under 24h → `tone: "soon"`, and one
+several days out → `tone: "normal"`, plus that the boundary near 24h behaves as intended. Pure-function,
+bounded to a new test file. If a richer win surfaces (e.g. `statusesForFilter` coverage), note it.
 Verify test + tsc/lint, push.
 
-> Status: comprehensively complete, regression- and scope-audited, 68 tests, optimized CI, a11y +
+> Status: comprehensively complete, regression- and scope-audited, 71 tests, optimized CI, a11y +
 > reduced-motion passes done. The loop has effectively converged — remaining items are fine-polish.
 > Standing offer to the user to wind it down early.
 
@@ -557,6 +558,14 @@ Verify test + tsc/lint, push.
   `dashboard-chart.tsx` and passed `isAnimationActive={!reduce}` to the Bar/Line/Area, so
   reduced-motion users get a static render — completing the spec's reduced-motion-safe goal across
   entrance, Reveal, and charts. tsc/lint/build ✓.
+- **Iteration 108 (13:06 UTC) — Locked the validation verdict's `notes` contract.**
+  (The planned step assumed missing-schema → fail; reading `mockValidation.ts` showed it does *not* —
+  only a missing artifact body hard-fails; a missing schema downgrades to a heuristic check and still
+  scores.) The untested surface was `ValidationOutcome.notes`, the human-readable verdict reasons the
+  UI shows. Added 3 tests to `lib/__tests__/mock-validation.test.ts`: no-body failure includes its
+  explanation note, a no-schema artifact still scores ≥70 (never short-circuits to 0) with the
+  heuristic note, and a schema-checked verdict carries the "Artifact present" + schema + score notes.
+  71 tests pass (was 68). tsc/lint ✓.
 
 ---
 
