@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SearchX } from "lucide-react";
+import { SearchX, X } from "lucide-react";
 import { SiteShell } from "@/components/layout/site-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { MarketplaceFilters } from "@/components/marketplace/marketplace-filters";
 import { getAgents, getCategoryCounts } from "@/lib/queries";
 import type { AgentFilter } from "@/lib/queries";
-import { CATEGORY_VALUES, MARKETPLACE_SORTS } from "@/lib/constants";
+import { CATEGORY_VALUES, MARKETPLACE_SORTS, PRICING_MODELS } from "@/lib/constants";
 import type { MarketplaceSort } from "@/lib/constants";
 import { formatNumber } from "@/lib/utils";
 
@@ -77,6 +77,27 @@ export default async function MarketplacePage({
   const hasFilters = Boolean(
     q || category || pricingModel || minRating || verified || (sort && sort !== "reputation"),
   );
+  const pricingLabel = (v: string) =>
+    PRICING_MODELS.find((p) => p.value === v)?.label ?? v;
+  // Build a marketplace URL with one filter removed and the rest preserved.
+  const hrefWithout = (omit: string) => {
+    const sp = new URLSearchParams();
+    if (q && omit !== "q") sp.set("q", q);
+    if (category && omit !== "category") sp.set("category", category);
+    if (pricingModel && omit !== "pricingModel") sp.set("pricingModel", pricingModel);
+    if (minRating && omit !== "minRating") sp.set("minRating", String(minRating));
+    if (verified && omit !== "verified") sp.set("verified", "true");
+    if (sort && sort !== "reputation") sp.set("sort", sort);
+    const qs = sp.toString();
+    return qs ? `/marketplace?${qs}` : "/marketplace";
+  };
+  const activeChips: { key: string; label: string }[] = [];
+  if (q) activeChips.push({ key: "q", label: `“${q}”` });
+  if (category) activeChips.push({ key: "category", label: category });
+  if (pricingModel)
+    activeChips.push({ key: "pricingModel", label: pricingLabel(pricingModel) });
+  if (minRating) activeChips.push({ key: "minRating", label: `${minRating}★ & up` });
+  if (verified) activeChips.push({ key: "verified", label: "Verified only" });
 
   return (
     <SiteShell>
@@ -98,6 +119,22 @@ export default async function MarketplacePage({
             categoryCounts={categoryCounts}
             totalCount={total}
           />
+
+          {activeChips.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              {activeChips.map((c) => (
+                <Link
+                  key={c.key}
+                  href={hrefWithout(c.key)}
+                  aria-label={`Remove filter ${c.label}`}
+                  className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/30 px-2.5 py-1 text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  {c.label}
+                  <X className="h-3 w-3" />
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground" aria-live="polite">

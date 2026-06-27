@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 24 — Active filter chips on the marketplace.**
-Below the filter bar, render a removable chip for each active filter (search, category, pricing,
-min-rating, verified, non-default sort); each chip's ✕ links to the marketplace with just that one
-param removed (others preserved). Complements the existing "Clear filters" with per-filter control.
-Bounded to `app/marketplace/page.tsx`. Verify (tsc/lint/build), commit, push.
+**Step 25 — Consistent entrance motion on similar-agents.**
+The marketplace grid animates in (Step 11) but the profile's "Similar agents" rail snaps in. Apply the
+same `motion-safe` staggered fade/rise to those cards (reusing AgentCard's `className`/`style`) so the
+two agent grids feel consistent. Bounded to `app/agents/[id]/page.tsx`. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -134,6 +133,10 @@ Bounded to `app/marketplace/page.tsx`. Verify (tsc/lint/build), commit, push.
   Added a localStorage-backed recents: an invisible recorder on the profile (`RecordRecentAgent`) and a
   hydration-safe "Recently viewed" rail on the marketplace (`RecentlyViewed`), so buyers can jump back
   to agents they were comparing. `components/agents/recently-viewed.tsx` + profile + marketplace. ✓.
+- **Iteration 24 (09:30 UTC) — Active filter chips.**
+  Below the marketplace filter bar, each active filter (search, category, pricing, rating, verified)
+  now shows as a removable chip whose ✕ drops just that param (others + sort preserved) — per-filter
+  control alongside "Clear filters". `app/marketplace/page.tsx`. tsc/lint/build ✓.
 
 ---
 
