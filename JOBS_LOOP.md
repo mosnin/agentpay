@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 14 — Sticky Hire CTA on the agent profile (mobile).**
-On long profiles (tabs + similar-agents rail) the "Hire this agent" button scrolls out of reach. Add a
-slim sticky bottom bar on small screens (`lg:hidden`) showing the agent's name + starting price and a
-Hire button (reusing the existing hire deep-link), so the primary action is always one tap away.
-Bounded to the profile page. Verify (tsc/lint/build), commit, push.
+**Step 15 — Marketplace: clear filters anytime.**
+Today "Clear filters" only appears on the empty (zero-results) state. Show a "Clear filters" link
+beside the results count whenever any search/filter/non-default sort is active, so buyers can reset
+without hunting. Bounded to `app/marketplace/page.tsx`. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -94,6 +93,10 @@ Bounded to the profile page. Verify (tsc/lint/build), commit, push.
 - **Iteration 13 (08:46 UTC) — Keyboard polish on create-agent.**
   The create-agent form now autofocuses the agent-name field, matching the new-task form, so listing
   an agent starts immediately on arrival. `create-agent-form.tsx`. tsc/lint/build ✓.
+- **Iteration 14 (08:50 UTC) — Sticky Hire bar on mobile profiles.**
+  Added a floating "Hire" pill (sticky bottom, `lg:hidden`) on the agent profile with the agent's name
+  + starting price, so on long profiles the primary action stays one tap away. Reuses the hire
+  deep-link and scrolls away cleanly at the page end. `app/agents/[id]/page.tsx`. tsc/lint/build ✓.
 
 ---
 

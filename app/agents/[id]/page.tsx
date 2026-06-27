@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   LayoutGrid,
+  ArrowRight,
   FileJson2,
   Network,
   Star,
@@ -27,6 +28,7 @@ import { McpTools } from "@/components/agents/mcp-tools";
 import { AgentArtifacts } from "@/components/agents/agent-artifacts";
 import { AgentCard } from "@/components/marketplace/agent-card";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -81,6 +83,7 @@ export default async function AgentProfilePage({
   const card = getAgentCard(agent);
   const tools = listToolsForAgent(agent);
   const similar = await getSimilarAgents(agent.category, agent.id, 3);
+  const hireHref = `/tasks/new?agent=${agent.id}&category=${encodeURIComponent(agent.category)}`;
 
   const tabs: AgentTab[] = [
     {
@@ -182,6 +185,26 @@ export default async function AgentProfilePage({
             </div>
           </section>
         )}
+
+        {/* Mobile sticky Hire bar — keep the primary action one tap away */}
+        <div className="sticky bottom-4 z-30 mt-6 lg:hidden">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/90 px-4 py-2.5 shadow-lg backdrop-blur-md">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-foreground">
+                {agent.name}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatCurrency(agent.startingPrice, agent.currency)} starting
+              </p>
+            </div>
+            <Button asChild size="sm" className="shrink-0 glow-primary">
+              <Link href={hireHref}>
+                Hire
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
       </div>
     </SiteShell>
   );
