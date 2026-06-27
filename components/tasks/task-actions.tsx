@@ -9,6 +9,7 @@ import {
   PlayCircle,
   ScanSearch,
   ShieldAlert,
+  Sparkles,
   Star,
   ThumbsUp,
   Upload,
@@ -22,6 +23,7 @@ import {
   runValidation,
   completeTask,
   cancelTask,
+  simulateTask,
 } from "@/lib/actions/tasks";
 import { SubmitArtifactDialog } from "./submit-artifact-dialog";
 import { ReviewForm } from "./review-form";
@@ -107,6 +109,7 @@ export function TaskActions({ task }: TaskActionsProps) {
   const showReview = status === "completed";
   const showDispute = ACTIVE_STATUSES.has(status);
   const showCancel = ["draft", "pending", "accepted", "running"].includes(status);
+  const showDemo = ACTIVE_STATUSES.has(status);
 
   const isTerminal = status === "completed" || status === "cancelled";
 
@@ -196,6 +199,30 @@ export function TaskActions({ task }: TaskActionsProps) {
               {task.hasReviewed ? "Review submitted" : "Leave a review"}
             </Button>
           </ReviewForm>
+        )}
+
+        {showDemo && (
+          <div className="space-y-1.5">
+            <Button
+              variant="outline"
+              className="w-full justify-start border-dashed text-muted-foreground hover:text-foreground"
+              disabled={pending}
+              onClick={() =>
+                run(
+                  "demo",
+                  () => simulateTask(id),
+                  "Demo complete · task auto-advanced and payment released",
+                )
+              }
+            >
+              <Sparkles />
+              {isBusy("demo") ? "Running demo…" : "Run demo — auto-complete"}
+            </Button>
+            <p className="px-1 text-xs text-muted-foreground">
+              Simulates the agent: accepts, submits an artifact, validates,
+              completes, and releases payment.
+            </p>
+          </div>
         )}
       </div>
 

@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 8 — "Run demo": make agent execution visible ("one more thing").**
-Add a one-click demo on a pending/draft task that auto-advances it through the full happy path
-(accept → start → submit artifact → validate → complete → release payment) via a single server action
-reusing existing logic, so a new user can watch the core loop resolve in seconds. Surface it as a
-clearly-labeled "Run demo" action on the task detail page. Keep it bounded and safe. Verify, commit, push.
+**Step 9 — Trust at a glance.**
+Make reliability legible where hiring decisions happen: ensure the marketplace `AgentCard` surfaces
+the key trust signals (completion rate, dispute rate, schema-compliance, verified) compactly, so
+buyers can compare agents without opening each profile. Read `components/marketplace/agent-card.tsx`
+first; keep it bounded and consistent with the existing card design. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -66,6 +66,12 @@ clearly-labeled "Run demo" action on the task detail page. Keep it bounded and s
   prompt (e.g. "Describe what you want Growth Research Agent to deliver for lead research…"), so the
   brief is ~80% there. Enriched `getAgentSelectOptions` with the primary capability.
   `queries.ts` + `create-task-form.tsx`. tsc/lint/build ✓.
+- **Iteration 8 (08:24 UTC) — "Run demo" auto-completes a task.**
+  Added a `simulateTask` server action that advances an active task through the full happy path
+  (accept → start → submit artifact → validate → complete → release payment) by reusing the real
+  transitions, surfaced as a dashed "Run demo — auto-complete" button on the task page — so new users
+  watch the core loop resolve in seconds. `lib/actions/tasks.ts` + `task-actions.tsx`. tsc/lint/build ✓
+  (verify caught a control-flow type error first; fixed before commit).
 
 ---
 

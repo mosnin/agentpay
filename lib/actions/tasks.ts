@@ -244,6 +244,67 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
   }
 }
 
+// Demo runner: auto-advance an active task through the full happy path so a new
+// user can watch the core loop resolve in seconds. It reuses the real
+// transitions, so it genuinely exercises validation, payment, and reputation.
+export async function simulateTask(taskId: string): Promise<ActionResult> {
+  try {
+    const existing = await prisma.task.findUnique({
+      where: { id: taskId },
+      select: { status: true },
+    });
+    if (!existing) return { ok: false, error: "Task not found." };
+    if (["completed", "cancelled", "disputed"].includes(existing.status)) {
+      return { ok: false, error: `This task is already ${existing.status}.` };
+    }
+
+    let status = existing.status;
+
+    if (status === "pending") {
+      const r = await acceptTask(taskId);
+      if (!r.ok) return r;
+      status = "accepted";
+    }
+    if (status === "accepted") {
+      const r = await startTask(taskId);
+      if (!r.ok) return r;
+      status = "running";
+    }
+    if (status === "running") {
+      const r = await submitArtifact(taskId, {
+        title: "Demo deliverable",
+        type: "json",
+        content: JSON.stringify(
+          {
+            summary: "Simulated artifact produced by the demo runner.",
+            records: 42,
+            confidence: 0.95,
+          },
+          null,
+          2,
+        ),
+      });
+      if (!r.ok) return r;
+      status = "submitted";
+    }
+    if (status === "submitted") {
+      const r = await runValidation(taskId);
+      if (!r.ok) return r;
+      status = "validating";
+    }
+    if (status === "validating") {
+      const r = await completeTask(taskId);
+      if (!r.ok) return r;
+    }
+
+    revalidateTask(taskId);
+    return { ok: true };
+  } catch (err) {
+    console.error("simulateTask failed", err);
+    return { ok: false, error: "Demo run failed." };
+  }
+}
+
 export async function openDispute(
   taskId: string,
   values: unknown,
