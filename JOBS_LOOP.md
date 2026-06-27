@@ -27,10 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 52 — CONTRIBUTING.md.**
-Add a concise `CONTRIBUTING.md`: prerequisites (Node 20 via `.nvmrc`, Postgres via docker-compose),
-setup steps, the quality gates (typecheck / lint / test / build), branch & PR conventions, and a
-pointer to the project structure. Bounded to one file. Verify (test + tsc/lint), commit, push.
+**Step 53 — GitHub issue templates.**
+Add `.github/ISSUE_TEMPLATE/bug_report.md` and `feature_request.md` (plus a `config.yml` to point
+casual questions at discussions/README) so reported issues arrive structured — reproduction steps,
+expected/actual, environment for bugs; problem/proposal/alternatives for features. Matches the PR
+template and CONTRIBUTING already in place. Bounded to the `.github/ISSUE_TEMPLATE/` dir. Verify
+(tsc/lint — docs-only), commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -243,6 +245,11 @@ pointer to the project structure. Bounded to one file. Verify (test + tsc/lint),
   Added a security policy: the MVP's mock auth (`lib/auth.ts`) and mock payments (x402 adapter) are not
   production-secure as shipped (don't deploy with real funds/PII until Clerk + x402 are wired), plus a
   report path and the safeguards already in place (Zod validation, env secrets, CI gates). tsc/lint ✓.
+- **Iteration 52 (11:30 UTC) — CONTRIBUTING.md.**
+  Added a contributor guide: prerequisites (Node 20 via `.nvmrc`, Postgres via docker-compose), setup
+  steps, the four quality gates (typecheck / lint / test / build) that mirror CI, branch & commit
+  conventions, a project-structure map, and pointers to README/SECURITY — so new contributors land
+  ready to run the same gates the loop enforces. `CONTRIBUTING.md` (docs-only). tsc/lint ✓.
 
 ---
 
