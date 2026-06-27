@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 34 — Badge consistency: admin flag pill.**
-The admin moderation view flags suspicious tasks with a raw amber pill (`amber-500/10 text-amber-300`).
-Replace it with `<Badge variant="warning">` so it matches the shared badge shape/size and the new
-warning token. Read `components/admin/admin-tabs.tsx` (and any admin flag usage) first; bounded.
-Verify (tsc/lint/build), commit, push.
+**Step 35 — Sync the README with shipped enhancements.**
+The README still describes the baseline MVP. Add a concise "Enhancements since MVP" section reflecting
+what the loop shipped — ⌘K agent search, smart hire defaults + run-demo, needs-attention,
+recently-viewed, similar-agents, OG/sitemap/manifest, and the a11y/craft passes — so the docs match the
+app. Bounded to `README.md`. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -172,6 +172,10 @@ Verify (tsc/lint/build), commit, push.
 - **Iteration 33 (10:06 UTC) — Badge consistency: payment-mode pill.**
   Replaced the hand-rolled payment-mode pill in `task-contract-preview` with `<Badge variant="secondary">`,
   matching the other badges' shape/size. tsc/lint/build ✓.
+- **Iteration 34 (10:10 UTC) — Badge consistency: admin flag pill.**
+  Switched the admin "flagged task" badge from raw amber overrides to the token-backed
+  `<Badge variant="warning">`, completing the badge-consistency sweep (mcp required → payment mode →
+  admin flag). `app/admin/admin-tabs.tsx`. tsc/lint/build ✓.
 
 ---
 

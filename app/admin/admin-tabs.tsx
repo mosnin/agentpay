@@ -359,8 +359,8 @@ export function AdminTabs({
                         {t.flags.map((flag) => (
                           <Badge
                             key={flag}
-                            variant="outline"
-                            className="gap-1 border-amber-500/30 bg-amber-500/10 text-amber-300"
+                            variant="warning"
+                            className="gap-1"
                           >
                             <AlertTriangle className="h-3 w-3" />
                             {flag}
