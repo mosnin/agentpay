@@ -27,12 +27,14 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 92 — Show dispute outcomes to the parties on the task page.**
-The task page's "Disputes" section only renders *open* disputes (`d.status === "open"`), so once a
-dispute is resolved/rejected (iter 89) it vanishes and the buyer/seller never see the outcome. Show
-*all* disputes on the task page with their status badge + resolution note (the section already renders
-`dispute.resolution` when present), retitled to reflect that it's the dispute history. Bounded to
-`app/tasks/[id]/page.tsx`. Verify tsc/lint/build, push.
+**Step 93 — A dismissed dispute shouldn't permanently dent reputation.**
+Fairness gap: `openDispute` calls `onDisputeOpened` (a reputation penalty), but resolving a dispute as
+**rejected** (baseless / dismissed) never credits it back — so a vindicated agent keeps the hit
+forever. Read `lib/reputation.ts` (`onDisputeOpened`) to learn the penalty shape, then in
+`resolveDispute`, when `status === "rejected"`, record a compensating `ReputationEvent` that reverses
+the open penalty (a focused `onDisputeDismissed`/credit helper in `reputation.ts`). Leave "resolved"
+(upheld) as-is. Bounded to `lib/reputation.ts` + `lib/actions/tasks.ts`. Verify tsc/lint/build + e2e
+(reputation recovers on reject), push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -472,6 +474,12 @@ dispute is resolved/rejected (iter 89) it vanishes and the buyer/seller never se
   the five in-progress states; `statusesForFilter` all→undefined / key→statuses / unknown→raw). Suite
   64 tests. `lib/constants.ts` + `app/tasks/page.tsx` + `app/api/tasks/route.ts` + `config.test.ts`.
   test/tsc/lint/build ✓.
+- **Iteration 92 (14:54 UTC) — Dispute outcomes visible to the parties.**
+  The task page's Disputes section only rendered *open* disputes, so a resolved/rejected dispute
+  vanished and the buyer/seller never saw the outcome. Now it shows *all* disputes (status badge +
+  resolution note), styled neutral once closed and retitled "Issues raised on this task and how they
+  were resolved." E2E verified: a rejected dispute's reason + resolution render on the task page (test
+  data cleaned up). `app/tasks/[id]/page.tsx`. tsc/lint/build ✓.
 
 ---
 

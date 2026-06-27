@@ -104,7 +104,6 @@ export default async function TaskDetailPage({
   const agent = task.sellerAgent;
   const contract = task.contract;
   const payment = task.payment;
-  const openDisputes = task.disputes.filter((d) => d.status === "open");
   const hasReviewed = currentUser
     ? task.reviews.some((r) => r.userId === currentUser.id)
     : false;
@@ -263,17 +262,21 @@ export default async function TaskDetailPage({
             )}
           </SectionCard>
 
-          {openDisputes.length > 0 && (
+          {task.disputes.length > 0 && (
             <SectionCard
               title="Disputes"
-              description="Open issues paused for review."
+              description="Issues raised on this task and how they were resolved."
               icon={FileWarning}
             >
               <div className="space-y-3">
-                {openDisputes.map((dispute) => (
+                {task.disputes.map((dispute) => (
                   <div
                     key={dispute.id}
-                    className="rounded-xl border border-red-500/30 bg-red-500/[0.06] p-4"
+                    className={`rounded-xl border p-4 ${
+                      dispute.status === "open"
+                        ? "border-red-500/30 bg-red-500/[0.06]"
+                        : "border-border/60 bg-muted/20"
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="text-xs text-muted-foreground">
