@@ -69,9 +69,12 @@ export function McpTools({
                           {schema.type}
                         </Badge>
                         {tool.inputSchema.required.includes(key) && (
-                          <span className="text-[10px] font-medium uppercase tracking-wide text-amber-400/80">
+                          <Badge
+                            variant="warning"
+                            className="text-[10px] font-normal uppercase tracking-wide"
+                          >
                             required
-                          </span>
+                          </Badge>
                         )}
                       </li>
                     ))}

@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 32 — Badge consistency.**
-Add a `warning` variant to the shared `Badge` primitive (using the existing `--warning` token) and
-replace the hand-rolled amber "required" pill in `components/agents/mcp-tools.tsx` with it, so status
-pills share one shape/size instead of mixing real Badges with raw spans. Read both first; bounded.
-Verify (tsc/lint/build), commit, push.
+**Step 33 — Badge consistency: payment-mode pill.**
+The payment-mode indicator in `components/tasks/task-contract-preview.tsx` is a hand-rolled pill
+(`px-2`, off from the shared `px-2.5`). Replace it with a `<Badge variant="secondary">` so it matches
+the other badges' shape/size. Read it first; bounded. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -165,6 +164,10 @@ Verify (tsc/lint/build), commit, push.
   Added a `code` color to the Tailwind config and replaced the repeated magic hex `bg-[#0a0c11]`
   across `json-viewer`, `endpoint-metadata`, `artifact-card`, and the developers page with `bg-code` —
   one source of truth for the JSON/code surface. tsc/lint/build ✓.
+- **Iteration 32 (10:02 UTC) — Badge consistency: warning variant.**
+  Added a subtle `warning` variant to the shared `Badge` (using the `--warning` token) and replaced the
+  hand-rolled amber "required" pill in `mcp-tools` with it, so parameter pills share one Badge
+  shape/size. `components/ui/badge.tsx` + `components/agents/mcp-tools.tsx`. tsc/lint/build ✓.
 
 ---
 
