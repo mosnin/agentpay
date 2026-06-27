@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 49 — Document the health endpoint.**
-Add `GET /api/health` to the developer docs endpoint reference (`app/developers/page.tsx`) so the new
-probe is discoverable alongside the other API routes. Read the endpoints section first; bounded.
-Verify (test + tsc/lint), commit, push.
+**Step 50 — Sync the README Scripts table.**
+The `test` script (and possibly `db:reset` / `db:studio`) isn't listed in the README "Scripts" table.
+Add the missing scripts so the documented commands match `package.json`. Read the Scripts table first;
+bounded to `README.md`. Verify (test + tsc/lint), commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -234,6 +234,9 @@ Verify (test + tsc/lint), commit, push.
   Added `GET /api/health` (`app/api/health/route.ts`): Prisma `SELECT 1` DB check returning
   `{ status, db, latencyMs, time }`, 200 when healthy / 503 when the DB is unreachable — a real
   deploy/uptime probe (`dynamic = "force-dynamic"`). tsc/lint/build ✓ (route emitted).
+- **Iteration 49 (11:18 UTC) — Documented the health endpoint.**
+  Added `GET /api/health` to the developer-docs endpoint reference so the readiness probe is listed
+  alongside the other API routes. `app/developers/page.tsx`. tsc/lint ✓.
 
 ---
 

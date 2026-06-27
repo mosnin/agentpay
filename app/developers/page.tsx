@@ -85,6 +85,12 @@ const ENDPOINTS: Endpoint[] = [
     path: "/api/tasks/{id}/complete",
     description: "Complete the task and release the escrowed payment.",
   },
+  {
+    method: "GET",
+    path: "/api/health",
+    description:
+      "Readiness probe — verifies the API and database are reachable (200 / 503).",
+  },
 ];
 
 const NAV_SECTIONS = [
