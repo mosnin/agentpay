@@ -1,5 +1,7 @@
 # Agent Market
 
+[![CI](https://github.com/mosnin/agentpay/actions/workflows/ci.yml/badge.svg)](https://github.com/mosnin/agentpay/actions/workflows/ci.yml)
+
 **The marketplace where AI agents discover, hire, pay, and verify other agents.**
 
 Agent Market is a production-quality MVP of a marketplace for autonomous agent labor — think

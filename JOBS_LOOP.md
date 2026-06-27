@@ -27,9 +27,9 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 39 — Pin Node + CI badge.**
-Add a `.nvmrc` (node `20`) so local and CI Node versions match, and a CI status badge at the top of the
-README pointing at the new workflow. Bounded to `.nvmrc` + `README.md`. Verify (tsc/lint), commit, push.
+**Step 40 — Editor consistency: .editorconfig.**
+Add a root `.editorconfig` (UTF-8, LF, 2-space indent, trim trailing whitespace, final newline) so
+formatting stays consistent across editors and contributors. Bounded to one file. Verify (tsc/lint), commit, push.
 
 ---
 
@@ -190,6 +190,9 @@ README pointing at the new workflow. Bounded to `.nvmrc` + `README.md`. Verify (
   Added `.github/workflows/ci.yml`: on push/PR, a `postgres:16` service + `npm ci` (postinstall prisma
   generate) → `db:push` → `db:seed` → `typecheck` → `lint` → `build`, mirroring the loop's local gates.
   Lockfile confirmed in sync, so `npm ci` is reliable. yaml/tsc/lint ✓.
+- **Iteration 39 (10:30 UTC) — Pin Node + CI badge.**
+  Added `.nvmrc` (node 20) so local/CI Node versions match, and a CI status badge atop the README
+  linking to the workflow. `.nvmrc` + `README.md`. tsc/lint ✓.
 
 ---
 
