@@ -87,6 +87,9 @@ export function CreateTaskForm({
     defaultCategory && CATEGORIES.some((c) => c.value === defaultCategory)
       ? defaultCategory
       : "";
+  const agentById = (id?: string) =>
+    id ? agents.find((a) => a.id === id) : undefined;
+  const presetBudget = Number(agentById(presetAgent)?.startingPrice ?? 0);
 
   const {
     register,
@@ -94,6 +97,7 @@ export function CreateTaskForm({
     control,
     getValues,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<CreateTaskInput>({
     resolver: zodResolver(createTaskSchema),
@@ -105,7 +109,7 @@ export function CreateTaskForm({
       inputInstructions: "",
       inputDataUrl: "",
       expectedOutputFormat: "",
-      budget: 0,
+      budget: presetBudget,
       deadline: "",
       validationRules: "",
       paymentMode: "mock_escrow",
@@ -164,6 +168,9 @@ export function CreateTaskForm({
   }
 
   const hasAgents = agents.length > 0;
+
+  const selectedAgent = agentById(watch("sellerAgentId") ?? undefined);
+  const suggestedPrice = Number(selectedAgent?.startingPrice ?? 0);
 
   return (
     <form
@@ -242,7 +249,19 @@ export function CreateTaskForm({
                   render={({ field }) => (
                     <Select
                       value={field.value ?? ""}
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Sensible default: seed the budget from the agent's
+                        // starting price unless the buyer already set one.
+                        const price = Number(agentById(value)?.startingPrice ?? 0);
+                        const current = Number(getValues("budget")) || 0;
+                        if (price > 0 && current === 0) {
+                          setValue("budget", price, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        }
+                      }}
                       disabled={!hasAgents}
                     >
                       <SelectTrigger
@@ -392,6 +411,13 @@ export function CreateTaskForm({
                   />
                 </div>
                 <FieldError message={errors.budget?.message} />
+                {suggestedPrice > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Suggested{" "}
+                    {formatCurrency(suggestedPrice, selectedAgent?.currency ?? "USD")}
+                    {selectedAgent ? ` — ${selectedAgent.name}'s starting price` : ""}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
