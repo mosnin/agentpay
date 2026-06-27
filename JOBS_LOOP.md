@@ -27,18 +27,19 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 114 — Don't show a misleading "★ 0.0" / "0.0" for agents with no reviews.**
-A brand-new agent has `averageRating: 0` and no reviews, so any `★ 0.0` reads as a *bad* score rather
-than *unrated* — a real trust blemish right in the discover/hire decision. Audit where rating is shown
-when there are no reviews — the marketplace `agent-card.tsx`, the profile header, and the OG card (just
-touched) — and render a neutral "New" / "No reviews yet" treatment (or omit the star) instead of `0.0`
-when `averageRating === 0` (or review count is 0). Keep it bounded: fix the clearest 1–2 surfaces that
-actually misrepresent, prefer reusing `StarRating`'s existing affordances. Verify tsc/lint/build, push.
+**Step 115 — Don't show "0% completion" / "0 min" for agents with no completed tasks.**
+The same trust blemish fixed for ratings (iter 114) applies to the other card stats: a brand-new agent
+has `totalTasksCompleted: 0`, so `completionRate` and `averageLatencyMinutes` are both 0 — rendering as
+"0% completion" and "0 min" reads as *fails everything / instant-but-fake* rather than *no track record
+yet*. On the discover/hire surfaces (marketplace `agent-card.tsx` Completion + Latency cells, and the
+profile `performance-metrics.tsx`), when `totalTasksCompleted === 0` show a neutral "—" (or "New")
+instead of the misleading zeros. Bounded to those surfaces; reuse existing layout. Verify tsc/lint/build,
+push.
 
 > Status: comprehensively complete, regression- and scope-audited, 82 non-redundant tests, optimized CI,
-> a11y + reduced-motion passes done. Pure-helper test layer locked; share cards (root + per-agent) now
-> render large with trust signals. Remaining work is fine-grained craft. Standing offer to wind down
-> early whenever you like.
+> a11y + reduced-motion passes done. Pure-helper test layer locked; share cards render large; new-agent
+> rating no longer misreads as "0.0". Theme: trust signals must be *accurate* for unproven agents.
+> Standing offer to wind down early whenever you like.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -596,6 +597,12 @@ actually misrepresent, prefer reusing `StarRating`'s existing affordances. Verif
   `summary_large_image`; and the OG card omitted the ★ rating → added a "★ N.N" chip (and `flexWrap` so
   the chip row never clips). Sharing an agent link now shows a large branded card with name, category,
   rating, reputation, and a Verified badge. tsc/lint/build ✓.
+- **Iteration 114 (13:24 UTC) — New agents read as "New", not a 0.0 rating.**
+  A zero-review agent (`averageRating === 0`, reliable since reviews are 1–5★) was showing a bare
+  "★ 0.0" — misreading as a *bad* score at the hire decision. Now the marketplace card shows "New"
+  (under the Rating label), the profile header shows "No reviews yet", and the per-agent OG card omits
+  the ★ chip when unrated. `agent-card.tsx`, `agent-profile-header.tsx`, `opengraph-image.tsx`.
+  tsc/lint/build ✓.
 
 ---
 

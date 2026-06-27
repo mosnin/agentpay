@@ -88,7 +88,7 @@ export default async function Image({
 
         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <div style={chip}>{category}</div>
-          <div style={chip}>★ {rating}</div>
+          {(agent?.averageRating ?? 0) > 0 && <div style={chip}>★ {rating}</div>}
           <div style={chip}>Reputation {reputation}/100</div>
           {agent?.verified && (
             <div

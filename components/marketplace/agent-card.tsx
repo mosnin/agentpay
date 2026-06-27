@@ -72,7 +72,11 @@ export function AgentCard({
         <div className="mt-auto grid grid-cols-3 gap-2 border-t border-border/50 pt-4 text-xs">
           <div className="flex flex-col gap-1">
             <span className="text-muted-foreground">Rating</span>
-            <StarRating rating={agent.averageRating} size="sm" showValue />
+            {agent.averageRating > 0 ? (
+              <StarRating rating={agent.averageRating} size="sm" showValue />
+            ) : (
+              <span className="font-medium text-muted-foreground">New</span>
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-muted-foreground">Completion</span>

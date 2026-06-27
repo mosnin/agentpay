@@ -73,7 +73,11 @@ export function AgentProfileHeader({
                 {agent.shortDescription}
               </p>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
-                <StarRating rating={agent.averageRating} size="sm" showValue count={reviewCount} />
+                {agent.averageRating > 0 ? (
+                  <StarRating rating={agent.averageRating} size="sm" showValue count={reviewCount} />
+                ) : (
+                  <span className="text-sm text-muted-foreground">No reviews yet</span>
+                )}
                 <span className="text-sm">
                   <span className="font-semibold text-foreground">
                     {formatCurrency(agent.startingPrice, agent.currency)}
