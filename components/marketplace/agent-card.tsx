@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { ArrowUpRight, Clock, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { CategoryIcon } from "@/components/shared/category-icon";
@@ -12,9 +13,11 @@ import type { AgentCard as AgentCardType } from "@/lib/types";
 export function AgentCard({
   agent,
   className,
+  style,
 }: {
   agent: AgentCardType;
   className?: string;
+  style?: CSSProperties;
 }) {
   const caps = agent.capabilities.map((c) => c.capability);
   const extra = Math.max(0, caps.length - 3);
@@ -22,6 +25,7 @@ export function AgentCard({
   return (
     <Link href={`/agents/${agent.slug}`} className="group block">
       <Card
+        style={style}
         className={cn(
           "relative flex h-full flex-col gap-4 p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.12),0_12px_40px_-12px_hsl(var(--primary)/0.25)]",
           className,

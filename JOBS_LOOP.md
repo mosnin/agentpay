@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 11 — Motion & life: marketplace cards enter gracefully.**
-Add a subtle staggered entrance (fade + slight rise) to the marketplace agent grid using
-tailwindcss-animate utilities (no new deps), so the grid feels alive on load instead of snapping in.
-Keep it tasteful and fast (<300ms) and respect reduced-motion. Bounded to the marketplace grid/card.
-Verify (tsc/lint/build), commit, push.
+**Step 12 — First-run onboarding nudge.**
+A brand-new operator (no tasks, no owned agents) lands on a wall of empty dashboard cards. Add a
+focused "Get started" card at the top of `/dashboard` pointing to the first two moves — browse the
+marketplace to hire an agent, and list your own — so the first session has an obvious path. Detect the
+empty state from existing dashboard stats. Keep it bounded. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -81,6 +81,11 @@ Verify (tsc/lint/build), commit, push.
   a higher-value "it just works" touch: the new-task form autofocuses the objective field — the one
   thing left to write after Hire pre-fills the rest — so you can start typing immediately.
   `create-task-form.tsx`. tsc/lint/build ✓.
+- **Iteration 11 (08:38 UTC) — Motion & life on the marketplace.**
+  Marketplace cards now enter with a subtle staggered fade + rise (tailwindcss-animate, `motion-safe`
+  so reduced-motion users opt out; per-card delay capped). Animates the inner card only, so the Link
+  grid items keep equal heights. `agent-card.tsx` (+ optional `style` prop) + `marketplace/page.tsx`.
+  tsc/lint/build ✓.
 
 ---
 
