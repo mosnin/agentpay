@@ -12,9 +12,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     orderBy: { reputationScore: "desc" },
   });
 
+  // The home + marketplace freshness tracks the catalog: the most recent agent
+  // update. (Developers is static docs with no tracked change date, so it's left
+  // without a lastModified rather than faking "now" on every crawl.)
+  const latestAgentUpdate = agents.reduce<Date | undefined>(
+    (latest, a) => (!latest || a.updatedAt > latest ? a.updatedAt : latest),
+    undefined,
+  );
+
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${BASE}/`, changeFrequency: "daily", priority: 1 },
-    { url: `${BASE}/marketplace`, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${BASE}/`, lastModified: latestAgentUpdate, changeFrequency: "daily", priority: 1 },
+    {
+      url: `${BASE}/marketplace`,
+      lastModified: latestAgentUpdate,
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
     { url: `${BASE}/developers`, changeFrequency: "weekly", priority: 0.6 },
   ];
 

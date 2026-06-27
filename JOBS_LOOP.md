@@ -27,12 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 71 — Sitemap freshness (`lastModified`) + route completeness.**
-`app/sitemap.ts` lists routes but (likely) without `lastModified`, so crawlers get no freshness signal.
-Add `lastModified` — `agent.updatedAt` for each agent profile, and a sensible date for the static
-public routes — and confirm every public route is present (home, marketplace, developers; keep
-admin/dashboard/seller out, matching robots). Small, real SEO hygiene. Bounded to `app/sitemap.ts`
-(verify what's there first). Verify tsc/lint/build, push.
+**Step 72 — A "Your tasks" index at `/tasks`.**
+Real gap: `/tasks/new` and `/tasks/[id]` exist but there's no `/tasks` index — the dashboard shows
+only 6 recent tasks and its breadcrumb points at `/dashboard`, so a power user can't see *all* their
+tasks. Add `app/tasks/page.tsx` ("Your tasks") listing every task where the operator is the buyer or
+owns the selling agent, reusing existing list patterns + `TaskStatusBadge`/`DeadlineBadge`, ordered by
+`updatedAt`, each linking to its detail page; add a `getUserTasks(userId)` query. Link it where it
+belongs (sidebar nav and/or the task-detail breadcrumb). Keep this version filter-free (status filters
+can be a follow-up) so it's finishable. Bounded to: new page + query (+ a nav/breadcrumb link). Verify
+tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -352,6 +355,11 @@ admin/dashboard/seller out, matching robots). Small, real SEO hygiene. Bounded t
   right now") shown on the dashboard when an *active* operator's triage list is empty (hidden for
   brand-new users, who still get "Get started"), so inbox-zero reads as an accomplishment instead of an
   empty space. `components/dashboard/needs-attention.tsx` + `app/dashboard/page.tsx`. tsc/lint/build ✓.
+- **Iteration 71 (12:48 UTC) — Sitemap freshness.**
+  Agent routes already carried `lastModified: updatedAt`; the static routes had none. Tied home +
+  marketplace `lastModified` to the latest catalog update (max agent `updatedAt`) as a real freshness
+  signal, and intentionally left `/developers` (static docs, no tracked change date) without one rather
+  than faking "now" each crawl. `app/sitemap.ts`. tsc/lint/build ✓.
 
 ---
 
