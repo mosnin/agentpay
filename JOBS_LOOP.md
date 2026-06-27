@@ -27,13 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 55 — Responsive feedback on task lifecycle actions.**
-Back to in-app craft on the core loop. Audit `components/tasks/task-actions.tsx`: every lifecycle
-button (accept, start, submit, validate, complete & release, review, dispute, Run demo) should give
-*immediate* feedback on click — disabled + inline spinner + "…ing" label via `useFormStatus`/pending
-state — so the verify→pay path feels instant and double-submits are impossible. Fill any gaps with a
-shared pending-button treatment. Bounded to the task-actions component (+ a tiny shared button if
-needed). Verify tsc/lint/build, commit, push.
+**Step 56 — Extend pending feedback to the task dialogs.**
+The inline lifecycle buttons now spin while busy; the three dialog submit buttons should match. Audit
+`components/tasks/submit-artifact-dialog.tsx`, `review-form.tsx`, and `dispute-dialog.tsx`: each
+submit should show a `Loader2` spinner + "…ing" label and stay disabled while the server action is in
+flight (and not double-submit). Fill any gaps so the entire task-action surface feels consistently
+responsive. Bounded to those three files. Verify tsc/lint/build, commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -260,6 +259,11 @@ needed). Verify tsc/lint/build, commit, push.
   A MIT `LICENSE` already existed but reuse terms were under-declared: added `"license": "MIT"` to
   `package.json` and a `## License` section to the README linking the file ([MIT](./LICENSE) © 2026
   mosnin), so the license is stated everywhere it's looked for. tsc/lint ✓ (docs/config-only).
+- **Iteration 55 (11:42 UTC) — Spinners on task lifecycle actions.**
+  The lifecycle buttons already swapped to "…ing" labels on click; added an animated `Loader2` that
+  replaces each busy button's leading icon (accept, start, validate, complete & release, Run demo,
+  cancel) so the verify→pay path shows live motion, not just a text change. All buttons already disable
+  on `pending` (no double-submit). `components/tasks/task-actions.tsx`. tsc/lint/build ✓.
 
 ---
 

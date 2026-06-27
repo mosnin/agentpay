@@ -5,6 +5,7 @@ import {
   Ban,
   CheckCircle2,
   Info,
+  Loader2,
   Lock,
   PlayCircle,
   ScanSearch,
@@ -132,7 +133,7 @@ export function TaskActions({ task }: TaskActionsProps) {
             disabled={pending}
             onClick={() => run("accept", () => acceptTask(id), "Task accepted")}
           >
-            <CheckCircle2 />
+            {isBusy("accept") ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
             {isBusy("accept") ? "Accepting…" : "Accept task"}
           </Button>
         )}
@@ -143,7 +144,7 @@ export function TaskActions({ task }: TaskActionsProps) {
             disabled={pending}
             onClick={() => run("start", () => startTask(id), "Task started")}
           >
-            <PlayCircle />
+            {isBusy("start") ? <Loader2 className="animate-spin" /> : <PlayCircle />}
             {isBusy("start") ? "Starting…" : "Start task"}
           </Button>
         )}
@@ -168,7 +169,7 @@ export function TaskActions({ task }: TaskActionsProps) {
             disabled={pending}
             onClick={onRunValidation}
           >
-            <ScanSearch />
+            {isBusy("validate") ? <Loader2 className="animate-spin" /> : <ScanSearch />}
             {isBusy("validate") ? "Running validation…" : "Run validation"}
           </Button>
         )}
@@ -185,7 +186,7 @@ export function TaskActions({ task }: TaskActionsProps) {
               )
             }
           >
-            <Lock />
+            {isBusy("complete") ? <Loader2 className="animate-spin" /> : <Lock />}
             {isBusy("complete")
               ? "Releasing payment…"
               : "Complete task & release payment"}
@@ -215,7 +216,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 )
               }
             >
-              <Sparkles />
+              {isBusy("demo") ? <Loader2 className="animate-spin" /> : <Sparkles />}
               {isBusy("demo") ? "Running demo…" : "Run demo — auto-complete"}
             </Button>
             <p className="px-1 text-xs text-muted-foreground">
@@ -250,7 +251,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 run("cancel", () => cancelTask(id), "Task cancelled · payment refunded")
               }
             >
-              <Ban />
+              {isBusy("cancel") ? <Loader2 className="animate-spin" /> : <Ban />}
               {isBusy("cancel") ? "Cancelling…" : "Cancel task"}
             </Button>
           )}
