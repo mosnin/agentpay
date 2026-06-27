@@ -5,6 +5,7 @@ import { SiteShell } from "@/components/layout/site-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AgentCard } from "@/components/marketplace/agent-card";
+import { RecentlyViewed } from "@/components/agents/recently-viewed";
 import { Button } from "@/components/ui/button";
 import { MarketplaceFilters } from "@/components/marketplace/marketplace-filters";
 import { getAgents, getCategoryCounts } from "@/lib/queries";
@@ -86,6 +87,7 @@ export default async function MarketplacePage({
         />
 
         <div className="space-y-6">
+          <RecentlyViewed />
           <MarketplaceFilters
             q={q}
             category={category}

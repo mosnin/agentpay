@@ -27,6 +27,7 @@ import { RecentTasks } from "@/components/agents/recent-tasks";
 import { McpTools } from "@/components/agents/mcp-tools";
 import { AgentArtifacts } from "@/components/agents/agent-artifacts";
 import { AgentCard } from "@/components/marketplace/agent-card";
+import { RecordRecentAgent } from "@/components/agents/recently-viewed";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 
@@ -153,6 +154,9 @@ export default async function AgentProfilePage({
   return (
     <SiteShell>
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <RecordRecentAgent
+          agent={{ slug: agent.slug, name: agent.name, category: agent.category }}
+        />
         <nav className="mb-5 flex items-center gap-1 text-sm text-muted-foreground">
           <Link href="/marketplace" className="transition-colors hover:text-foreground">
             Marketplace

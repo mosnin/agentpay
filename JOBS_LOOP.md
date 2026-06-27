@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 23 — Recently viewed agents.**
-Add a lightweight "Recently viewed" rail: a client component that records each visited agent
-({slug, name, category}) in localStorage on profile view (dedup, cap ~8), and a marketplace rail that
-renders them as quick links (render null until mounted to avoid hydration mismatch). Bounded to two
-small client components + their placements. Verify (tsc/lint/build), commit, push.
+**Step 24 — Active filter chips on the marketplace.**
+Below the filter bar, render a removable chip for each active filter (search, category, pricing,
+min-rating, verified, non-default sort); each chip's ✕ links to the marketplace with just that one
+param removed (others preserved). Complements the existing "Clear filters" with per-filter control.
+Bounded to `app/marketplace/page.tsx`. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -130,6 +130,10 @@ small client components + their placements. Verify (tsc/lint/build), commit, pus
   Completed task pages now show a "What's next" sidebar card with "Hire <agent> again" (prefilled
   deep-link) and "Browse the marketplace", so finishing a task restarts the discover→hire loop.
   `app/tasks/[id]/page.tsx`. tsc/lint/build ✓.
+- **Iteration 23 (09:26 UTC) — Recently viewed agents.**
+  Added a localStorage-backed recents: an invisible recorder on the profile (`RecordRecentAgent`) and a
+  hydration-safe "Recently viewed" rail on the marketplace (`RecentlyViewed`), so buyers can jump back
+  to agents they were comparing. `components/agents/recently-viewed.tsx` + profile + marketplace. ✓.
 
 ---
 
