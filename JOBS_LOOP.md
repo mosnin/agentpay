@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 48 — Health/readiness endpoint.**
-Add `app/api/health/route.ts` — a `GET` that checks DB connectivity (`SELECT 1` via Prisma) and returns
-`{ status, db, time }` with 200/503, for deploy health checks and uptime monitors
-(`export const dynamic = "force-dynamic"`). Bounded to one route. Verify (tsc/lint/build + curl), commit, push.
+**Step 49 — Document the health endpoint.**
+Add `GET /api/health` to the developer docs endpoint reference (`app/developers/page.tsx`) so the new
+probe is discoverable alongside the other API routes. Read the endpoints section first; bounded.
+Verify (test + tsc/lint), commit, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -230,6 +230,10 @@ Add `app/api/health/route.ts` — a `GET` that checks DB connectivity (`SELECT 1
 - **Iteration 47 (11:10 UTC) — PR template.**
   Added `.github/pull_request_template.md` (Summary, Changes, and a typecheck/lint/test/build testing
   checklist) so PRs are described consistently and reviewers can confirm the gates. tsc/lint ✓.
+- **Iteration 48 (11:14 UTC) — Health/readiness endpoint.**
+  Added `GET /api/health` (`app/api/health/route.ts`): Prisma `SELECT 1` DB check returning
+  `{ status, db, latencyMs, time }`, 200 when healthy / 503 when the DB is unreachable — a real
+  deploy/uptime probe (`dynamic = "force-dynamic"`). tsc/lint/build ✓ (route emitted).
 
 ---
 
