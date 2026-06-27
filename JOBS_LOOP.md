@@ -27,12 +27,14 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 75 — robots: keep the private `/tasks` surface out of search.**
-`/tasks` is an operator-only, authed surface (their own task list) but `app/robots.ts` only disallows
-`/admin`, `/dashboard`, `/seller`, `/api` — it predates the new index. Add `/tasks` to the disallow
-list for consistency, so operator task lists don't land in search results. (Social/OG unfurls are
-unaffected — robots governs crawling/indexing, not link previews; the sitemap already omits task
-pages.) Bounded to `app/robots.ts` (verify current rules first). Verify tsc/lint/build, push.
+**Step 76 — New-task form: show who you're hiring.**
+The hire moment is the conversion point. When an agent is selected (especially via a "Hire" deep-link)
+the form should confirm *who* you're commissioning with a compact summary — name, category, rating,
+starting price, verified — so the buyer has confidence, not just a dropdown value. Verify
+`create-task-form.tsx` doesn't already show this; if not, enrich `getAgentSelectOptions` with
+rating/startingPrice/currency/verified and render a small selected-agent card above the objective.
+Bounded to `lib/queries.ts` (select fields) + `create-task-form.tsx`. If already present, ship the
+next-best small win and note it. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -374,6 +376,11 @@ pages.) Bounded to `app/robots.ts` (verify current rules first). Verify tsc/lint
   Added a subtle "View all tasks →" footer link to the dashboard's Recent tasks card (shown when there
   are tasks), connecting the 6-item recent view to the full new index.
   `components/dashboard/recent-tasks-card.tsx`. tsc/lint/build ✓.
+- **Iteration 75 (13:10 UTC) — robots: private `/tasks` out of search.**
+  `app/robots.ts` predated the new index and only disallowed admin/dashboard/seller/api. Added `/tasks`
+  to the disallow list (operator-only operational surface, absent from the sitemap), so task lists
+  don't land in search results; OG/social unfurls are unaffected (robots ≠ link previews).
+  `app/robots.ts`. tsc/lint/build ✓.
 
 ---
 
