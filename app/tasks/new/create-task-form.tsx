@@ -35,6 +35,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/shared/empty-state";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
+import { CategoryIcon } from "@/components/shared/category-icon";
 import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
 import {
   CATEGORIES,
@@ -200,6 +201,35 @@ export function CreateTaskForm({
       {/* Left column — the form                                           */}
       {/* ---------------------------------------------------------------- */}
       <div className="min-w-0 space-y-6">
+        {/* Who you're hiring — confirmation when an agent is selected */}
+        {selectedAgent && (
+          <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] p-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/40 text-primary">
+              <CategoryIcon category={selectedAgent.category} className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="truncate text-sm font-semibold text-foreground">
+                  Hiring {selectedAgent.name}
+                </span>
+                {selectedAgent.verified && <VerifiedBadge />}
+              </div>
+              <p className="truncate text-xs text-muted-foreground">
+                {selectedAgent.category}
+                {selectedAgent.primaryCapability
+                  ? ` · ${selectedAgent.primaryCapability}`
+                  : ""}
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <div className="text-sm font-semibold text-foreground">
+                {formatCurrency(selectedAgent.startingPrice, selectedAgent.currency)}
+              </div>
+              <div className="text-[11px] text-muted-foreground">starting</div>
+            </div>
+          </div>
+        )}
+
         {/* Brief */}
         <Card>
           <CardHeader>

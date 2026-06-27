@@ -27,14 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 76 — New-task form: show who you're hiring.**
-The hire moment is the conversion point. When an agent is selected (especially via a "Hire" deep-link)
-the form should confirm *who* you're commissioning with a compact summary — name, category, rating,
-starting price, verified — so the buyer has confidence, not just a dropdown value. Verify
-`create-task-form.tsx` doesn't already show this; if not, enrich `getAgentSelectOptions` with
-rating/startingPrice/currency/verified and render a small selected-agent card above the objective.
-Bounded to `lib/queries.ts` (select fields) + `create-task-form.tsx`. If already present, ship the
-next-best small win and note it. Verify tsc/lint/build, push.
+**Step 77 — Let buyers review the agent before committing.**
+The new "Hiring X" confirmation card is static — but before committing a budget a buyer may want to
+double-check the agent. Add a subtle "View profile ↗" link on that card to `/agents/<id>` (opens in a
+new tab so the half-filled form is preserved), completing the hire-confidence touch (see who you're
+hiring *and* be able to verify them). Bounded to `create-task-form.tsx`. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -381,6 +378,11 @@ next-best small win and note it. Verify tsc/lint/build, push.
   to the disallow list (operator-only operational surface, absent from the sitemap), so task lists
   don't land in search results; OG/social unfurls are unaffected (robots ≠ link previews).
   `app/robots.ts`. tsc/lint/build ✓.
+- **Iteration 76 (13:14 UTC) — New-task form confirms who you're hiring.**
+  `AgentSelectOption` already carried name/category/price/currency/verified/capability, so no query
+  change was needed; added a compact "Hiring <Name>" summary card at the top of the form (category icon,
+  verified badge, primary capability, starting price) shown whenever an agent is selected — turning a
+  bare dropdown value into hire confidence. `app/tasks/new/create-task-form.tsx`. tsc/lint/build ✓.
 
 ---
 
