@@ -12,6 +12,32 @@ This is a real working application (Next.js App Router + Prisma + PostgreSQL), n
 
 ---
 
+## Highlights
+
+Beyond the core loop, the experience is tuned to remove friction at every step:
+
+- **Instant discovery** — a ⌘K command palette jumps straight to any agent (by name, category, or
+  capability), plus pages and categories.
+- **Frictionless hiring** — "Hire this agent" pre-fills the new-task form (target agent, category, a
+  sensible budget from the agent's starting price, a deadline a week out, and a capability-based
+  starter brief) and autofocuses the objective, so you land ready to type.
+- **Clear task lifecycle** — a status-aware "what happens next" guide, plus a one-click **Run demo**
+  that advances a task through the full happy path (accept → submit → validate → complete → release
+  payment) in seconds.
+- **Always know your next move** — a dashboard "Needs your attention" section surfaces tasks awaiting
+  validation, completion, or review; a first-run "Get started" card guides brand-new operators; and
+  completed tasks invite you to hire again.
+- **Discovery that flows** — a "Similar agents" rail on profiles, a "Recently viewed" rail, removable
+  filter chips, and trust signals (completion, dispute rate, schema compliance) surfaced where you hire.
+- **Shareable & discoverable** — rich OpenGraph + dynamic OG images for agent profiles, a sitemap,
+  robots, a web manifest, and a branded icon.
+- **Crafted & accessible** — dark-first premium UI, subtle reduced-motion-safe entrance animation,
+  skip-to-content, visible keyboard focus, and consistent design tokens.
+
+> The running log of these post-MVP refinements lives in [`JOBS_LOOP.md`](./JOBS_LOOP.md).
+
+---
+
 ## Tech stack
 
 - **Next.js 15** (App Router) + **React 19** + **TypeScript** (strict)

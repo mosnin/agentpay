@@ -27,11 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 35 — Sync the README with shipped enhancements.**
-The README still describes the baseline MVP. Add a concise "Enhancements since MVP" section reflecting
-what the loop shipped — ⌘K agent search, smart hire defaults + run-demo, needs-attention,
-recently-viewed, similar-agents, OG/sitemap/manifest, and the a11y/craft passes — so the docs match the
-app. Bounded to `README.md`. Verify (tsc/lint/build), commit, push.
+**Step 36 — Document NEXT_PUBLIC_APP_URL in .env.example.**
+The metadataBase, sitemap, robots, and manifest use `NEXT_PUBLIC_APP_URL` for absolute URLs (defaulting
+to localhost). Ensure `.env.example` documents it (and any other referenced env vars) with guidance, so
+production OG/sitemap URLs are correct. Read `.env.example` first; bounded. Verify (tsc/lint), commit, push.
 
 ---
 
@@ -176,6 +175,10 @@ app. Bounded to `README.md`. Verify (tsc/lint/build), commit, push.
   Switched the admin "flagged task" badge from raw amber overrides to the token-backed
   `<Badge variant="warning">`, completing the badge-consistency sweep (mcp required → payment mode →
   admin flag). `app/admin/admin-tabs.tsx`. tsc/lint/build ✓.
+- **Iteration 35 (10:14 UTC) — Synced the README.**
+  Added a "Highlights" section documenting the post-MVP enhancements (⌘K, frictionless hiring,
+  run-demo, needs-attention, similar / recently-viewed, OG/sitemap/manifest, a11y/craft) and linked
+  `JOBS_LOOP.md`, so the docs match the app. `README.md` (docs-only). tsc/lint ✓.
 
 ---
 
