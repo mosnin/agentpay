@@ -27,12 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 56 — Extend pending feedback to the task dialogs.**
-The inline lifecycle buttons now spin while busy; the three dialog submit buttons should match. Audit
-`components/tasks/submit-artifact-dialog.tsx`, `review-form.tsx`, and `dispute-dialog.tsx`: each
-submit should show a `Loader2` spinner + "…ing" label and stay disabled while the server action is in
-flight (and not double-submit). Fill any gaps so the entire task-action surface feels consistently
-responsive. Bounded to those three files. Verify tsc/lint/build, commit, push.
+**Step 57 — Deadline urgency where operators triage.**
+The task *detail* page now shows deadline urgency; the dashboard "Needs your attention" rows — the
+primary triage surface — still don't. Reuse `deadlineStatus()` to render a compact overdue / due-soon
+indicator on those rows (only for active tasks with a deadline), so urgency is visible at the point of
+triage, not just on the detail page. Extract a tiny shared `DeadlineBadge` if it keeps things clean.
+Bounded to the needs-attention component (+ optional small shared badge). Verify tsc/lint/build, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -264,6 +264,13 @@ responsive. Bounded to those three files. Verify tsc/lint/build, commit, push.
   replaces each busy button's leading icon (accept, start, validate, complete & release, Run demo,
   cancel) so the verify→pay path shows live motion, not just a text change. All buttons already disable
   on `pending` (no double-submit). `components/tasks/task-actions.tsx`. tsc/lint/build ✓.
+- **Iteration 56 (11:46 UTC) — Deadline urgency at a glance.**
+  (Planned step — dialog pending feedback — was already shipped: `submit-artifact`, `review-form`, and
+  `dispute-dialog` all have spinner + disabled + close-guarded-while-pending. Verified, so shipped the
+  next item.) Added a pure, testable `deadlineStatus()` helper (overdue / soon ≤24h / normal via
+  date-fns `formatDistance` with injectable `now`) and a color-coded urgency chip on active tasks'
+  deadline on the task detail page — so time pressure reads instantly. `lib/utils.ts` +
+  `app/tasks/[id]/page.tsx` + 3 unit tests (57 total). test/tsc/lint/build ✓.
 
 ---
 

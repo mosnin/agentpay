@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistance, formatDistanceToNow } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -58,6 +58,31 @@ export function formatRelativeTime(date: Date | string | number) {
   } catch {
     return formatDate(date);
   }
+}
+
+export type DeadlineTone = "overdue" | "soon" | "normal";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Describe a deadline relative to now for at-a-glance urgency on active tasks.
+ * `overdue` = past due, `soon` = within 24h, `normal` = further out. `now` is
+ * injectable so the result is deterministic in tests.
+ */
+export function deadlineStatus(
+  deadline: Date | string | number,
+  now: Date | string | number = new Date(),
+): { tone: DeadlineTone; label: string } {
+  const due = new Date(deadline);
+  const ref = new Date(now);
+  const diffMs = due.getTime() - ref.getTime();
+  if (diffMs <= 0) {
+    return { tone: "overdue", label: `Overdue by ${formatDistance(ref, due)}` };
+  }
+  return {
+    tone: diffMs <= DAY_MS ? "soon" : "normal",
+    label: `Due ${formatDistance(due, ref, { addSuffix: true })}`,
+  };
 }
 
 /** Render a latency value (minutes) in a human friendly way. */

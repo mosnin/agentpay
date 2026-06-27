@@ -10,6 +10,7 @@ import {
   hashString,
   clamp,
   mockHash,
+  deadlineStatus,
 } from "@/lib/utils";
 
 describe("formatCurrency", () => {
@@ -61,6 +62,25 @@ describe("safeJsonParse", () => {
   it("parses valid JSON and returns null on invalid", () => {
     expect(safeJsonParse('{"a":1}')).toEqual({ a: 1 });
     expect(safeJsonParse("not json")).toBeNull();
+  });
+});
+
+describe("deadlineStatus", () => {
+  const now = new Date("2026-06-27T12:00:00Z");
+  it("flags past deadlines as overdue", () => {
+    const r = deadlineStatus(new Date("2026-06-25T12:00:00Z"), now);
+    expect(r.tone).toBe("overdue");
+    expect(r.label).toMatch(/^Overdue by /);
+  });
+  it("flags deadlines within 24h as soon", () => {
+    const r = deadlineStatus(new Date("2026-06-27T18:00:00Z"), now);
+    expect(r.tone).toBe("soon");
+    expect(r.label).toMatch(/^Due /);
+  });
+  it("treats deadlines further out as normal", () => {
+    const r = deadlineStatus(new Date("2026-07-04T12:00:00Z"), now);
+    expect(r.tone).toBe("normal");
+    expect(r.label).toMatch(/^Due /);
   });
 });
 

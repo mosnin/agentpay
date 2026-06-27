@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Bot,
+  Clock,
   Compass,
   FileWarning,
   Hash,
@@ -40,7 +41,13 @@ import { Button } from "@/components/ui/button";
 import { getTaskById } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/auth";
 import { PAYMENT_MODES } from "@/lib/constants";
-import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import {
+  cn,
+  deadlineStatus,
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+} from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -119,6 +126,12 @@ export default async function TaskDetailPage({
       contract.validationRules.length === 0
     );
 
+  // Surface deadline urgency only while the task is still live — once it's
+  // completed/cancelled/disputed the countdown is just noise.
+  const isActive = !["completed", "cancelled", "disputed"].includes(task.status);
+  const deadlineInfo =
+    isActive && task.deadline ? deadlineStatus(task.deadline) : null;
+
   return (
     <AppShell>
       <PageHeader
@@ -180,12 +193,30 @@ export default async function TaskDetailPage({
               {task.objective}
             </p>
             {task.deadline && (
-              <p className="mt-4 text-xs text-muted-foreground">
-                Deadline:{" "}
-                <span className="text-foreground">
-                  {formatDateTime(task.deadline)}
+              <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground">
+                <span>
+                  Deadline:{" "}
+                  <span className="text-foreground">
+                    {formatDateTime(task.deadline)}
+                  </span>
                 </span>
-              </p>
+                {deadlineInfo && (
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium",
+                      deadlineInfo.tone === "overdue" &&
+                        "border-red-500/40 bg-red-500/10 text-red-300",
+                      deadlineInfo.tone === "soon" &&
+                        "border-amber-500/40 bg-amber-500/10 text-amber-300",
+                      deadlineInfo.tone === "normal" &&
+                        "border-border/60 bg-muted/30 text-muted-foreground",
+                    )}
+                  >
+                    <Clock className="h-3 w-3" />
+                    {deadlineInfo.label}
+                  </span>
+                )}
+              </div>
             )}
           </SectionCard>
 
