@@ -27,14 +27,14 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 86 — Seller can pause / resume a listing.**
-Completes seller self-management (create → edit → take offline). The `setAgentStatus` action already
-exists but is only used by admin and — like `updateAgent` did — lacks an ownership check. Add the
-ownership check to `setAgentStatus`, then add a small client control on the seller listing row to
-toggle a listing between `active` and `paused` (server action + pending state + toast + refresh). A
-paused agent should still be owner-visible but signal it's offline. Bounded to: `setAgentStatus`
-(authz) + a tiny client toggle component + `seller-agents.tsx`. Verify tsc/lint/build + e2e (owner
-toggles, non-owner blocked), push.
+**Step 87 — A paused listing must actually leave the marketplace.**
+Pause/resume only *means* something if a paused agent disappears from public discovery. Verify
+`getAgents` (the marketplace/landing query) and `getSimilarAgents`/featured filter to `status: active`
+(not just "not suspended"); if paused agents still surface publicly, exclude them. Align `app/sitemap.ts`
+too (it currently allows everything except `suspended`, so paused profiles would still be advertised).
+The owner's seller studio + the (owner-only) profile should still show paused listings. Bounded to
+`lib/queries.ts` (+ `app/sitemap.ts`). Verify tsc/lint/build (+ a quick check that a paused agent is
+absent from `GET /api/agents`), push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -435,6 +435,14 @@ toggles, non-owner blocked), push.
   now that the editor exists, repointed them at `/agents/{slug}/edit` (View buttons still go to the
   profile) — so owners reach the editor from where they manage listings. `app/seller/seller-agents.tsx`.
   tsc/lint/build ✓.
+- **Iteration 86 (14:06 UTC) — Seller pause / resume a listing.**
+  Added a seller-facing `setOwnedAgentStatus` (active⇄paused, ownership-checked) — kept *separate* from
+  the admin `setAgentStatus` so adding the owner check doesn't block admin moderation of others' agents
+  — and a small client `AgentStatusToggle` (Pause/Resume + spinner + toast) wired into the seller rows
+  (desktop + mobile). Verified: build green, toggle renders for owned active/paused listings, and the
+  ownership guard is identical to the e2e-verified `updateAgent` check (full click-e2e needs Playwright,
+  not a project dep). `lib/actions/agents.ts` + `components/seller/agent-status-toggle.tsx` +
+  `seller-agents.tsx`. tsc/lint/build ✓.
 
 ---
 

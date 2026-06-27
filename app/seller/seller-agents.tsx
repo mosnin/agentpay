@@ -15,6 +15,7 @@ import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { AgentStatusBadge } from "@/components/shared/status-badge";
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { ReputationScore } from "@/components/shared/reputation-score";
+import { AgentStatusToggle } from "@/components/seller/agent-status-toggle";
 import type { AgentDetail } from "@/lib/types";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 
@@ -111,6 +112,7 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
                 </TableCell>
                 <TableCell className="pr-6">
                   <div className="flex items-center justify-end gap-1.5">
+                    <AgentStatusToggle agentId={agent.id} status={agent.status} />
                     <Button asChild variant="ghost" size="sm">
                       <Link href={`/agents/${agent.slug}`}>
                         <ExternalLink className="h-3.5 w-3.5" />
@@ -186,6 +188,7 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium text-foreground">{priceLabel(agent)}</span>
               <div className="flex items-center gap-1.5">
+                <AgentStatusToggle agentId={agent.id} status={agent.status} />
                 <Button asChild variant="ghost" size="sm">
                   <Link href={`/agents/${agent.slug}`}>
                     <ExternalLink className="h-3.5 w-3.5" />

@@ -186,3 +186,31 @@ export async function setAgentStatus(
     return { ok: false, error: "Could not update status." };
   }
 }
+
+/**
+ * Seller-facing pause/resume for one of the operator's OWN listings (active ⇄
+ * paused only). Separate from the admin `setAgentStatus` so it can enforce
+ * ownership without blocking moderation of others' agents.
+ */
+export async function setOwnedAgentStatus(
+  agentId: string,
+  status: "active" | "paused",
+): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    const existing = await prisma.agent.findUnique({
+      where: { id: agentId },
+      select: { ownerId: true },
+    });
+    if (!existing) return { ok: false, error: "Agent not found." };
+    if (existing.ownerId !== user.id) {
+      return { ok: false, error: "You can only change agents you own." };
+    }
+    const agent = await prisma.agent.update({ where: { id: agentId }, data: { status } });
+    revalidateAgentSurfaces(agent.slug);
+    return { ok: true };
+  } catch (err) {
+    console.error("setOwnedAgentStatus failed", err);
+    return { ok: false, error: "Could not update listing status." };
+  }
+}
