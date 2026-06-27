@@ -71,10 +71,9 @@ npm run dev
 # open http://localhost:3000
 ```
 
-> **You need a running PostgreSQL instance.** Any local or hosted Postgres works — point
-> `DATABASE_URL` at it. Example (Docker):
-> `docker run --name agentmarket-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=agentmarket -p 5432:5432 -d postgres:16`
-> then `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/agentmarket?schema=public"`.
+> **You need a running PostgreSQL instance.** The quickest path is the bundled compose file:
+> `docker compose up -d` — Postgres 16 with db `agentmarket`, matching the default `DATABASE_URL` in
+> `.env.example`. Any local or hosted Postgres works too; just point `DATABASE_URL` at it.
 
 ### Scripts
 

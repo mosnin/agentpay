@@ -27,11 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 37 — Add docker-compose for local Postgres.**
-The README and `.env.example` reference "docker-compose / a local Postgres", but no compose file exists
-(confirmed). Add a minimal `docker-compose.yml` (postgres:16, db `agentmarket`, user/pass `postgres`,
-port 5432, healthcheck + named volume) matching the default `DATABASE_URL`, so `docker compose up -d`
-yields a ready database. Bounded to one file. Verify (tsc/lint), commit, push.
+**Step 38 — Continuous integration.**
+The repo has no CI. Add `.github/workflows/ci.yml` that, on PRs/pushes, spins up a `postgres:16`
+service, runs `npm ci`, `prisma generate` + `prisma db push`, then `tsc --noEmit`, `next lint`, and
+`next build` — so regressions are caught automatically (the same gates this loop runs locally). Bounded
+to one workflow file. Verify (tsc/lint), commit, push.
 
 ---
 
@@ -184,6 +184,10 @@ yields a ready database. Bounded to one file. Verify (tsc/lint), commit, push.
   The var was present but documented only as "developer docs examples"; updated the comment to reflect
   its real role — metadataBase for OG/Twitter, sitemap, robots, manifest, and canonical URLs; set to
   the deployed origin in production. `.env.example`. tsc/lint ✓.
+- **Iteration 37 (10:22 UTC) — docker-compose for local Postgres.**
+  Added `docker-compose.yml` (postgres:16, db `agentmarket`, healthcheck, named volume) matching the
+  default `DATABASE_URL`, and pointed the README at `docker compose up -d` — the docs referenced compose
+  but no file existed. `docker-compose.yml` + `README.md`. yaml/tsc/lint ✓.
 
 ---
 
