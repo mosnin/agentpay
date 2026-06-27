@@ -27,13 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 88 — Coherent profile CTA for a non-active agent.**
-Loose end from pausing: a paused agent is gone from discovery, but its profile is still reachable by
-direct link and shows an active "Hire this agent" button — yet the new-task form only offers *active*
-agents, so hiring would silently fail to preselect it. On the profile header, when `status !== "active"`
-and the viewer is NOT the owner, replace the Hire CTA with a clear "This agent is currently
-unavailable" state (keep "View agent card"). Owners still see Hire + the edit/owner cue. The header
-already has `status` + `isOwner`. Bounded to `agent-profile-header.tsx`. Verify tsc/lint/build, push.
+**Step 89 — Close the dispute loop (admin can resolve an open dispute).**
+Disputes can be *opened* (buyer, from the task page) and admin can see them, but can an operator
+*resolve* one (record a resolution + flip the dispute to `resolved`, lifting the task's paused state)?
+Inspect the admin disputes UI + actions (`app/admin/*`, `lib/actions/*`). If there's no resolve
+action/UI, add a `resolveDispute(id, resolution)` server action and a small admin control to enter a
+resolution and close it. If resolution already exists, ship the next-best small win and note it.
+Bounded to the admin dispute area + one action. Verify tsc/lint/build (+ e2e if a write), push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -449,6 +449,12 @@ already has `status` + `isOwner`. Bounded to `agent-profile-header.tsx`. Verify 
   offline. Owner surfaces unaffected (seller studio queries by ownerId; admin uses its own query;
   profile direct-access kept). E2E verified: pausing an agent dropped `GET /api/agents` 12→11 with it
   absent; DB restored after. `lib/queries.ts` + `app/sitemap.ts`. tsc/lint/build ✓.
+- **Iteration 88 (14:22 UTC) — Coherent CTA for a non-active agent profile.**
+  A paused agent's profile (reachable by direct link) showed an active "Hire this agent" button it
+  couldn't honor (the form lists active agents only). The header now renders "Currently unavailable"
+  (Ban icon) instead of Hire whenever `status !== "active"`; "View agent card" + the owner edit-cue
+  stay. E2E verified: paused profile shows "Currently unavailable" / no Hire, active shows Hire; DB
+  restored. `components/agents/agent-profile-header.tsx`. tsc/lint/build ✓.
 
 ---
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Code2, Building2, Briefcase } from "lucide-react";
+import { ArrowRight, Ban, Code2, Building2, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
@@ -27,6 +27,9 @@ export function AgentProfileHeader({
   const hireHref = `/tasks/new?agent=${agent.id}&category=${encodeURIComponent(agent.category)}`;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const shareUrl = `${baseUrl}/agents/${agent.slug}`;
+  // Only active agents are hireable (the new-task form lists active agents only),
+  // so a paused/draft/suspended listing can't be hired by anyone.
+  const isActive = agent.status === "active";
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40">
@@ -88,12 +91,19 @@ export function AgentProfileHeader({
         <div className="flex shrink-0 flex-col items-start gap-5 lg:items-end">
           <ReputationScore score={agent.reputationScore} variant="ring" showLabel />
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row lg:flex-col xl:flex-row">
-            <Button asChild size="lg" className="glow-primary">
-              <Link href={hireHref}>
-                Hire this agent
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+            {isActive ? (
+              <Button asChild size="lg" className="glow-primary">
+                <Link href={hireHref}>
+                  Hire this agent
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <span className="inline-flex items-center justify-center gap-2 rounded-md border border-border/60 bg-muted/30 px-4 text-sm font-medium text-muted-foreground">
+                <Ban className="h-4 w-4 shrink-0" />
+                Currently unavailable
+              </span>
+            )}
             <Button asChild size="lg" variant="outline">
               <Link href={`/api/agents/${agent.id}`} target="_blank" rel="noreferrer">
                 <Code2 className="h-4 w-4" />
