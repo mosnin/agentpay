@@ -27,12 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 57 — Deadline urgency where operators triage.**
-The task *detail* page now shows deadline urgency; the dashboard "Needs your attention" rows — the
-primary triage surface — still don't. Reuse `deadlineStatus()` to render a compact overdue / due-soon
-indicator on those rows (only for active tasks with a deadline), so urgency is visible at the point of
-triage, not just on the detail page. Extract a tiny shared `DeadlineBadge` if it keeps things clean.
-Bounded to the needs-attention component (+ optional small shared badge). Verify tsc/lint/build, push.
+**Step 58 — Order the triage list by urgency.**
+Now that "Needs your attention" shows urgency, it should also be *ordered* by it: overdue first, then
+due-soon, then the rest — so the most time-critical task is always at the top (the badge tells you
+*which*, the order means you don't have to scan). Sort the mapped `needsAttention` array in
+`getDashboardData` by time-to-deadline ascending (no deadline sorts last), as a stable secondary to
+the existing `updatedAt` ordering. Bounded to `lib/queries.ts`. Verify tsc/lint/build, push.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -271,6 +271,12 @@ Bounded to the needs-attention component (+ optional small shared badge). Verify
   date-fns `formatDistance` with injectable `now`) and a color-coded urgency chip on active tasks'
   deadline on the task detail page — so time pressure reads instantly. `lib/utils.ts` +
   `app/tasks/[id]/page.tsx` + 3 unit tests (57 total). test/tsc/lint/build ✓.
+- **Iteration 57 (11:50 UTC) — Deadline urgency where operators triage.**
+  Extracted a shared `components/shared/deadline-badge.tsx` (with an `urgentOnly` mode that renders
+  nothing for non-urgent deadlines so the red/amber stays meaningful), surfaced it on the dashboard
+  "Needs your attention" rows (active tasks only), threaded `deadline` through `getDashboardData` +
+  `NeedsAttentionItem`, and refactored the task-detail chip to reuse the same component (removing
+  duplication). test 57 ✓, tsc/lint/build ✓.
 
 ---
 

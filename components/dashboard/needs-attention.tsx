@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import { DeadlineBadge } from "@/components/shared/deadline-badge";
 
 export interface NeedsAttentionItem {
   id: string;
@@ -17,6 +18,7 @@ export interface NeedsAttentionItem {
   agentName: string | null;
   budget: number;
   currency: string;
+  deadline: Date | string | null;
 }
 
 // The single next move the operator owns for each waiting state.
@@ -62,10 +64,15 @@ export function NeedsAttention({ items }: { items: NeedsAttentionItem[] }) {
                     <p className="truncate text-sm font-medium text-foreground">
                       {item.title}
                     </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {item.agentName ?? "Unassigned"} ·{" "}
-                      {formatCurrency(item.budget, item.currency)}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                      <span className="truncate">
+                        {item.agentName ?? "Unassigned"} ·{" "}
+                        {formatCurrency(item.budget, item.currency)}
+                      </span>
+                      {item.status !== "completed" && item.deadline && (
+                        <DeadlineBadge deadline={item.deadline} urgentOnly />
+                      )}
+                    </div>
                   </div>
                   <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                     <Icon className="h-3.5 w-3.5" />

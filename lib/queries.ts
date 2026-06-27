@@ -330,6 +330,7 @@ export async function getDashboardData(userId: string) {
       agentName: t.sellerAgent?.name ?? null,
       budget: t.budget,
       currency: t.currency,
+      deadline: t.deadline,
     }));
 
   return {

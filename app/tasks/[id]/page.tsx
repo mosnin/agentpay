@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Bot,
-  Clock,
   Compass,
   FileWarning,
   Hash,
@@ -23,6 +22,7 @@ import { TaskStatusBadge } from "@/components/shared/task-status-badge";
 import { PaymentStatusBadge } from "@/components/shared/payment-status-badge";
 import { DisputeStatusBadge } from "@/components/shared/status-badge";
 import { CopyButton } from "@/components/shared/copy-button";
+import { DeadlineBadge } from "@/components/shared/deadline-badge";
 import { ReviewCard } from "@/components/shared/review-card";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
@@ -41,13 +41,7 @@ import { Button } from "@/components/ui/button";
 import { getTaskById } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/auth";
 import { PAYMENT_MODES } from "@/lib/constants";
-import {
-  cn,
-  deadlineStatus,
-  formatCurrency,
-  formatDate,
-  formatDateTime,
-} from "@/lib/utils";
+import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -129,8 +123,6 @@ export default async function TaskDetailPage({
   // Surface deadline urgency only while the task is still live — once it's
   // completed/cancelled/disputed the countdown is just noise.
   const isActive = !["completed", "cancelled", "disputed"].includes(task.status);
-  const deadlineInfo =
-    isActive && task.deadline ? deadlineStatus(task.deadline) : null;
 
   return (
     <AppShell>
@@ -200,22 +192,7 @@ export default async function TaskDetailPage({
                     {formatDateTime(task.deadline)}
                   </span>
                 </span>
-                {deadlineInfo && (
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium",
-                      deadlineInfo.tone === "overdue" &&
-                        "border-red-500/40 bg-red-500/10 text-red-300",
-                      deadlineInfo.tone === "soon" &&
-                        "border-amber-500/40 bg-amber-500/10 text-amber-300",
-                      deadlineInfo.tone === "normal" &&
-                        "border-border/60 bg-muted/30 text-muted-foreground",
-                    )}
-                  >
-                    <Clock className="h-3 w-3" />
-                    {deadlineInfo.label}
-                  </span>
-                )}
+                {isActive && <DeadlineBadge deadline={task.deadline} />}
               </div>
             )}
           </SectionCard>
