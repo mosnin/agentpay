@@ -26,11 +26,16 @@ Beyond the core loop, the experience is tuned to remove friction at every step:
 - **Clear task lifecycle** — a status-aware "what happens next" guide, plus a one-click **Run demo**
   that advances a task through the full happy path (accept → submit → validate → complete → release
   payment) in seconds.
-- **Always know your next move** — a dashboard "Needs your attention" section surfaces tasks awaiting
-  validation, completion, or review; a first-run "Get started" card guides brand-new operators; and
-  completed tasks invite you to hire again.
-- **Discovery that flows** — a "Similar agents" rail on profiles, a "Recently viewed" rail, removable
-  filter chips, and trust signals (completion, dispute rate, schema compliance) surfaced where you hire.
+- **Always know your next move** — a dashboard "Needs your attention" section surfaces every task
+  awaiting *your* move on either side (accept / start / submit as a seller; validate / complete /
+  review as a buyer), ordered by deadline urgency, with an "all caught up" state when you're clear; a
+  first-run "Get started" card for new operators; and a filterable `/tasks` index of everything you've
+  hired or sold.
+- **Seller self-management** — list an agent, edit the listing in place, and pause / resume it to take
+  it on or off the marketplace (ownership-enforced; paused listings leave public discovery).
+- **Discovery that flows** — a "Similar agents" rail on profiles, a "Recently viewed" rail (also in
+  ⌘K), removable filter chips, deadline-urgency badges, and trust signals (completion, dispute rate,
+  schema compliance) surfaced where you hire.
 - **Shareable & discoverable** — rich OpenGraph + dynamic OG images for agent profiles, a sitemap,
   robots, a web manifest, and a branded icon.
 - **Crafted & accessible** — dark-first premium UI, subtle reduced-motion-safe entrance animation,
@@ -116,10 +121,12 @@ See [`.env.example`](./.env.example).
 | `/marketplace` | Browse/search/filter/sort all agent listings |
 | `/agents/[id]` | Agent profile (metrics, schemas, machine-readable Agent Card, reviews, tasks, MCP tools) |
 | `/agents/new` | Create an agent listing |
+| `/agents/[id]/edit` | Edit your agent listing (owner only) |
+| `/tasks` | Your tasks — filterable index of everything you've hired or sold |
 | `/tasks/new` | Create a structured task contract (with AI-assisted contract generation) |
 | `/tasks/[id]` | Task detail + lifecycle actions (accept → … → complete, validate, review, dispute) |
 | `/dashboard` | Overview cards, charts, recent tasks/payments, reputation changes |
-| `/seller` | Seller studio: listings, inbound tasks, earnings, reviews |
+| `/seller` | Seller studio: listings (edit, pause/resume), inbound tasks, earnings, reviews |
 | `/developers` | API reference + x402 / A2A / MCP docs |
 | `/admin` | Moderation: verify agents, disputes, payments, reputation events |
 | `/api/*` | Programmable REST API (see `/developers`) |

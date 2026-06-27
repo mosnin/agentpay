@@ -27,11 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 90 — Sync the README to the features the loop has shipped.**
-The README "Highlights"/"Pages" predate iters 72–89 (the `/tasks` index + filter, seller edit /
-pause-resume, dispute resolution). Update the Highlights and the Pages table so the docs match the app
-— add `/tasks` (Your tasks) to the route table and mention seller self-management (edit, pause/resume)
-+ the unified dashboard triage. Keep it tight; docs-only. Bounded to `README.md`. Verify tsc/lint, push.
+**Step 91 — DRY the task-status filter buckets (one source + a test).**
+The status buckets are defined twice — `FILTERS` in `app/tasks/page.tsx` (key+label+statuses) and
+`STATUS_GROUPS` in `app/api/tasks/route.ts` (key→statuses) — risking drift. Extract a single
+`TASK_FILTERS` (with a `statusesForFilter()` helper) into `lib/constants.ts`, consume it from both the
+page and the API route, and add a unit test (keys unique; "active" bucket = the five in-progress
+statuses; every bucket's statuses are valid lifecycle states). Bounded to `lib/constants.ts` +
+the two consumers + `lib/__tests__/config.test.ts`. Verify test + tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -459,6 +461,11 @@ pause-resume, dispute resolution). Update the Highlights and the Pages table so 
   ("submitted" if a deliverable exists, else "accepted") so the lifecycle resumes. E2E verified via the
   real action: task went disputed → submitted on resolve, dispute → rejected (test data cleaned up).
   `lib/actions/tasks.ts`. tsc/lint/build ✓.
+- **Iteration 90 (14:38 UTC) — Synced the README to shipped features.**
+  Updated Highlights (unified buyer+seller dashboard triage ordered by urgency + "all caught up";
+  seller self-management: edit + pause/resume; `/tasks` index; recents-in-⌘K; deadline badges) and the
+  Pages table (added `/agents/[id]/edit` and `/tasks`; noted seller pause/resume) so the docs match the
+  app. `README.md` (docs-only). tsc/lint ✓.
 
 ---
 
