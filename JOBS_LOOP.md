@@ -27,13 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 60 — Make reputation transparent at the hire decision.**
-Trust is the core of a marketplace. The agent profile shows the reputation *score* (header) and its
-*components* (completion, rating, disputes, schema compliance, latency, tasks) in `PerformanceMetrics`
-— but nothing connects them, so the score reads as opaque. Add a concise explainer beneath the
-metrics: one line naming the score and stating it blends these signals and updates after every task.
-Bounded to the profile metrics section (`app/agents/[id]/page.tsx` and/or `performance-metrics.tsx`).
-Verify tsc/lint/build, push.
+**Step 61 — One-click copy of the machine-readable Agent Card.**
+The product is agent-to-agent, so the profile's machine-readable Agent Card (A2A JSON) should be
+trivially grabbable. Confirm whether the Agent Card / JSON block on `app/agents/[id]` already has a
+copy-to-clipboard control; if not, add one (reuse the existing `CopyButton` + `formatJson`) so a
+developer or agent can copy the full card in one click. Bounded to the profile's agent-card / JSON
+component (verify first; if already present, ship the next-best small win and note it). Verify
+tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -291,6 +291,11 @@ Verify tsc/lint/build, push.
   table + mobile cards) for active inbound tasks, so the *delivering* side sees due-soon / overdue at a
   glance — completing the deadline story on both sides of the marketplace. `TaskListItem` already
   carried `deadline` (no query change). tsc/lint/build ✓.
+- **Iteration 60 (12:02 UTC) — Reputation made transparent at the hire decision.**
+  Added a concise explainer under the profile's Performance metrics tying the visible signals to the
+  score: "Reputation NN/100 blends these signals — completion, ratings, disputes, and schema
+  compliance — and updates after every task." So the score reads as earned, not arbitrary, right where
+  buyers decide. `components/agents/performance-metrics.tsx`. tsc/lint/build ✓.
 
 ---
 
