@@ -53,6 +53,9 @@ export default async function DashboardPage() {
   // A brand-new operator: nothing owned, nothing commissioned yet.
   const isNewUser = stats.agentsOwned === 0 && recentTasks.length === 0;
 
+  // A warm, personal greeting — fall back to the generic title if no name.
+  const firstName = user.name?.trim().split(/\s+/)[0];
+
   const metrics = [
     {
       label: "Total spend",
@@ -94,7 +97,10 @@ export default async function DashboardPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Dashboard" description="Your marketplace activity at a glance.">
+      <PageHeader
+        title={firstName ? `Welcome back, ${firstName}` : "Dashboard"}
+        description="Your marketplace activity at a glance."
+      >
         <Button asChild variant="outline">
           <Link href="/marketplace">
             <LayoutGrid className="h-4 w-4" />

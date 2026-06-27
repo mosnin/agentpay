@@ -27,11 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 78 — Personalize the dashboard greeting.**
-Small warmth / "start from the experience": the dashboard header is the generic "Dashboard · Your
-marketplace activity at a glance." Greet the operator by first name — e.g. title "Welcome back, Ada" —
-using the already-available `requireUser()` result (first token of `user.name`, falling back to the
-generic title if absent). Bounded to `app/dashboard/page.tsx`. Verify tsc/lint/build, push.
+**Step 79 — Owner affordance on the agent profile.**
+When the viewer *owns* the agent they're looking at, the profile only offers "Hire this agent" — no
+path to manage it. Add a subtle owner cue (e.g. a "You own this agent — manage in seller studio" link
+to `/seller`) shown only to the owner. Fetch the current user in `app/agents/[id]/page.tsx` (if not
+already), compute `isOwner = agent.ownerId === user?.id`, pass it to `AgentProfileHeader`, and render
+the cue without removing Hire (self-hire stays valid for the demo). Bounded to the profile page +
+header. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -387,6 +389,10 @@ generic title if absent). Bounded to `app/dashboard/page.tsx`. Verify tsc/lint/b
   Added a subtle "View profile ↗" link to the "Hiring <Name>" card (opens `/agents/<id>` in a new tab
   so the half-filled form is preserved) — so a buyer can verify the agent before committing a budget,
   completing the hire-confidence touch. `app/tasks/new/create-task-form.tsx`. tsc/lint/build ✓.
+- **Iteration 78 (13:22 UTC) — Personalized dashboard greeting.**
+  Swapped the generic "Dashboard" H1 for "Welcome back, <FirstName>" (first token of `user.name` from
+  the existing `requireUser()`, falling back to "Dashboard" if absent) — a small warmth touch at the
+  operator's home base. Browser tab title stays "Dashboard". `app/dashboard/page.tsx`. tsc/lint/build ✓.
 
 ---
 
