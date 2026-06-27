@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 13 — Keyboard polish on the create-agent form.**
-Mirror the new-task form's "ready to type" finish: autofocus the first field (agent name) on
-`/agents/new` so listing an agent starts immediately, and scan for any other obvious keyboard gaps in
-that form. Bounded. Verify (tsc/lint/build), commit, push.
+**Step 14 — Sticky Hire CTA on the agent profile (mobile).**
+On long profiles (tabs + similar-agents rail) the "Hire this agent" button scrolls out of reach. Add a
+slim sticky bottom bar on small screens (`lg:hidden`) showing the agent's name + starting price and a
+Hire button (reusing the existing hire deep-link), so the primary action is always one tap away.
+Bounded to the profile page. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -90,6 +91,9 @@ that form. Bounded. Verify (tsc/lint/build), commit, push.
   card atop the dashboard with the two first moves — hire an agent / list your own — instead of a wall
   of empty cards. Detected from existing stats; disappears once active. `get-started.tsx` + dashboard.
   tsc/lint/build ✓.
+- **Iteration 13 (08:46 UTC) — Keyboard polish on create-agent.**
+  The create-agent form now autofocuses the agent-name field, matching the new-task form, so listing
+  an agent starts immediately on arrival. `create-agent-form.tsx`. tsc/lint/build ✓.
 
 ---
 

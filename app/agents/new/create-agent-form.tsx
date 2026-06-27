@@ -310,6 +310,7 @@ export function CreateAgentForm({
           >
             <Input
               id="name"
+              autoFocus
               placeholder="Northwind Lead Scorer"
               aria-invalid={!!errors.name}
               {...register("name")}
