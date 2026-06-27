@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 20 — Branded favicon.**
-Replace the default favicon with a branded mark via `app/icon.tsx` (`next/og` `ImageResponse`) — the
-◆ glyph in the indigo brand tint on the near-black background — so the browser tab matches the app's
-identity. Bounded to one file. Verify (tsc/lint/build), commit, push.
+**Step 21 — Installable + themed mobile chrome.**
+Add `app/manifest.ts` (name, description, standalone display, `#0a0a0b` background/theme) referencing
+the branded `/icon`, and a `viewport` `themeColor` in the root layout, so the app is installable and
+mobile browser chrome matches the dark theme. Bounded to two files. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -117,6 +117,10 @@ identity. Bounded to one file. Verify (tsc/lint/build), commit, push.
   Added `app/agents/[id]/opengraph-image.tsx` (`next/og`) rendering a dark 1200×630 branded card with
   the agent's name, description, category, reputation, and a Verified chip — so shared profile links
   show a premium preview image. tsc/lint/build ✓ (route emitted).
+- **Iteration 20 (09:14 UTC) — Branded favicon (+ robust OG mark).**
+  Replaced the default favicon with a CSS-drawn diamond in the brand tint via `app/icon.tsx`, and
+  swapped the OG image's glyph mark for the same CSS diamond — eliminating a `next/og` dynamic-font
+  fetch that failed for the ◆ glyph. `app/icon.tsx` + `opengraph-image.tsx`. tsc/build ✓ (no warning).
 
 ---
 

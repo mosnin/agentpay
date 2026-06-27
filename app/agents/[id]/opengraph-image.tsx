@@ -59,11 +59,17 @@ export default async function Image({
               borderRadius: 14,
               background: "rgba(99,102,241,0.18)",
               border: "1px solid rgba(99,102,241,0.55)",
-              color: "#c7d2fe",
-              fontSize: 26,
             }}
           >
-            ◆
+            <div
+              style={{
+                width: 18,
+                height: 18,
+                background: "#c7d2fe",
+                borderRadius: 4,
+                transform: "rotate(45deg)",
+              }}
+            />
           </div>
           <div style={{ display: "flex", fontSize: 26, letterSpacing: 3, color: "#a1a1aa" }}>
             AGENT MARKET
