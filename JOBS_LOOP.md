@@ -27,13 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 91 — DRY the task-status filter buckets (one source + a test).**
-The status buckets are defined twice — `FILTERS` in `app/tasks/page.tsx` (key+label+statuses) and
-`STATUS_GROUPS` in `app/api/tasks/route.ts` (key→statuses) — risking drift. Extract a single
-`TASK_FILTERS` (with a `statusesForFilter()` helper) into `lib/constants.ts`, consume it from both the
-page and the API route, and add a unit test (keys unique; "active" bucket = the five in-progress
-statuses; every bucket's statuses are valid lifecycle states). Bounded to `lib/constants.ts` +
-the two consumers + `lib/__tests__/config.test.ts`. Verify test + tsc/lint/build, push.
+**Step 92 — Show dispute outcomes to the parties on the task page.**
+The task page's "Disputes" section only renders *open* disputes (`d.status === "open"`), so once a
+dispute is resolved/rejected (iter 89) it vanishes and the buyer/seller never see the outcome. Show
+*all* disputes on the task page with their status badge + resolution note (the section already renders
+`dispute.resolution` when present), retitled to reflect that it's the dispute history. Bounded to
+`app/tasks/[id]/page.tsx`. Verify tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -466,6 +465,13 @@ the two consumers + `lib/__tests__/config.test.ts`. Verify test + tsc/lint/build
   seller self-management: edit + pause/resume; `/tasks` index; recents-in-⌘K; deadline badges) and the
   Pages table (added `/agents/[id]/edit` and `/tasks`; noted seller pause/resume) so the docs match the
   app. `README.md` (docs-only). tsc/lint ✓.
+- **Iteration 91 (14:46 UTC) — DRY'd the task-status filter buckets.**
+  The buckets were defined twice (`/tasks` page `FILTERS` + `/api/tasks` `STATUS_GROUPS`), risking
+  drift. Extracted one `TASK_FILTERS` + `statusesForFilter()` into `lib/constants.ts`; both the page and
+  the API route now consume it. Added 4 unit tests (unique keys + labels; valid statuses; "active" =
+  the five in-progress states; `statusesForFilter` all→undefined / key→statuses / unknown→raw). Suite
+  64 tests. `lib/constants.ts` + `app/tasks/page.tsx` + `app/api/tasks/route.ts` + `config.test.ts`.
+  test/tsc/lint/build ✓.
 
 ---
 

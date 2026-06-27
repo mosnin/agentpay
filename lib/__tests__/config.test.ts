@@ -12,6 +12,8 @@ import {
   VALIDATION_STATUS_CONFIG,
   AGENT_STATUS_CONFIG,
   DISPUTE_STATUS_CONFIG,
+  TASK_FILTERS,
+  statusesForFilter,
   getStatusConfig,
 } from "@/lib/constants";
 import { SIDEBAR_GROUPS, TOP_NAV_LINKS } from "@/lib/nav";
@@ -104,5 +106,51 @@ describe("navigation config", () => {
       expect(link.title.length).toBeGreaterThan(0);
       expect(link.href.startsWith("/")).toBe(true);
     }
+  });
+});
+
+describe("TASK_FILTERS / statusesForFilter", () => {
+  const validStatuses = new Set([
+    ...TASK_LIFECYCLE,
+    "disputed",
+    "cancelled",
+  ]);
+
+  it("has an 'all' bucket and unique keys with labels", () => {
+    const keys = TASK_FILTERS.map((f) => f.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys).toContain("all");
+    for (const f of TASK_FILTERS) expect(f.label.length).toBeGreaterThan(0);
+  });
+
+  it("every bucket's statuses are real lifecycle states; 'all' has none", () => {
+    for (const f of TASK_FILTERS) {
+      if (f.key === "all") {
+        expect("statuses" in f).toBe(false);
+      } else {
+        const statuses = (f as { statuses: readonly string[] }).statuses;
+        expect(statuses.length).toBeGreaterThan(0);
+        for (const s of statuses) expect(validStatuses.has(s)).toBe(true);
+      }
+    }
+  });
+
+  it("the 'active' bucket is exactly the five in-progress statuses", () => {
+    const active = TASK_FILTERS.find((f) => f.key === "active");
+    expect(active && "statuses" in active ? [...active.statuses] : []).toEqual([
+      "pending",
+      "accepted",
+      "running",
+      "submitted",
+      "validating",
+    ]);
+  });
+
+  it("statusesForFilter resolves keys, all→undefined, unknown→raw", () => {
+    expect(statusesForFilter()).toBeUndefined();
+    expect(statusesForFilter("all")).toBeUndefined();
+    expect(statusesForFilter("completed")).toEqual(["completed"]);
+    expect(statusesForFilter("active")).toHaveLength(5);
+    expect(statusesForFilter("running")).toEqual(["running"]);
   });
 });

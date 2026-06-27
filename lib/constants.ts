@@ -70,6 +70,35 @@ export const TASK_STATUS_CONFIG: Record<string, StatusConfig> = {
   cancelled: { label: "Cancelled", className: "border-zinc-600/30 bg-zinc-600/10 text-zinc-400", dot: "bg-zinc-500" },
 };
 
+/**
+ * Curated task-status filter buckets — one source of truth for the `/tasks` page
+ * pills and the `GET /api/tasks` filter, so the UI and API can't drift.
+ */
+export const TASK_FILTERS = [
+  { key: "all", label: "All" },
+  {
+    key: "active",
+    label: "Active",
+    statuses: ["pending", "accepted", "running", "submitted", "validating"],
+  },
+  { key: "completed", label: "Completed", statuses: ["completed"] },
+  { key: "disputed", label: "Disputed", statuses: ["disputed"] },
+  { key: "cancelled", label: "Cancelled", statuses: ["cancelled"] },
+] as const;
+
+export type TaskFilterKey = (typeof TASK_FILTERS)[number]["key"];
+
+/**
+ * Resolve a filter key to the lifecycle statuses to query. Returns `undefined`
+ * for "all" (no filter); an unknown key is treated as a raw lifecycle status.
+ */
+export function statusesForFilter(key?: string): string[] | undefined {
+  if (!key || key === "all") return undefined;
+  const found = TASK_FILTERS.find((f) => f.key === key);
+  if (found && "statuses" in found) return [...found.statuses];
+  return [key];
+}
+
 export const PAYMENT_STATUS_CONFIG: Record<string, StatusConfig> = {
   pending: { label: "Pending", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-300", dot: "bg-zinc-400" },
   escrowed: { label: "Escrowed", className: "border-amber-500/30 bg-amber-500/10 text-amber-300", dot: "bg-amber-400" },

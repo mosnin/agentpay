@@ -10,6 +10,7 @@ import { TaskStatusBadge } from "@/components/shared/task-status-badge";
 import { DeadlineBadge } from "@/components/shared/deadline-badge";
 import { requireUser } from "@/lib/auth";
 import { getUserTasks } from "@/lib/queries";
+import { TASK_FILTERS, statusesForFilter } from "@/lib/constants";
 import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -19,19 +20,6 @@ export const metadata: Metadata = {
 
 const TERMINAL = new Set(["completed", "cancelled", "disputed"]);
 
-// Curated status buckets — ruthless simplicity over one pill per raw status.
-const FILTERS: { key: string; label: string; statuses?: string[] }[] = [
-  { key: "all", label: "All" },
-  {
-    key: "active",
-    label: "Active",
-    statuses: ["pending", "accepted", "running", "submitted", "validating"],
-  },
-  { key: "completed", label: "Completed", statuses: ["completed"] },
-  { key: "disputed", label: "Disputed", statuses: ["disputed"] },
-  { key: "cancelled", label: "Cancelled", statuses: ["cancelled"] },
-];
-
 export default async function TasksPage({
   searchParams,
 }: {
@@ -39,8 +27,8 @@ export default async function TasksPage({
 }) {
   const user = await requireUser();
   const { status } = await searchParams;
-  const active = FILTERS.find((f) => f.key === status) ?? FILTERS[0];
-  const tasks = await getUserTasks(user.id, active.statuses);
+  const active = TASK_FILTERS.find((f) => f.key === status) ?? TASK_FILTERS[0];
+  const tasks = await getUserTasks(user.id, statusesForFilter(active.key));
 
   return (
     <AppShell>
@@ -59,7 +47,7 @@ export default async function TasksPage({
       <div className="space-y-4">
         {/* Status filter */}
         <div className="flex flex-wrap items-center gap-2">
-          {FILTERS.map((f) => {
+          {TASK_FILTERS.map((f) => {
             const isActive = f.key === active.key;
             return (
               <Link
