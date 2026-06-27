@@ -27,15 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 99 — Code-hygiene sweep (stray debug / TODOs).**
-A real audit: grep `app/`, `lib/`, `components/` for `console.log`, `debugger`, and `TODO`/`FIXME`
-(keep legit `console.error` in server-action catch blocks). Remove any stray debug logging and resolve
-or convert any TODO into a tracked note. If the tree is already clean, record that and ship a tiny
-next-best polish. Bounded to whatever the sweep surfaces. Verify tsc/lint/build, push.
+**Step 100 — Cache npm in CI for faster, cheaper runs.**
+The CI workflow (`.github/workflows/ci.yml`) runs `npm ci` on every push/PR. If the `actions/setup-node`
+step doesn't set `cache: "npm"`, installs re-download the whole dependency tree each run. Add npm
+caching to the setup-node step (a one-line `cache: npm`) so CI is faster and lighter. Confirm it's not
+already cached. Bounded to `ci.yml`. Verify the YAML + tsc/lint, push.
 
-> Status: the product is comprehensively complete, regression-audited (iter 95, all routes green), with
-> full loading-state coverage and 67 tests. Remaining items are fine-polish/hygiene. Standing offer to
-> the user to wind the loop down early.
+> Status: the product is comprehensively complete, regression-audited (iter 95), with full loading-state
+> coverage, 67 tests, and a clean hygiene sweep. Remaining items are fine-polish/infra. Standing offer
+> to the user to wind the loop down early.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -513,6 +513,10 @@ next-best polish. Bounded to whatever the sweep surfaces. Verify tsc/lint/build,
   Added `app/agents/new/loading.tsx` and `app/tasks/new/loading.tsx` (form-card skeletons; the task one
   mirrors the two-column form + sticky contract-preview layout). Every data/form route now has a
   `loading.tsx` — loading-state coverage is complete app-wide; skeleton thread closed. tsc/lint/build ✓.
+- **Iteration 99 (15:50 UTC) — Hygiene sweep (clean) + Node engine.**
+  Swept `app/`/`lib/`/`components/` — no `console.log`/`debugger`/`TODO`/`FIXME` (only 24 legit
+  `console.error` in catch blocks). Shipped a tiny polish: declared `"engines": { "node": ">=20" }` in
+  `package.json` (matches `.nvmrc` + CI; helps deploy platforms pick the right Node). tsc/lint/build ✓.
 
 ---
 
