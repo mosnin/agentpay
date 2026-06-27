@@ -346,9 +346,13 @@ export async function resolveDispute(
 ): Promise<ActionResult> {
   try {
     await requireUser();
+    // Enforce the data invariant at the boundary, not just in the dialog:
+    // a resolved/rejected dispute must carry a non-empty resolution note.
+    const note = resolution.trim();
+    if (!note) return { ok: false, error: "A resolution note is required." };
     const dispute = await prisma.dispute.update({
       where: { id: disputeId },
-      data: { status, resolution },
+      data: { status, resolution: note },
       select: { taskId: true },
     });
 

@@ -27,17 +27,18 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 127 — Dispute flow transparency (verify→dispute path).**
-Walk the dispute path (iter earlier added dispute-resolve reputation fairness, but re-check the UI): when
-a buyer opens a dispute, is the dispute *reason* shown on the task page, and once resolved is the outcome
-clear (e.g. task lifted out of "disputed", reputation restored on dismissal)? Read the task-detail dispute
-UI + `resolveDispute`. If the reason or resolution isn't surfaced where buyer/seller see it, add a concise
-display; keep it bounded to the relevant component. If it's already clear, ship the next-best small win and
-note it. Verify tsc/lint/build, push.
+**Step 128 — Test the `submitArtifactSchema` refine + add an `apiCreateTaskSchema` budget edge.**
+Pure, zero-risk coverage for two boundary behaviors shipped recently: (1) confirm the iter-119 content-or-url
+refine on `submitArtifactSchema` is locked (title-only rejected; content-only / url-only / both pass) —
+already added in iter 119, so re-confirm and, if thin, extend; (2) `apiCreateTaskSchema` coerces/accepts a
+numeric-string budget and rejects a negative one (the public API entry point). Add the missing cases to
+`lib/__tests__/schemas.test.ts`. If both are fully covered already, ship the next-best small win and note it.
+Verify test + tsc/lint, push.
 
-> Status: CONVERGED; verify step is live-verified (smoke test iter 126: all routes 200, seeded notes
-> render, "Validation checks" label present). Now re-walking the dispute branch. **Recommend winding down
-> early**; absent that, the loop continues to the 19:56 UTC deadline. 91 tests green.
+> Status: CONVERGED end-to-end. Entire core loop walked & verified — discover, hire, verify (live-tested),
+> pay, reputation, AND the full dispute branch (open dialog → admin resolve/reject UI → task lifted →
+> reputation restored; server now enforces a non-empty resolution note). **Recommend winding down early**;
+> absent that, the loop continues to the 19:56 UTC deadline. 91 tests green.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -668,6 +669,12 @@ note it. Verify tsc/lint/build, push.
   page rendered the seeded note "Validation passed with score 96" and the "Validation checks" label,
   proving the iter-123 schema change works end-to-end at runtime. Stopped the server and cleaned up 9
   orphaned `next-server` processes left from earlier build/start runs. No code change (verification).
+- **Iteration 127 (14:07 UTC) — Dispute flow confirmed complete; hardened `resolveDispute` server-side.**
+  Walked the dispute branch: the task page shows each dispute's opener/time/status/reason/resolution, the
+  open dialog validates the reason, the admin `ResolveDisputeDialog` resolves/rejects, and `resolveDispute`
+  lifts the task out of "disputed" + restores reputation on dismissal — all complete. Shipped a next-best
+  hardening: `resolveDispute` now trims and **requires a non-empty resolution note at the action boundary**
+  (not just the dialog), so the "resolved ⇒ has a note" invariant holds for any caller. tsc/lint/build ✓.
 
 ---
 
