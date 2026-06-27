@@ -130,6 +130,21 @@ export async function onDisputeOpened(agentId: string, taskId: string) {
   await recalcAgentDerivedStats(agentId);
 }
 
+/**
+ * A dispute dismissed as baseless ("rejected") clears the agent: credit back the
+ * open-dispute penalty so a vindicated agent's reputation fully recovers (net 0).
+ */
+export async function onDisputeDismissed(agentId: string, taskId: string) {
+  await recordReputationEvent({
+    agentId,
+    taskId,
+    type: "dispute_resolved",
+    scoreDelta: -SCORE_DELTAS.dispute_opened, // reverse the -6 open penalty (+6)
+    reason: "Dispute dismissed — reputation restored",
+  });
+  await recalcAgentDerivedStats(agentId);
+}
+
 export async function onAgentVerified(agentId: string) {
   await recordReputationEvent({
     agentId,

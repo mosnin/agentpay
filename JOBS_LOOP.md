@@ -27,14 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 93 — A dismissed dispute shouldn't permanently dent reputation.**
-Fairness gap: `openDispute` calls `onDisputeOpened` (a reputation penalty), but resolving a dispute as
-**rejected** (baseless / dismissed) never credits it back — so a vindicated agent keeps the hit
-forever. Read `lib/reputation.ts` (`onDisputeOpened`) to learn the penalty shape, then in
-`resolveDispute`, when `status === "rejected"`, record a compensating `ReputationEvent` that reverses
-the open penalty (a focused `onDisputeDismissed`/credit helper in `reputation.ts`). Leave "resolved"
-(upheld) as-is. Bounded to `lib/reputation.ts` + `lib/actions/tasks.ts`. Verify tsc/lint/build + e2e
-(reputation recovers on reject), push.
+**Step 94 — Reputation feed should label dismissed-dispute events.**
+`onDisputeDismissed` now writes `dispute_resolved` reputation events — verify the dashboard reputation
+feed (and any event-type → label/icon map) renders that type with a sensible label/icon and sign, not
+a generic fallback. Inspect `components/dashboard/reputation-feed.tsx` (and the admin reputation list if
+it shares a map); if `dispute_resolved` / `dispute_opened` aren't handled, add them. Bounded to the
+reputation feed component(s). If already handled, ship the next-best small win and note it. Verify
+tsc/lint/build, push.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -480,6 +479,12 @@ the open penalty (a focused `onDisputeDismissed`/credit helper in `reputation.ts
   resolution note), styled neutral once closed and retitled "Issues raised on this task and how they
   were resolved." E2E verified: a rejected dispute's reason + resolution render on the task page (test
   data cleaned up). `app/tasks/[id]/page.tsx`. tsc/lint/build ✓.
+- **Iteration 93 (15:02 UTC) — Dismissed disputes restore reputation.**
+  Fairness fix: `openDispute` docks −6, but resolving as *rejected* (baseless) never credited it back,
+  so a vindicated agent kept the hit forever. Added `onDisputeDismissed` (records a `dispute_resolved`
+  event of +6, reversing the open penalty) and called it from `resolveDispute` when `status ===
+  "rejected"`; *upheld* ("resolved") disputes keep the penalty. E2E verified: rep 94 → 88 (open) → 94
+  (dismiss), net zero. `lib/reputation.ts` + `lib/actions/tasks.ts`. tsc/lint/build ✓.
 
 ---
 

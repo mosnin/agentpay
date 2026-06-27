@@ -13,6 +13,7 @@ import { createPaymentForTask, releasePaymentForTask, refundPaymentForTask } fro
 import {
   onTaskCompleted,
   onDisputeOpened,
+  onDisputeDismissed,
   onValidationComplete,
 } from "@/lib/reputation";
 import { evaluateArtifact } from "@/lib/mockValidation";
@@ -355,7 +356,11 @@ export async function resolveDispute(
     // (re-validate → complete), else "accepted" (the agent resumes work).
     const task = await prisma.task.findUnique({
       where: { id: dispute.taskId },
-      select: { status: true, _count: { select: { artifacts: true } } },
+      select: {
+        status: true,
+        sellerAgentId: true,
+        _count: { select: { artifacts: true } },
+      },
     });
     if (task?.status === "disputed") {
       const restored: "submitted" | "accepted" =
@@ -364,6 +369,12 @@ export async function resolveDispute(
         where: { id: dispute.taskId },
         data: { status: restored },
       });
+    }
+
+    // A baseless ("rejected") dispute clears the agent — restore the reputation
+    // the open penalty docked, so a dismissed dispute leaves no permanent mark.
+    if (status === "rejected" && task?.sellerAgentId) {
+      await onDisputeDismissed(task.sellerAgentId, dispute.taskId);
     }
 
     revalidateTask(dispute.taskId);
