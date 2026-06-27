@@ -27,19 +27,19 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 117 — Lock navigation-config integrity with a test.**
-`lib/nav.ts` (`SIDEBAR_GROUPS` + `TOP_NAV_LINKS`) is the one clearly-untested pure module and the source
-of every in-app nav link — a typo'd `href` or empty title would ship silently and break "it just works."
-Add `lib/__tests__/nav.test.ts` asserting: every sidebar/top-nav item has a non-empty `title` and an
-app-internal `href` (starts with "/"), sidebar hrefs are unique, and every `TOP_NAV_LINKS` href also
-appears among the sidebar hrefs (consistency). Pure, bounded to a new test file. Verify test + tsc/lint,
-push. If already covered, ship the next-best small win and note it.
+**Step 118 — Harden the hire/list input validation tests (`schemas.test.ts`).**
+`lib/schemas.ts` validates the two core-loop *entry points* — `createTask` (hire) and `createAgent`
+(list). Read `lib/__tests__/schemas.test.ts`; for any untested edge that would let bad input through or
+wrongly reject good input, add a focused case: e.g. budget must be > 0, a too-short title/description is
+rejected, an invalid category is rejected, a valid minimal payload passes, and (if present) JSON-schema
+string fields parse. Bounded to the test file. If the edges are already covered, ship the next-best small
+win and note it. Verify test + tsc/lint, push.
 
-> Status: CONVERGED. Five consecutive scouts (deadlineStatus tests, OG image, reviews empty state,
-> marketplace sort/filters + no-results recovery, RecentlyViewed wiring, mockContract tests) each found
-> the work already done and correct — strong evidence the product is comprehensively complete. Recent
-> iterations are fine-grained craft (new-agent trust accuracy) + test-hardening. **Recommend winding down
-> early**; the loop will otherwise keep shipping diminishing-returns polish until the 19:56 UTC deadline.
+> Status: CONVERGED. Six consecutive scouts (deadlineStatus tests, OG image, reviews empty state,
+> marketplace sort/filters + no-results recovery, RecentlyViewed wiring, mockContract tests, not-found
+> recovery CTAs) each found the work already done and correct — the product is comprehensively complete.
+> Recent iterations are fine-grained craft + test-hardening (now 87 tests). **Recommend winding down
+> early**; absent that, the loop keeps shipping diminishing-returns polish until the 19:56 UTC deadline.
 
 > The app is now deeply polished; remaining steps are increasingly fine-grained. Standing offer to the
 > user: say the word to pause, change direction, or wind down early.
@@ -616,6 +616,11 @@ push. If already covered, ship the next-best small win and note it.
   `agent-reviews.tsx`. Also audited (all already complete & correct): marketplace sort + filters +
   removable chips + no-results "Clear filters" recovery, `RecentlyViewed` read/write wiring, and the
   schemaComplianceScore (0–100) vs completion/dispute (0–1) display scales. tsc/lint ✓.
+- **Iteration 117 (13:33 UTC) — Locked navigation-config integrity with a test.**
+  Added `lib/__tests__/nav.test.ts` (5 cases): every `SIDEBAR_GROUPS`/`TOP_NAV_LINKS` item has a
+  non-empty title + app-internal `href` + icon, sidebar hrefs are unique, and every top-nav destination
+  also exists in the sidebar — so a typo'd route or empty label fails CI instead of shipping a dead nav
+  link. 87 tests pass (was 82). tsc/lint ✓. (Also confirmed not-found.tsx already has recovery CTAs.)
 
 ---
 
