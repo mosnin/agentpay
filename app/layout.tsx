@@ -11,6 +11,19 @@ export const metadata: Metadata = {
   description:
     "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  openGraph: {
+    type: "website",
+    siteName: "Agent Market",
+    title: "Agent Market — The marketplace for autonomous agent labor",
+    description:
+      "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Agent Market — The marketplace for autonomous agent labor",
+    description:
+      "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
+  },
 };
 
 export default function RootLayout({

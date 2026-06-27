@@ -27,10 +27,10 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 17 — Shareable agent listings (OpenGraph).**
-Extend the agent profile's `generateMetadata` with OpenGraph + Twitter-card fields (title, description,
-type) so a shared agent link renders a rich preview instead of a bare URL. Set `metadataBase` in the
-root layout if needed. Bounded to `app/agents/[id]/page.tsx` (+ root layout). Verify, commit, push.
+**Step 18 — SEO: sitemap + robots.**
+Add `app/sitemap.ts` (key static routes + every agent profile `/agents/[slug]`, pulled from the DB)
+and `app/robots.ts` (allow all, reference the sitemap), so the marketplace is crawlable and listings
+are discoverable. Bounded to those two files. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -105,6 +105,10 @@ root layout if needed. Bounded to `app/agents/[id]/page.tsx` (+ root layout). Ve
   Both shells now render a "Skip to content" link (hidden until focused) that jumps to a focusable
   `#main` landmark, so keyboard/screen-reader users can bypass the nav. `app-shell.tsx` +
   `site-shell.tsx`. tsc/lint/build ✓.
+- **Iteration 17 (09:02 UTC) — Shareable agent listings (OpenGraph).**
+  Added site-wide OpenGraph + Twitter-card defaults in the root layout, and agent-specific OG/Twitter
+  (title, description, canonical URL) on the profile, so shared links render rich previews. Also fixed
+  a double "— Agent Market" in the profile title. `app/layout.tsx` + `app/agents/[id]/page.tsx`. ✓.
 
 ---
 
