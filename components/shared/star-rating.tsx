@@ -27,7 +27,13 @@ export function StarRating({
 
   return (
     <div className={cn("inline-flex items-center gap-1.5", className)}>
-      <div className="flex items-center" role={interactive ? "radiogroup" : undefined}>
+      <div
+        className="flex items-center"
+        role={interactive ? "radiogroup" : "img"}
+        aria-label={
+          interactive ? "Rate this agent" : `${rating.toFixed(1)} out of 5 stars`
+        }
+      >
         {[1, 2, 3, 4, 5].map((i) => {
           const filled = i <= Math.round(display);
           const star = (
@@ -51,7 +57,9 @@ export function StarRating({
               {star}
             </button>
           ) : (
-            <span key={i}>{star}</span>
+            <span key={i} aria-hidden>
+              {star}
+            </span>
           );
         })}
       </div>

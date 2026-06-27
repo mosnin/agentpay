@@ -27,12 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 104 — Accessible label for `StarRating`.**
-Continuing the a11y sweep: `components/shared/star-rating.tsx` renders rating stars (reviews, profile
-header) that are likely visual-only. Give the read-only display an `aria-label` like "4.8 out of 5
-stars" (and `role="img"` on the star group / `aria-hidden` on the individual icons) so screen-reader
-users get the rating. Keep the interactive (onChange) variant keyboard/AT-usable too. Bounded to
-`star-rating.tsx`. Verify tsc/lint/build, push.
+**Step 105 — Accessible label for the reputation score.**
+Next in the a11y sweep: `components/shared/reputation-score.tsx` (the score shown on cards/profiles,
+incl. a "ring" variant) is likely a visual-only number/ring. Give it `role="img"` + `aria-label`
+"Reputation NN out of 100" (and `aria-hidden` on purely decorative ring SVG bits) so screen-reader
+users get the value. Verify it isn't already labeled; if it is, ship the next-best small a11y win and
+note it. Bounded to `reputation-score.tsx`. Verify tsc/lint/build, push.
 
 > Status: comprehensively complete, regression- and scope-audited (both clean), 68 tests, optimized CI.
 > Remaining items are fine-polish/a11y. Standing offer to wind the loop down early.
@@ -535,6 +535,10 @@ users get the rating. Keep the interactive (onChange) variant keyboard/AT-usable
   The Recharts charts were visual-only; wrapped each `ChartCard` chart in a `role="img"` region with an
   `aria-label` summarizing the data (title + N data points + total + peak, respecting value prefix/suffix)
   so screen-reader users get the chart's meaning. `components/dashboard/chart-card.tsx`. tsc/lint/build ✓.
+- **Iteration 104 (16:30 UTC) — Accessible `StarRating`.**
+  The read-only star display had no accessible label and exposed decorative SVGs. Gave it `role="img"` +
+  `aria-label` "X out of 5 stars" with the individual icons `aria-hidden`; the interactive variant keeps
+  its labeled radiogroup. `components/shared/star-rating.tsx`. tsc/lint/build ✓.
 
 ---
 
