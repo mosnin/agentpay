@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -24,6 +24,10 @@ export const metadata: Metadata = {
     description:
       "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0b",
 };
 
 export default function RootLayout({

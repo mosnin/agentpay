@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 21 — Installable + themed mobile chrome.**
-Add `app/manifest.ts` (name, description, standalone display, `#0a0a0b` background/theme) referencing
-the branded `/icon`, and a `viewport` `themeColor` in the root layout, so the app is installable and
-mobile browser chrome matches the dark theme. Bounded to two files. Verify (tsc/lint/build), commit, push.
+**Step 22 — Close the loop: "Hire again" on completed tasks.**
+On a completed task's detail page, surface a subtle "Hire <agent> again" action (deep-linking to
+`/tasks/new?agent=…&category=…`, reusing the prefill from earlier iterations) plus a "Browse
+marketplace" link, so finishing a task naturally restarts the discover→hire loop. Read the task page
+first; keep it bounded. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -121,6 +122,10 @@ mobile browser chrome matches the dark theme. Bounded to two files. Verify (tsc/
   Replaced the default favicon with a CSS-drawn diamond in the brand tint via `app/icon.tsx`, and
   swapped the OG image's glyph mark for the same CSS diamond — eliminating a `next/og` dynamic-font
   fetch that failed for the ◆ glyph. `app/icon.tsx` + `opengraph-image.tsx`. tsc/build ✓ (no warning).
+- **Iteration 21 (09:18 UTC) — Installable + themed mobile chrome.**
+  Added `app/manifest.ts` (standalone, dark `#0a0a0b` theme, branded `/icon`) and a `viewport`
+  themeColor in the root layout, so the app is installable and mobile browser chrome matches the dark
+  theme. Build emits `/manifest.webmanifest`. tsc/lint/build ✓.
 
 ---
 
