@@ -27,16 +27,16 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 109 — Lock `deadlineStatus`'s urgency thresholds with tests.**
-`deadlineStatus(deadline, now)` in `lib/utils.ts` drives the color/urgency of every deadline chip in
-the task lists (overdue → red, ≤24h → amber "soon", else muted "normal"), but it has no unit test, so
-a boundary regression would ship silently. Add a small test file (`lib/__tests__/deadline-status.test.ts`)
-asserting: a past deadline → `tone: "overdue"`, a deadline well under 24h → `tone: "soon"`, and one
-several days out → `tone: "normal"`, plus that the boundary near 24h behaves as intended. Pure-function,
-bounded to a new test file. If a richer win surfaces (e.g. `statusesForFilter` coverage), note it.
-Verify test + tsc/lint, push.
+**Step 110 — Lock the `/tasks` filter map (`statusesForFilter` / `TASK_FILTERS`) with tests.**
+The `/tasks` index pills depend on `statusesForFilter(key)` (lib/constants.ts) returning the right
+status set per tab — most importantly `active` = exactly the in-progress statuses (pending, accepted,
+running, submitted, validating) and `all` = no status constraint, while completed/disputed/cancelled
+each map to their single status. A regression here would silently show the wrong tasks under a tab.
+Add `lib/__tests__/task-filters.test.ts` asserting: every `TASK_FILTERS` key resolves; `active` is
+exactly those 5 statuses; single-status tabs map 1:1; `all` returns no constraint; and every returned
+status is a valid `TaskStatus`. Pure, bounded to a new test file. Verify test + tsc/lint, push.
 
-> Status: comprehensively complete, regression- and scope-audited, 71 tests, optimized CI, a11y +
+> Status: comprehensively complete, regression- and scope-audited, 78 tests, optimized CI, a11y +
 > reduced-motion passes done. The loop has effectively converged — remaining items are fine-polish.
 > Standing offer to the user to wind it down early.
 
@@ -566,6 +566,11 @@ Verify test + tsc/lint, push.
   explanation note, a no-schema artifact still scores ≥70 (never short-circuits to 0) with the
   heuristic note, and a schema-checked verdict carries the "Artifact present" + schema + score notes.
   71 tests pass (was 68). tsc/lint ✓.
+- **Iteration 109 (13:09 UTC) — Locked `deadlineStatus`'s urgency thresholds with tests.**
+  `deadlineStatus` colors every deadline chip but had no test. Added `lib/__tests__/deadline-status.test.ts`
+  (7 cases): past/at-now → `overdue`, within-24h → `soon` (incl. the exact 24h boundary), past-24h and
+  days-out → `normal`, and Date/string/number inputs treated equivalently. A boundary regression now
+  fails CI instead of shipping. 78 tests pass (was 71). tsc/lint ✓.
 
 ---
 
