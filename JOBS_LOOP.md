@@ -27,12 +27,15 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 53 — GitHub issue templates.**
-Add `.github/ISSUE_TEMPLATE/bug_report.md` and `feature_request.md` (plus a `config.yml` to point
-casual questions at discussions/README) so reported issues arrive structured — reproduction steps,
-expected/actual, environment for bugs; problem/proposal/alternatives for features. Matches the PR
-template and CONTRIBUTING already in place. Bounded to the `.github/ISSUE_TEMPLATE/` dir. Verify
-(tsc/lint — docs-only), commit, push.
+**Step 54 — License the repo (MIT).**
+The repo has no `LICENSE` file, so reuse terms are undefined — README/CONTRIBUTING invite
+contribution but nothing states the license. Add a standard MIT `LICENSE` and a one-line License
+section at the bottom of the README pointing to it. Bounded to two files. Verify (tsc/lint —
+docs-only), commit, push.
+
+> After this, the repo-hygiene track (CI, dependabot, templates, security, contributing, license) is
+> essentially complete; the next pivots should return to in-app craft on the core loop (e.g.
+> optimistic UI on task actions, or a copy/empty-state pass) unless the user redirects.
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -250,6 +253,11 @@ template and CONTRIBUTING already in place. Bounded to the `.github/ISSUE_TEMPLA
   steps, the four quality gates (typecheck / lint / test / build) that mirror CI, branch & commit
   conventions, a project-structure map, and pointers to README/SECURITY — so new contributors land
   ready to run the same gates the loop enforces. `CONTRIBUTING.md` (docs-only). tsc/lint ✓.
+- **Iteration 53 (11:34 UTC) — GitHub issue templates.**
+  Added `.github/ISSUE_TEMPLATE/bug_report.md` (repro / expected / actual / environment),
+  `feature_request.md` (problem / proposal / alternatives, framed around the core loop), and
+  `config.yml` (disable blank issues; point setup questions at the README) — so reported issues arrive
+  structured, matching the PR template + CONTRIBUTING. tsc/lint ✓ (docs/config-only).
 
 ---
 
