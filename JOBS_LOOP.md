@@ -27,10 +27,12 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 4 — Instant discovery: wire the ⌘K command palette.**
-Make the global ⌘K palette (`components/layout/search-command.tsx`) actually jump — search agents by
-name/category and navigate to their profile, plus quick actions (Create task, Marketplace, Dashboard,
-List an agent). Read the component first; keep it bounded. Verify (tsc/lint/build), commit, push.
+**Step 5 — Dashboard "Needs your attention".**
+Add a section pinned near the top of `/dashboard` that surfaces tasks awaiting the operator's *own*
+action — submitted (run validation), validating (complete & release payment), and completed-but-
+unreviewed (leave a review) — each linking to the task with the next action named, so the operator
+always knows the next move. Add a focused query in `lib/queries.ts` and a component in
+`components/dashboard/`. Keep it bounded. Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -46,6 +48,10 @@ List an agent). Read the component first; keep it bounded. Verify (tsc/lint/buil
 - **Iteration 3 (07:56 UTC) — Sensible default deadline.**
   The new-task form now defaults the deadline to a week out (editable, with a hint) instead of empty,
   so a hired task lands ready to submit. `create-task-form.tsx`. tsc/lint/build ✓.
+- **Iteration 4 (08:05 UTC) — ⌘K jumps to agents.**
+  The command palette now lazily fetches `/api/agents` on first open and lists every agent (search by
+  name / category / capability); Enter jumps straight to its profile, alongside Pages and Categories.
+  Delivers on the "Search agents…" promise. `components/layout/search-command.tsx`. tsc/lint/build ✓.
 
 ---
 

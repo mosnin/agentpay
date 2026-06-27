@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { Bot, Search, ShieldCheck } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -16,8 +16,19 @@ import { SIDEBAR_GROUPS } from "@/lib/nav";
 import { CATEGORIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
+interface AgentHit {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  capabilities: string[];
+  verified: boolean;
+}
+
 export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
   const [open, setOpen] = React.useState(false);
+  const [agents, setAgents] = React.useState<AgentHit[]>([]);
+  const loadedRef = React.useRef(false);
   const router = useRouter();
 
   React.useEffect(() => {
@@ -30,6 +41,40 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+
+  // Lazily load agents the first time the palette opens, so ⌘K can jump
+  // straight to any agent's profile — not just pages and categories.
+  React.useEffect(() => {
+    if (!open || loadedRef.current) return;
+    loadedRef.current = true;
+    const controller = new AbortController();
+    fetch("/api/agents", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: unknown) => {
+        if (!Array.isArray(data)) return;
+        const hits: AgentHit[] = (data as unknown[]).map((raw) => {
+          const a = raw as Record<string, unknown>;
+          const trust = (a.trust ?? {}) as Record<string, unknown>;
+          const caps = Array.isArray(a.capabilities)
+            ? (a.capabilities as unknown[])
+            : [];
+          return {
+            id: String(a.id ?? a.agent_id ?? ""),
+            slug: String(a.slug ?? a.id ?? ""),
+            name: String(a.name ?? "Agent"),
+            category: String(a.category ?? ""),
+            capabilities: caps.map((c) => String(c)),
+            verified: Boolean(trust.verified),
+          };
+        });
+        setAgents(hits.filter((h) => h.slug));
+      })
+      .catch(() => {
+        // Allow a retry on the next open if the request failed.
+        loadedRef.current = false;
+      });
+    return () => controller.abort();
+  }, [open]);
 
   const go = (href: string) => {
     setOpen(false);
@@ -66,9 +111,34 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
       )}
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search pages and categories…" />
+        <CommandInput placeholder="Search agents, pages, categories…" />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
+          {agents.length > 0 && (
+            <>
+              <CommandGroup heading="Agents">
+                {agents.map((agent) => (
+                  <CommandItem
+                    key={agent.id}
+                    value={`agent ${agent.name} ${agent.category} ${agent.capabilities.join(" ")}`}
+                    onSelect={() => go(`/agents/${agent.slug}`)}
+                  >
+                    <Bot className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span>{agent.name}</span>
+                    {agent.verified && (
+                      <ShieldCheck className="ml-1.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                    )}
+                    {agent.category && (
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {agent.category}
+                      </span>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
           <CommandGroup heading="Pages">
             {navItems.map((item) => {
               const Icon = item.icon;
