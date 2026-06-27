@@ -215,6 +215,12 @@ function lastNDays(n: number): { date: string; key: string }[] {
   return days;
 }
 
+/** Triage sort key: earliest deadline first, undated next, completed (no time pressure) last. */
+function urgencyRank(item: { status: string; deadline: Date | string | null }): number {
+  if (item.status === "completed") return Number.POSITIVE_INFINITY;
+  return item.deadline ? new Date(item.deadline).getTime() : Number.MAX_SAFE_INTEGER;
+}
+
 export async function getDashboardData(userId: string) {
   const [
     ownedAgents,
@@ -331,7 +337,10 @@ export async function getDashboardData(userId: string) {
       budget: t.budget,
       currency: t.currency,
       deadline: t.deadline,
-    }));
+    }))
+    // Most time-critical first: earliest deadline → no-deadline → completed
+    // (no time pressure). Stable, so the updatedAt order holds within a tier.
+    .sort((a, b) => urgencyRank(a) - urgencyRank(b));
 
   return {
     stats: {

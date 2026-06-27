@@ -27,12 +27,13 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 58 — Order the triage list by urgency.**
-Now that "Needs your attention" shows urgency, it should also be *ordered* by it: overdue first, then
-due-soon, then the rest — so the most time-critical task is always at the top (the badge tells you
-*which*, the order means you don't have to scan). Sort the mapped `needsAttention` array in
-`getDashboardData` by time-to-deadline ascending (no deadline sorts last), as a stable secondary to
-the existing `updatedAt` ordering. Bounded to `lib/queries.ts`. Verify tsc/lint/build, push.
+**Step 59 — Deadline urgency on the seller's inbound tasks.**
+Completes the deadline story on the *delivering* side — the seller has the strongest reason to see
+"due soon / overdue." Reuse the shared `DeadlineBadge` (`urgentOnly`) on the rows in
+`app/seller/inbound-tasks.tsx` for active inbound tasks (confirm `TaskListItem` carries `deadline`;
+add to the include/type if missing). Bounded to the seller inbound list (+ type/query if needed).
+Verify tsc/lint/build, push. After this, deadlines "just work" everywhere they matter — pivot the next
+step to a fresh core-loop surface (e.g. a delight moment on task completion, or a copy pass).
 
 > Note: remaining untested logic (`reputation.ts`, `payments.ts`, `auth.ts`) is DB-bound — it would
 > need integration tests against Postgres rather than unit tests; deferred to keep the loop low-risk.
@@ -277,6 +278,11 @@ the existing `updatedAt` ordering. Bounded to `lib/queries.ts`. Verify tsc/lint/
   "Needs your attention" rows (active tasks only), threaded `deadline` through `getDashboardData` +
   `NeedsAttentionItem`, and refactored the task-detail chip to reuse the same component (removing
   duplication). test 57 ✓, tsc/lint/build ✓.
+- **Iteration 58 (11:54 UTC) — Ordered the triage list by urgency.**
+  "Needs your attention" now *sorts* by urgency via a `urgencyRank` key — earliest deadline first, then
+  undated, then completed-awaiting-review (no time pressure) last — as a stable secondary to the
+  existing `updatedAt` order, so the most time-critical task is always on top. `lib/queries.ts`.
+  tsc/lint/build ✓.
 
 ---
 
