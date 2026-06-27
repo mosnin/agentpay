@@ -1,5 +1,6 @@
 import { FileCode2, ShieldCheck, Target } from "lucide-react";
 import { JsonViewer } from "@/components/shared/json-viewer";
+import { Badge } from "@/components/ui/badge";
 import { PAYMENT_MODES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -53,11 +54,7 @@ export function TaskContractPreview({
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          {paymentLabel && (
-            <span className="rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 text-muted-foreground">
-              {paymentLabel}
-            </span>
-          )}
+          {paymentLabel && <Badge variant="secondary">{paymentLabel}</Badge>}
           {contract.contractHash && (
             <span className="break-all font-mono text-muted-foreground">{contract.contractHash}</span>
           )}

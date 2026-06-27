@@ -27,10 +27,11 @@ the deadline. One bounded, verified improvement per iteration — never a broken
 
 ## ▶ Next step
 
-**Step 33 — Badge consistency: payment-mode pill.**
-The payment-mode indicator in `components/tasks/task-contract-preview.tsx` is a hand-rolled pill
-(`px-2`, off from the shared `px-2.5`). Replace it with a `<Badge variant="secondary">` so it matches
-the other badges' shape/size. Read it first; bounded. Verify (tsc/lint/build), commit, push.
+**Step 34 — Badge consistency: admin flag pill.**
+The admin moderation view flags suspicious tasks with a raw amber pill (`amber-500/10 text-amber-300`).
+Replace it with `<Badge variant="warning">` so it matches the shared badge shape/size and the new
+warning token. Read `components/admin/admin-tabs.tsx` (and any admin flag usage) first; bounded.
+Verify (tsc/lint/build), commit, push.
 
 ---
 
@@ -168,6 +169,9 @@ the other badges' shape/size. Read it first; bounded. Verify (tsc/lint/build), c
   Added a subtle `warning` variant to the shared `Badge` (using the `--warning` token) and replaced the
   hand-rolled amber "required" pill in `mcp-tools` with it, so parameter pills share one Badge
   shape/size. `components/ui/badge.tsx` + `components/agents/mcp-tools.tsx`. tsc/lint/build ✓.
+- **Iteration 33 (10:06 UTC) — Badge consistency: payment-mode pill.**
+  Replaced the hand-rolled payment-mode pill in `task-contract-preview` with `<Badge variant="secondary">`,
+  matching the other badges' shape/size. tsc/lint/build ✓.
 
 ---
 
