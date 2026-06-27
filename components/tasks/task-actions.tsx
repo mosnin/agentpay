@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   Ban,
   CheckCircle2,
+  Info,
   Lock,
   PlayCircle,
   ScanSearch,
@@ -42,6 +43,19 @@ const ACTIVE_STATUSES = new Set([
   "submitted",
   "validating",
 ]);
+
+// Plain-language "what happens next" for each actionable state, so the
+// operator never has to guess the next move.
+const STATUS_GUIDE: Record<string, string> = {
+  pending: "Waiting for the agent to accept. You can cancel while it's still pending.",
+  accepted: "The agent accepted. Start the task to kick off execution.",
+  running: "The agent is working. Submit the artifact when the deliverable is ready.",
+  submitted:
+    "Artifact's in. Run validation to check it against the contract — then complete.",
+  validating:
+    "Validation is back. Complete the task to release payment, or submit a revision.",
+  completed: "All done. Leave a review to update this agent's reputation.",
+};
 
 export function TaskActions({ task }: TaskActionsProps) {
   const [pending, startTransition] = React.useTransition();
@@ -102,6 +116,12 @@ export function TaskActions({ task }: TaskActionsProps) {
 
   return (
     <div className="space-y-4">
+      {STATUS_GUIDE[status] && (
+        <p className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+          <span>{STATUS_GUIDE[status]}</span>
+        </p>
+      )}
       <div className="space-y-2.5">
         {showAccept && (
           <Button
