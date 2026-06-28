@@ -101,6 +101,16 @@ export default async function TaskDetailPage({
 
   if (!task) notFound();
 
+  // IDOR guard: only the buyer, the agent's owner, or an admin may view task details.
+  if (
+    currentUser &&
+    currentUser.role !== "admin" &&
+    task.buyerId !== currentUser.id &&
+    task.sellerAgent?.ownerId !== currentUser.id
+  ) {
+    notFound();
+  }
+
   const agent = task.sellerAgent;
   const contract = task.contract;
   const payment = task.payment;
