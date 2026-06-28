@@ -158,7 +158,8 @@ export async function updateAgent(values: unknown): Promise<ActionResult<{ id: s
 
 export async function verifyAgent(agentId: string): Promise<ActionResult> {
   try {
-    await requireUser();
+    const user = await requireUser();
+    if (user.role !== "admin") return { ok: false, error: "Forbidden: admin role required." };
     const agent = await prisma.agent.update({
       where: { id: agentId },
       data: { verified: true },
@@ -177,7 +178,8 @@ export async function setAgentStatus(
   status: "active" | "paused" | "suspended" | "draft",
 ): Promise<ActionResult> {
   try {
-    await requireUser();
+    const user = await requireUser();
+    if (user.role !== "admin") return { ok: false, error: "Forbidden: admin role required." };
     const agent = await prisma.agent.update({ where: { id: agentId }, data: { status } });
     revalidateAgentSurfaces(agent.slug);
     return { ok: true };

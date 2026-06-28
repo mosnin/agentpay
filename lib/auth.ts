@@ -33,6 +33,19 @@ export async function requireUser() {
   return user;
 }
 
+/**
+ * Require the current user AND that they hold the "admin" role.
+ * Throws an authorization error otherwise — callers should catch and return
+ * a 403 / notFound() response rather than letting the exception bubble up.
+ */
+export async function requireAdmin() {
+  const user = await requireUser();
+  if (user.role !== "admin") {
+    throw new Error("Forbidden: admin role required.");
+  }
+  return user;
+}
+
 export async function getCurrentOrganization() {
   const user = await getCurrentUser();
   return user?.organization ?? null;

@@ -207,6 +207,7 @@ model Task {
   @@index([category])
   @@index([buyerId])
   @@index([sellerAgentId])
+  @@index([updatedAt])
 }
 
 model TaskContract {
@@ -267,6 +268,7 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([taskId, userId])
   @@index([agentId])
   @@index([taskId])
 }

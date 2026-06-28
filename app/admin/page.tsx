@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Bot, ShieldAlert, Scale, Wallet } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
 import { getAdminData } from "@/lib/queries";
+import { requireAdmin } from "@/lib/auth";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { AdminTabs } from "./admin-tabs";
 
@@ -14,6 +16,12 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
+  try {
+    await requireAdmin();
+  } catch {
+    notFound();
+  }
+
   const data = await getAdminData();
 
   const agents = data.agents.map((a) => ({

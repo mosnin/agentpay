@@ -4,6 +4,8 @@ import { createTask } from "@/lib/actions/tasks";
 import { getTaskById, getUserTasks } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/auth";
 import { statusesForFilter } from "@/lib/constants";
+import { getRateLimitKey } from "@/lib/api-auth";
+import { strictRateLimit } from "@/lib/ratelimit";
 
 /** Derive a concise title from the first ~8 words of the objective. */
 function titleFromObjective(objective: string): string {
@@ -50,6 +52,11 @@ export async function GET(request: NextRequest) {
 // Auth is mocked for the MVP: the task is created on behalf of the demo operator.
 export async function POST(request: Request) {
   try {
+    const rl = strictRateLimit(getRateLimitKey(request));
+    if (!rl.ok) {
+      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    }
+
     let raw: unknown;
     try {
       raw = await request.json();
