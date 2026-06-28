@@ -108,6 +108,7 @@ async function transition(
   allowedFrom: string[],
   to: string,
 ): Promise<ActionResult> {
+  await requireUser();
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     select: { status: true },
@@ -188,6 +189,7 @@ export async function submitArtifact(
   }
 
   try {
+    await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       select: { status: true },
@@ -218,6 +220,7 @@ export async function submitArtifact(
 
 export async function runValidation(taskId: string): Promise<ActionResult<{ score: number; status: string }>> {
   try {
+    await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       include: {
@@ -261,6 +264,7 @@ export async function runValidation(taskId: string): Promise<ActionResult<{ scor
 
 export async function completeTask(taskId: string): Promise<ActionResult> {
   try {
+    await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       select: { status: true, sellerAgentId: true },
@@ -289,6 +293,7 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
 // transitions, so it genuinely exercises validation, payment, and reputation.
 export async function simulateTask(taskId: string): Promise<ActionResult> {
   try {
+    await requireUser();
     const existing = await prisma.task.findUnique({
       where: { id: taskId },
       select: { status: true },
