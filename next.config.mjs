@@ -2,22 +2,41 @@
 
 const isDev = process.env.NODE_ENV === "development";
 
+// When Clerk is configured, the CSP must admit its frontend API, avatar CDN,
+// telemetry, and the Cloudflare Turnstile bot-protection frame it embeds.
+// Development instances live on *.clerk.accounts.dev; production instances
+// use a Frontend API host on your own domain (clerk.<your-domain>) — covered
+// by 'self' plus the wildcard below. Directives stay strict when keyless.
+const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+const clerkScript = hasClerk
+  ? " https://*.clerk.accounts.dev https://challenges.cloudflare.com"
+  : "";
+const clerkConnect = hasClerk
+  ? " https://*.clerk.accounts.dev https://clerk-telemetry.com"
+  : "";
+const clerkImg = hasClerk ? " https://img.clerk.com" : "";
+const clerkFrame = hasClerk ? "frame-src https://challenges.cloudflare.com" : "";
+
 const CSP = [
   "default-src 'self'",
   // unsafe-eval is required only by dev HMR — production ships without it.
   // unsafe-inline remains for Next.js's inline bootstrap scripts (a nonce
   // strategy requires per-request CSP via middleware; revisit post-MVP).
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}${clerkScript}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://avatars.githubusercontent.com https://images.unsplash.com",
+  `img-src 'self' data: blob: https://avatars.githubusercontent.com https://images.unsplash.com${clerkImg}`,
   "font-src 'self'",
-  "connect-src 'self'",
+  `connect-src 'self'${clerkConnect}`,
+  hasClerk ? "worker-src 'self' blob:" : "",
+  clerkFrame,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "upgrade-insecure-requests",
-].join("; ");
+]
+  .filter(Boolean)
+  .join("; ");
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: CSP },

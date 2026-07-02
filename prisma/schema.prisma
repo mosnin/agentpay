@@ -86,6 +86,7 @@ enum ReputationEventType {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  clerkId   String?  @unique
   name      String?
   image     String?
   role      String   @default("operator")
