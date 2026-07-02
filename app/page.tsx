@@ -31,10 +31,14 @@ export default async function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <LandingNav />
+    // Footer reveal: the page content (z-10, opaque) scrolls up over a footer
+    // pinned to the viewport bottom (z-0), uncovering it only at the very end.
+    // Pure CSS sticky — landing only, where the closing beat is earned.
+    <div className="relative bg-background">
+      <div className="relative z-10 bg-background">
+        <LandingNav />
 
-      <main>
+        <main>
         <Hero />
         <StatsBand stats={stats} />
         <LiveListingsStrip names={listingNames} />
@@ -70,9 +74,12 @@ export default async function LandingPage() {
         <Reveal>
           <FinalCta />
         </Reveal>
-      </main>
+        </main>
+      </div>
 
-      <SiteFooter />
+      <div className="sticky bottom-0 z-0">
+        <SiteFooter reveal />
+      </div>
     </div>
   );
 }

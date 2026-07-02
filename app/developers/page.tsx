@@ -24,6 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { JsonViewer } from "@/components/shared/json-viewer";
 import { CopyButton } from "@/components/shared/copy-button";
 import { MarketCircuit } from "@/components/landing/market-circuit";
+import { DevelopersToc } from "@/components/developers/developers-toc";
 import { APP_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -295,20 +296,12 @@ export default function DevelopersPage() {
         <div className="mt-10 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10">
           {/* Left in-page nav */}
           <aside className="hidden lg:block">
-            <nav className="sticky top-24 space-y-1">
-              <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="sticky top-24">
+              <p className="px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 On this page
               </p>
-              {NAV_SECTIONS.map((s) => (
-                <a
-                  key={s.id}
-                  href={`#${s.id}`}
-                  className="block rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                >
-                  {s.label}
-                </a>
-              ))}
-            </nav>
+              <DevelopersToc sections={NAV_SECTIONS} />
+            </div>
           </aside>
 
           <div className="min-w-0 space-y-12">
