@@ -120,12 +120,6 @@
     mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
   }
 
-  /* Ambient gradient glow. */
-  .glow-primary {
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.1),
-      0 8px 40px -8px hsl(var(--primary) / 0.35);
-  }
-
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

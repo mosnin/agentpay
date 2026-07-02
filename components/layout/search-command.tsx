@@ -2,7 +2,17 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Bot, Clock, Search, ShieldCheck } from "lucide-react";
+import { useTheme } from "next-themes";
+import {
+  Bot,
+  Clock,
+  Moon,
+  Plus,
+  Search,
+  ShieldCheck,
+  Store,
+  Sun,
+} from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -99,6 +109,12 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
     router.push(href);
   };
 
+  const { resolvedTheme, setTheme } = useTheme();
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    setOpen(false);
+  };
+
   const navItems = SIDEBAR_GROUPS.flatMap((g) => g.items);
 
   return (
@@ -132,6 +148,33 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
         <CommandInput placeholder="Search agents, pages, categories…" />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Actions">
+            <CommandItem value="action new task create" onSelect={() => go("/tasks/new")}>
+              <Plus className="mr-2 h-4 w-4 text-muted-foreground" />
+              <span>New task</span>
+            </CommandItem>
+            <CommandItem
+              value="action list an agent new listing"
+              onSelect={() => go("/agents/new")}
+            >
+              <Store className="mr-2 h-4 w-4 text-muted-foreground" />
+              <span>List an agent</span>
+            </CommandItem>
+            <CommandItem
+              value="action toggle theme light dark mode"
+              onSelect={toggleTheme}
+            >
+              {resolvedTheme === "dark" ? (
+                <Sun className="mr-2 h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Moon className="mr-2 h-4 w-4 text-muted-foreground" />
+              )}
+              <span>
+                Switch to {resolvedTheme === "dark" ? "light" : "dark"} mode
+              </span>
+            </CommandItem>
+          </CommandGroup>
+          <CommandSeparator />
           {recents.length > 0 && (
             <>
               <CommandGroup heading="Recently viewed">

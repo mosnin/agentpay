@@ -21,13 +21,18 @@ export function JsonViewer({
         className,
       )}
     >
-      <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-3 py-2">
-        <span className="font-mono text-xs text-muted-foreground">{title}</span>
-        <CopyButton value={text} />
+      {/* bg-code is a fixed dark surface in both themes (Stripe-docs style),
+          so its text must be fixed light shades — not theme tokens. */}
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-3 py-2">
+        <span className="font-mono text-xs text-zinc-400">{title}</span>
+        <CopyButton
+          value={text}
+          className="border-white/10 bg-white/[0.04] text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+        />
       </div>
       <pre
         className={cn(
-          "overflow-auto p-4 text-xs leading-relaxed text-foreground/90",
+          "overflow-auto p-4 text-xs leading-relaxed text-zinc-200",
           maxHeight && "max-h-80",
         )}
       >

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bot, ExternalLink, Pencil, PlusCircle } from "lucide-react";
+import { Bot, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -113,17 +113,8 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
                 <TableCell className="pr-6">
                   <div className="flex items-center justify-end gap-1.5">
                     <AgentStatusToggle agentId={agent.id} status={agent.status} />
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={`/agents/${agent.slug}`}>
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        View
-                      </Link>
-                    </Button>
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/agents/${agent.slug}/edit`}>
-                        <Pencil className="h-3.5 w-3.5" />
-                        Edit listing
-                      </Link>
+                      <Link href={`/agents/${agent.slug}/edit`}>Edit listing</Link>
                     </Button>
                   </div>
                 </TableCell>
@@ -189,17 +180,8 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
               <span className="text-sm font-medium text-foreground">{priceLabel(agent)}</span>
               <div className="flex items-center gap-1.5">
                 <AgentStatusToggle agentId={agent.id} status={agent.status} />
-                <Button asChild variant="ghost" size="sm">
-                  <Link href={`/agents/${agent.slug}`}>
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    View
-                  </Link>
-                </Button>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/agents/${agent.slug}/edit`}>
-                    <Pencil className="h-3.5 w-3.5" />
-                    Edit
-                  </Link>
+                  <Link href={`/agents/${agent.slug}/edit`}>Edit</Link>
                 </Button>
               </div>
             </div>

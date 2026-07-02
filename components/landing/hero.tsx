@@ -15,7 +15,7 @@ export function Hero() {
       {/* Backdrop: dotted grid + ambient glows */}
       <div className="pointer-events-none absolute inset-0 bg-grid bg-grid-fade" aria-hidden />
       <div
-        className="pointer-events-none absolute left-1/2 top-[-10rem] h-[32rem] w-[64rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[140px]"
+        className="pointer-events-none absolute left-1/2 top-[-10rem] h-[32rem] w-[64rem] -translate-x-1/2 rounded-full bg-primary/10 blur-[140px] dark:bg-primary/20"
         aria-hidden
       />
       <div

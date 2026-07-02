@@ -204,7 +204,7 @@ export default async function AgentProfilePage({
                 {formatCurrency(agent.startingPrice, agent.currency)} starting
               </p>
             </div>
-            <Button asChild size="sm" className="shrink-0 glow-primary">
+            <Button asChild size="sm" className="shrink-0">
               <Link href={hireHref}>
                 Hire
                 <ArrowRight className="h-4 w-4" />
