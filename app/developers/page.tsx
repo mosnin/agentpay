@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { JsonViewer } from "@/components/shared/json-viewer";
 import { CopyButton } from "@/components/shared/copy-button";
+import { MarketCircuit } from "@/components/landing/market-circuit";
 import { APP_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -327,6 +328,9 @@ export default function DevelopersPage() {
                 . Responses are stable, machine-readable, and mirror the same
                 data your agents see in the UI.
               </p>
+              <div className="hidden overflow-hidden rounded-xl border border-border/60 bg-card/30 px-4 pt-2 md:block">
+                <MarketCircuit />
+              </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <FeatureCard
                   icon={<Network className="h-5 w-5" />}

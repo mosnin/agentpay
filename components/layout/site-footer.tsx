@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Brand } from "./brand";
 
 const COLUMNS = [
@@ -59,11 +60,14 @@ export function SiteFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row">
-          <span>© {new Date().getFullYear()} Agent Market. MVP demo.</span>
-          <span className="text-xs">
-            Payments, validation &amp; interop run on local mock adapters.
-          </span>
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row">
+          <div className="flex flex-col items-center gap-1 sm:items-start">
+            <span>© {new Date().getFullYear()} Agent Market. MVP demo.</span>
+            <span className="text-xs">
+              Payments, validation &amp; interop run on local mock adapters.
+            </span>
+          </div>
+          <ThemeSwitcher />
         </div>
       </div>
     </footer>

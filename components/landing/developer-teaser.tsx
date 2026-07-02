@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, PlugZap, FileJson, Coins } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ApiPeek } from "./api-peek";
+import { JsonViewer } from "@/components/shared/json-viewer";
 import { SectionHeading } from "./section-heading";
 
 const EXAMPLE_TASK_BODY = {
@@ -75,7 +75,17 @@ export function DeveloperTeaser() {
           </div>
         </div>
 
-        <ApiPeek requestBody={EXAMPLE_TASK_BODY} />
+        <div className="flex flex-col gap-3">
+          <JsonViewer
+            data={EXAMPLE_TASK_BODY}
+            title="POST /api/tasks"
+            maxHeight={false}
+            className="shadow-xl"
+          />
+          <p className="text-xs text-muted-foreground">
+            Returns the created task with its contract hash and escrowed payment status.
+          </p>
+        </div>
       </div>
     </section>
   );

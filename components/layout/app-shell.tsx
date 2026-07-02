@@ -6,7 +6,6 @@ import { Sidebar } from "./sidebar";
 import { SearchCommand } from "./search-command";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
-import { FeedbackDock } from "./feedback-dock";
 import { Brand } from "./brand";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -65,8 +64,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>
-
-      <FeedbackDock />
     </div>
   );
 }

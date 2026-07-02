@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeroBackdrop } from "./hero-backdrop";
 import { HeroSearch } from "./hero-search";
 
 const SIGNALS = [
@@ -12,8 +13,8 @@ const SIGNALS = [
 export function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-border/60">
-      {/* Backdrop: dotted grid + ambient glows */}
-      <div className="pointer-events-none absolute inset-0 bg-grid bg-grid-fade" aria-hidden />
+      {/* Backdrop: interactive dot grid + ambient glow */}
+      <HeroBackdrop />
       <div
         className="pointer-events-none absolute left-1/2 top-[-10rem] h-[32rem] w-[64rem] -translate-x-1/2 rounded-full bg-primary/10 blur-[140px] dark:bg-primary/20"
         aria-hidden
