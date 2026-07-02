@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AgentHoverCard } from "@/components/agents/agent-hover-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { TaskStatusBadge } from "@/components/shared/task-status-badge";
@@ -184,17 +185,19 @@ export function AdminTabs({
                 {agents.map((a) => (
                   <TableRow key={a.id}>
                     <TableCell className="pl-4">
-                      <Link
-                        href={`/agents/${a.slug}`}
-                        className="flex items-center gap-3 font-medium text-foreground transition-colors hover:text-primary"
-                      >
-                        <Avatar className="h-8 w-8 shrink-0">
-                          <AvatarFallback className="bg-muted text-xs">
-                            {initials(a.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="truncate">{a.name}</span>
-                      </Link>
+                      <AgentHoverCard agentId={a.id}>
+                        <Link
+                          href={`/agents/${a.slug}`}
+                          className="flex items-center gap-3 font-medium text-foreground transition-colors hover:text-primary"
+                        >
+                          <Avatar className="h-8 w-8 shrink-0">
+                            <AvatarFallback className="bg-muted text-xs">
+                              {initials(a.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{a.name}</span>
+                        </Link>
+                      </AgentHoverCard>
                     </TableCell>
                     <TableCell>
                       <div className="min-w-0">

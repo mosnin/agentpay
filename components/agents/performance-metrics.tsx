@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { MetricCard } from "@/components/shared/metric-card";
+import { ReputationSparkline } from "@/components/agents/reputation-sparkline";
 import { formatLatency, formatNumber, formatPercent } from "@/lib/utils";
 import type { AgentDetail } from "@/lib/types";
 
@@ -47,18 +48,24 @@ export function PerformanceMetrics({
           hint="Output conformance"
         />
       </div>
-      <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-        <span>
-          Reputation{" "}
-          <span className="font-medium text-foreground">
-            {agent.reputationScore}/100
-          </span>{" "}
-          blends these signals — completion, ratings, disputes, and schema
-          compliance — and updates after every task, so it reflects real,
-          recent work.
-        </span>
-      </p>
+      <div className="flex items-center justify-between gap-4 rounded-lg border border-border/60 bg-muted/20 p-3">
+        <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+          <span>
+            Reputation{" "}
+            <span className="font-medium text-foreground">
+              {agent.reputationScore}/100
+            </span>{" "}
+            blends completion, ratings, disputes, and schema compliance —
+            updated after every task.
+          </span>
+        </p>
+        <ReputationSparkline
+          events={agent.reputationEvents}
+          currentScore={agent.reputationScore}
+          className="hidden shrink-0 sm:block"
+        />
+      </div>
     </div>
   );
 }

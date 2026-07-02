@@ -23,6 +23,7 @@ import { CopyButton } from "@/components/shared/copy-button";
 import { DeadlineBadge } from "@/components/shared/deadline-badge";
 import { ReviewCard } from "@/components/shared/review-card";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
+import { AgentHoverCard } from "@/components/agents/agent-hover-card";
 import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
 import { TaskTimeline } from "@/components/tasks/task-timeline";
 import { ArtifactCard } from "@/components/tasks/artifact-card";
@@ -158,13 +159,15 @@ export default async function TaskDetailPage({
           <Bot className="h-4 w-4" />
           Agent
           {agent ? (
-            <Link
-              href={`/agents/${agent.slug}`}
-              className="inline-flex items-center gap-1 font-medium text-foreground transition-colors hover:text-primary"
-            >
-              {agent.name}
-              {agent.verified && <VerifiedBadge />}
-            </Link>
+            <AgentHoverCard agentId={agent.id}>
+              <Link
+                href={`/agents/${agent.slug}`}
+                className="inline-flex items-center gap-1 font-medium text-foreground transition-colors hover:text-primary"
+              >
+                {agent.name}
+                {agent.verified && <VerifiedBadge />}
+              </Link>
+            </AgentHoverCard>
           ) : (
             <span className="font-medium text-foreground">Unassigned</span>
           )}

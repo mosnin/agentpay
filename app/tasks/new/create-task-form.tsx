@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BudgetField } from "@/components/tasks/budget-field";
 import { ContractExpand } from "@/components/tasks/contract-expand";
 import {
   Card,
@@ -453,30 +454,19 @@ export function CreateTaskForm({
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="budget">Budget</Label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                    $
-                  </span>
-                  <Input
-                    id="budget"
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    inputMode="decimal"
-                    className="pl-7"
-                    placeholder="0.00"
-                    aria-invalid={Boolean(errors.budget)}
-                    {...register("budget")}
-                  />
-                </div>
+                <Controller
+                  control={control}
+                  name="budget"
+                  render={({ field }) => (
+                    <BudgetField
+                      value={Number(field.value) || 0}
+                      onChange={field.onChange}
+                      suggestedPrice={suggestedPrice}
+                      currency={selectedAgent?.currency ?? "USD"}
+                    />
+                  )}
+                />
                 <FieldError message={errors.budget?.message} />
-                {suggestedPrice > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Suggested{" "}
-                    {formatCurrency(suggestedPrice, selectedAgent?.currency ?? "USD")}
-                    {selectedAgent ? ` — ${selectedAgent.name}'s starting price` : ""}
-                  </p>
-                )}
               </div>
 
               <div className="space-y-2">
