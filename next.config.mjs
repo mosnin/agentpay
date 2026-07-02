@@ -1,8 +1,13 @@
 /** @type {import('next').NextConfig} */
 
+const isDev = process.env.NODE_ENV === "development";
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval needed by Next.js dev/HMR; tighten in prod via nonce strategy
+  // unsafe-eval is required only by dev HMR — production ships without it.
+  // unsafe-inline remains for Next.js's inline bootstrap scripts (a nonce
+  // strategy requires per-request CSP via middleware; revisit post-MVP).
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://avatars.githubusercontent.com https://images.unsplash.com",
   "font-src 'self'",

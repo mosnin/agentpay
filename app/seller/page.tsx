@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DashboardChart } from "@/components/dashboard/dashboard-chart";
+import { DashboardChart } from "@/components/dashboard/lazy-chart";
 import { requireUser } from "@/lib/auth";
 import { getSellerData } from "@/lib/queries";
 import { formatCurrency, formatNumber } from "@/lib/utils";

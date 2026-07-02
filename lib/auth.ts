@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "./prisma";
 
 // ---------------------------------------------------------------------------
@@ -15,12 +16,14 @@ export const DEMO_ORG_SLUG = "northwind-labs";
 
 export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
-export async function getCurrentUser() {
+// cache() dedupes the DB lookup across a single server request — layouts,
+// pages, and nested components can all call getCurrentUser() and share one query.
+export const getCurrentUser = cache(async () => {
   return prisma.user.findUnique({
     where: { email: DEMO_USER_EMAIL },
     include: { organization: true },
   });
-}
+});
 
 /** Throws if the demo user is missing (database not seeded). */
 export async function requireUser() {

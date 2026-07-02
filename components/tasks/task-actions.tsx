@@ -176,12 +176,14 @@ export function TaskActions({ task }: TaskActionsProps) {
         {showSubmit && (
           <SubmitArtifactDialog taskId={id} disabled={pending}>
             <Button
-              variant={status === "submitted" ? "outline" : "default"}
+              variant={optimisticStatus === "submitted" ? "outline" : "default"}
               className="w-full justify-start"
               disabled={pending}
             >
               <Upload />
-              {status === "submitted" ? "Submit another artifact" : "Submit artifact"}
+              {optimisticStatus === "submitted"
+                ? "Submit another artifact"
+                : "Submit artifact"}
             </Button>
           </SubmitArtifactDialog>
         )}
@@ -287,7 +289,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       {isTerminal && !showReview && (
         <p className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-xs text-muted-foreground">
           <Ban className="h-3.5 w-3.5 shrink-0" />
-          This task is {status}. No further actions are available.
+          This task is {optimisticStatus}. No further actions are available.
         </p>
       )}
 
