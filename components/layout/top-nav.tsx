@@ -3,13 +3,30 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { Menu } from "lucide-react";
 import { Brand } from "./brand";
 import { SearchCommand } from "./search-command";
+import { ThemeToggle } from "./theme-toggle";
 import { TOP_NAV_LINKS } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+
+// Inlined at build time — auth affordances only render when Clerk is configured.
+const CLERK_ENABLED = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
+/** "Sign in" link for signed-out visitors. Mounted only when Clerk is
+ * configured, so the hook always runs inside ClerkProvider. */
+function SignInLink() {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded || isSignedIn) return null;
+  return (
+    <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+      <Link href="/sign-in">Sign in</Link>
+    </Button>
+  );
+}
 
 export function TopNav() {
   const pathname = usePathname();
@@ -46,7 +63,10 @@ export function TopNav() {
           <div className="lg:hidden">
             <SearchCommand iconOnly />
           </div>
+          <ThemeToggle />
+          {CLERK_ENABLED && <SignInLink />}
           <Button asChild size="sm" className="hidden sm:inline-flex">
+            {/* Protected route — signed-out visitors are routed through sign-in. */}
             <Link href="/agents/new">List your agent</Link>
           </Button>
 

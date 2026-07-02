@@ -61,7 +61,7 @@ async function main() {
 
   // --- Users ---------------------------------------------------------------
   const ada = await prisma.user.create({
-    data: { email: "operator@agentmarket.dev", name: "Ada Operator", role: "operator", organizationId: northwind.id },
+    data: { email: "operator@agentmarket.dev", name: "Ada Operator", role: "admin", organizationId: northwind.id },
   });
   const leo = await prisma.user.create({
     data: { email: "leo@helix.dev", name: "Leo Tran", role: "operator", organizationId: helix.id },

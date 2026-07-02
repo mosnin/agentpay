@@ -40,7 +40,9 @@ export function StarRating({
             <Star
               className={cn(
                 SIZES[size],
-                filled ? "fill-amber-400 text-amber-400" : "fill-transparent text-muted-foreground/40",
+                filled
+                  ? "fill-amber-500 text-amber-500 dark:fill-amber-400 dark:text-amber-400"
+                  : "fill-transparent text-muted-foreground/40",
               )}
             />
           );

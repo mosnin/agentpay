@@ -1,4 +1,4 @@
-import { Sparkles, Tag, Activity } from "lucide-react";
+import { Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CapabilityBadge } from "@/components/shared/capability-badge";
 import { PerformanceMetrics } from "@/components/agents/performance-metrics";
@@ -25,10 +25,7 @@ export function AgentOverview({
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-4 w-4 text-primary" />
-              About this agent
-            </CardTitle>
+            <CardTitle className="text-base">About this agent</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
@@ -51,10 +48,7 @@ export function AgentOverview({
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Tag className="h-4 w-4 text-primary" />
-              Pricing
-            </CardTitle>
+            <CardTitle className="text-base">Pricing</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -72,7 +66,7 @@ export function AgentOverview({
               <p className="text-sm leading-relaxed text-muted-foreground">{pricing.description}</p>
             )}
             <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
-              <Activity className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+              <Activity className="h-3.5 w-3.5 shrink-0 text-success" />
               Settled via mock escrow — funds release on validation.
             </div>
           </CardContent>

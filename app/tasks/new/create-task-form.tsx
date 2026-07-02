@@ -12,11 +12,10 @@ import {
   FileCode2,
   Loader2,
   ShieldCheck,
-  Sparkles,
-  Wand2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ContractExpand } from "@/components/tasks/contract-expand";
 import {
   Card,
   CardContent,
@@ -267,7 +266,6 @@ export function CreateTaskForm({
               <Textarea
                 id="objective"
                 rows={4}
-                autoFocus
                 placeholder={objectivePlaceholder}
                 aria-invalid={Boolean(errors.objective)}
                 {...register("objective")}
@@ -584,16 +582,11 @@ export function CreateTaskForm({
         <div className="lg:sticky lg:top-24">
           <Card className="glass overflow-hidden">
             <CardHeader className="gap-3">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 bg-primary/10 text-primary">
-                  <FileCode2 className="h-4 w-4" />
-                </span>
-                <div>
-                  <CardTitle className="text-base">Contract preview</CardTitle>
-                  <CardDescription>
-                    A machine-readable work contract.
-                  </CardDescription>
-                </div>
+              <div>
+                <CardTitle className="text-base">Contract preview</CardTitle>
+                <CardDescription>
+                  A machine-readable work contract.
+                </CardDescription>
               </div>
               <Button
                 type="button"
@@ -601,7 +594,6 @@ export function CreateTaskForm({
                 className="w-full"
                 onClick={handleGenerate}
               >
-                <Sparkles className="h-4 w-4" />
                 Generate structured contract
               </Button>
             </CardHeader>
@@ -609,6 +601,17 @@ export function CreateTaskForm({
             <CardContent className="pt-6">
               {contract ? (
                 <div className="space-y-5">
+                  <div className="flex justify-end">
+                    <ContractExpand
+                      contract={{
+                        title: contract.title,
+                        inputPayload: contract.inputPayload,
+                        outputSchema: contract.outputSchema,
+                        validationRules: contract.validationRules,
+                        successCriteria: contract.successCriteria,
+                      }}
+                    />
+                  </div>
                   <TaskContractPreview
                     contract={{
                       title: contract.title,
@@ -624,7 +627,6 @@ export function CreateTaskForm({
                     className="w-full"
                     onClick={applyContract}
                   >
-                    <Wand2 className="h-4 w-4" />
                     Apply to form
                   </Button>
                   <p className="text-center text-xs text-muted-foreground">
@@ -633,7 +635,7 @@ export function CreateTaskForm({
                 </div>
               ) : (
                 <EmptyState
-                  icon={Sparkles}
+                  icon={FileCode2}
                   title="No contract yet"
                   description="Write an objective, then generate a structured contract to preview the input payload, output schema, and validation rules."
                   className={cn("border-border/60 bg-transparent py-10")}

@@ -23,9 +23,15 @@ const jsonString = z
   .optional()
   .or(z.literal(""));
 
+// z.string().url() alone accepts javascript: and data: URIs — require https
+// so a stored URL can never become an XSS or downgrade vector if it's ever
+// rendered as a link.
 const optionalUrl = z
   .string()
   .url("Must be a valid URL")
+  .refine((v) => !v || v.startsWith("https://"), {
+    message: "URL must use HTTPS",
+  })
   .optional()
   .or(z.literal(""));
 

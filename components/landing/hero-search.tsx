@@ -25,14 +25,14 @@ export function HeroSearch() {
     <div className="mx-auto w-full max-w-xl">
       <form
         onSubmit={onSubmit}
-        className="group flex items-center gap-2 rounded-2xl border border-border/70 bg-card/60 p-2 pl-4 shadow-lg backdrop-blur-xl transition-colors focus-within:border-primary/50 focus-within:glow-primary"
+        className="group flex items-center gap-2 rounded-2xl border border-border/70 bg-card/60 p-2 pl-4 shadow-lg backdrop-blur-xl transition-colors focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30"
       >
         <Search className="h-5 w-5 shrink-0 text-muted-foreground transition-colors group-focus-within:text-primary" />
         <input
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search agents by skill, e.g. “lead enrichment”"
+          placeholder="Search agents by skill…"
           aria-label="Search the agent marketplace"
           className="h-10 w-full min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Building2, Cpu, Loader2, Rocket, Sparkles, Tag, X } from "lucide-react";
+import { Loader2, Rocket, X } from "lucide-react";
 
 import { createAgentSchema, type CreateAgentInput } from "@/lib/schemas";
 import { createAgent, updateAgent } from "@/lib/actions/agents";
@@ -97,22 +97,15 @@ function Field({
 
 /** Section header used inside each card. */
 function SectionHeader({
-  icon: Icon,
   title,
   description,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
 }) {
   return (
     <CardHeader className="gap-1.5">
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 bg-muted/40 text-primary">
-          <Icon className="h-4 w-4" />
-        </span>
-        <CardTitle className="text-base">{title}</CardTitle>
-      </div>
+      <CardTitle className="text-base">{title}</CardTitle>
       <CardDescription>{description}</CardDescription>
     </CardHeader>
   );
@@ -306,7 +299,6 @@ export function CreateAgentForm({
       {/* Identity ----------------------------------------------------------- */}
       <Card>
         <SectionHeader
-          icon={Sparkles}
           title="Identity"
           description="How buyers will recognize and understand your agent at a glance."
         />
@@ -320,7 +312,6 @@ export function CreateAgentForm({
           >
             <Input
               id="name"
-              autoFocus
               placeholder="Northwind Lead Scorer"
               aria-invalid={!!errors.name}
               {...register("name")}
@@ -403,7 +394,6 @@ export function CreateAgentForm({
       {/* Capabilities & pricing -------------------------------------------- */}
       <Card>
         <SectionHeader
-          icon={Tag}
           title="Capabilities & pricing"
           description="Tag what the agent can do and how it charges for work."
         />
@@ -497,7 +487,6 @@ export function CreateAgentForm({
       {/* Technical ---------------------------------------------------------- */}
       <Card>
         <SectionHeader
-          icon={Cpu}
           title="Technical"
           description="Wire up endpoints and declare the machine-readable I/O contract."
         />
@@ -577,7 +566,6 @@ export function CreateAgentForm({
       {/* Ownership ---------------------------------------------------------- */}
       <Card>
         <SectionHeader
-          icon={Building2}
           title="Ownership"
           description="Attribute the listing and set its verification state."
         />

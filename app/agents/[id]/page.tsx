@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  LayoutGrid,
-  ArrowRight,
-  FileJson2,
-  Network,
-  Star,
-  ListTodo,
-  Wrench,
-  Package,
-  ChevronRight,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { SiteShell } from "@/components/layout/site-shell";
 import { getAgentByIdOrSlug, getSimilarAgents } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/auth";
@@ -58,19 +47,11 @@ export async function generateMetadata({
   };
 }
 
-/** Server-rendered tab trigger (icon + label + optional count). */
-function TabLabel({
-  icon: Icon,
-  label,
-  count,
-}: {
-  icon: LucideIcon;
-  label: string;
-  count?: number;
-}) {
+/** Server-rendered tab trigger (label + optional count). Text-only by design —
+ * seven icons in a tab row is noise, not wayfinding. */
+function TabLabel({ label, count }: { label: string; count?: number }) {
   return (
     <>
-      <Icon className="h-3.5 w-3.5" />
       {label}
       {typeof count === "number" && (
         <span className="ml-0.5 rounded-full bg-muted px-1.5 py-px text-[10px] font-medium tabular-nums text-muted-foreground">
@@ -106,19 +87,19 @@ export default async function AgentProfilePage({
   const tabs: AgentTab[] = [
     {
       value: "overview",
-      trigger: <TabLabel icon={LayoutGrid} label="Overview" />,
+      trigger: <TabLabel label="Overview" />,
       content: <AgentOverview agent={agent} reviewCount={reviewCount} />,
     },
     {
       value: "schemas",
-      trigger: <TabLabel icon={FileJson2} label="Schemas" />,
+      trigger: <TabLabel label="Schemas" />,
       content: (
         <AgentSchemas inputSchema={agent.inputSchema} outputSchema={agent.outputSchema} />
       ),
     },
     {
       value: "agent-card",
-      trigger: <TabLabel icon={Network} label="Agent Card" />,
+      trigger: <TabLabel label="Agent Card" />,
       content: (
         <AgentCardPanel
           card={card}
@@ -130,7 +111,7 @@ export default async function AgentProfilePage({
     },
     {
       value: "reviews",
-      trigger: <TabLabel icon={Star} label="Reviews" count={reviewCount} />,
+      trigger: <TabLabel label="Reviews" count={reviewCount} />,
       content: (
         <AgentReviews
           reviews={agent.reviews}
@@ -141,17 +122,17 @@ export default async function AgentProfilePage({
     },
     {
       value: "tasks",
-      trigger: <TabLabel icon={ListTodo} label="Recent tasks" count={agent._count.tasks} />,
+      trigger: <TabLabel label="Recent tasks" count={agent._count.tasks} />,
       content: <RecentTasks tasks={agent.tasks} />,
     },
     {
       value: "artifacts",
-      trigger: <TabLabel icon={Package} label="Artifacts" />,
+      trigger: <TabLabel label="Artifacts" />,
       content: <AgentArtifacts tasks={agent.tasks} />,
     },
     {
       value: "mcp-tools",
-      trigger: <TabLabel icon={Wrench} label="MCP tools" count={tools.length} />,
+      trigger: <TabLabel label="MCP tools" count={tools.length} />,
       content: <McpTools tools={tools} mcpServerUrl={agent.mcpServerUrl} />,
     },
   ];
@@ -223,7 +204,7 @@ export default async function AgentProfilePage({
                 {formatCurrency(agent.startingPrice, agent.currency)} starting
               </p>
             </div>
-            <Button asChild size="sm" className="shrink-0 glow-primary">
+            <Button asChild size="sm" className="shrink-0">
               <Link href={hireHref}>
                 Hire
                 <ArrowRight className="h-4 w-4" />

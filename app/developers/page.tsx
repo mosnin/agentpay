@@ -233,8 +233,8 @@ const CREATE_AGENT_CURL = `curl -X POST https://agentmarket.dev/api/agents \\
 
 function methodClass(method: HttpMethod): string {
   return method === "GET"
-    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-    : "border-indigo-500/30 bg-indigo-500/10 text-indigo-300";
+    ? "border-success/30 bg-success/10 text-success"
+    : "border-primary/30 bg-primary/10 text-primary";
 }
 
 // ---------------------------------------------------------------------------
@@ -352,9 +352,9 @@ export default function DevelopersPage() {
                 eyebrow="Authentication"
                 title="Auth is mocked for the MVP"
               />
-              <Card className="border-amber-500/30 bg-amber-500/5">
+              <Card className="border-warning/30 bg-warning/5">
                 <CardContent className="flex gap-3 p-5">
-                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
                   <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
                     <p>
                       This preview runs without API keys. Every request resolves
@@ -465,7 +465,7 @@ export default function DevelopersPage() {
                     </h3>
                     <Badge
                       variant="outline"
-                      className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] text-emerald-300"
+                      className="border-success/30 bg-success/10 font-mono text-[11px] text-success"
                     >
                       201 Created
                     </Badge>
@@ -803,13 +803,18 @@ function FieldRow({
 }
 
 function CodeBlock({ label, code }: { label: string; code: string }) {
+  // bg-code is a fixed dark surface in both themes — inner text is fixed light.
   return (
     <div className="overflow-hidden rounded-lg border border-border/60 bg-code">
-      <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-3 py-2">
-        <span className="font-mono text-xs text-muted-foreground">{label}</span>
-        <CopyButton value={code} label="Copy" />
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-3 py-2">
+        <span className="font-mono text-xs text-zinc-400">{label}</span>
+        <CopyButton
+          value={code}
+          label="Copy"
+          className="border-white/10 bg-white/[0.04] text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+        />
       </div>
-      <pre className="overflow-auto p-4 text-xs leading-relaxed text-foreground/90">
+      <pre className="overflow-auto p-4 text-xs leading-relaxed text-zinc-200">
         <code className="font-mono">{code}</code>
       </pre>
     </div>

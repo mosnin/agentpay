@@ -133,13 +133,27 @@ See [`.env.example`](./.env.example).
 
 ---
 
+## UI motion primitives
+
+Signature interactions (task-status Dynamic Island, expandable agent quick
+views, the API-peek side panel, the feedback morph dock) are built on four
+adapted [cult-ui](https://cult-ui.com) primitives in `components/ui/`.
+**Before changing them or their placements, read
+[`docs/motion-primitives.md`](docs/motion-primitives.md)** — it documents the
+adaptations and the regression checklist.
+
 ## How the mock systems work
 
-### Mock auth (`lib/auth.ts`)
-Clerk is optional. By default the entire app runs as a single seeded operator
-(**Ada Operator**, `operator@agentmarket.dev`, org **Northwind Labs**). `getCurrentUser()` /
-`requireUser()` resolve to this account. To use Clerk, set the keys in `.env` and replace the body
-of `getCurrentUser()` — nothing else in the app needs to change.
+### Auth (`lib/auth.ts`) — Clerk, with a keyless fallback
+Clerk is **integrated**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` and the app
+gets real sign-in/sign-up (`/sign-in`, `/sign-up`), session-protected routes via `middleware.ts`,
+and just-in-time user provisioning — on first sign-in a local `User` row is created (or adopted by
+email, so pre-seeded accounts keep their history and role). Authorization stays in the database:
+`role` on `User` is the source of truth (`UPDATE "User" SET role='admin' WHERE email='...'`).
+
+Without keys the app runs **keyless** as a single seeded operator (**Ada Operator**,
+`operator@agentmarket.dev`, org **Northwind Labs**) — local dev, CI, and previews need no Clerk
+account. Same switch pattern as the x402 payments adapter.
 
 ### Mock payments — x402 (`lib/payments.ts`, `lib/payments/x402Adapter.ts`)
 - **On task creation**, a `Payment` is created. If the payment mode is **Mock escrow** the status
@@ -173,7 +187,7 @@ grants a bump.
 | **Payments (x402)** | `lib/payments/x402Adapter.ts` | Implement `createPaymentRequirement` / `verifyPayment` / `releasePayment` against a real x402 facilitator; set `X402_*`. |
 | **Agent interop (A2A)** | `lib/interop/a2aAdapter.ts` | `getAgentCard` / `createTaskMessage` / `parseArtifactMessage` already follow A2A message shapes; point them at a real registry (`A2A_REGISTRY_URL`). |
 | **Tools (MCP)** | `lib/interop/mcpAdapter.ts` | Replace `listToolsForAgent` / `validateMcpServer` with a real MCP client handshake (`MCP_GATEWAY_URL`). |
-| **Auth** | `lib/auth.ts` | Swap `getCurrentUser()` for a Clerk session lookup. |
+| **Auth** | `lib/auth.ts` | ✅ Done — Clerk session lookup + JIT provisioning; keyless fallback for dev/CI. |
 
 The marketplace loop is intentionally prioritized over deep protocol integration — the adapters keep
 the architecture ready without blocking the MVP.
@@ -213,7 +227,7 @@ prisma/
 
 ## Next steps / roadmap
 
-- Real authentication (Clerk) and multi-tenant org switching.
+- Multi-tenant org switching (Clerk auth is in; orgs still single-tenant).
 - Live x402 settlement + on-chain receipts; real escrow release on validation.
 - Real A2A federation and MCP handshakes against agent endpoints.
 - Streaming task execution logs and webhooks for status changes.

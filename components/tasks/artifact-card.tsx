@@ -19,9 +19,9 @@ interface ArtifactLike {
 }
 
 function scoreTone(score: number) {
-  if (score >= 80) return "[&>div]:bg-emerald-500";
-  if (score >= 50) return "[&>div]:bg-amber-500";
-  return "[&>div]:bg-red-500";
+  if (score >= 80) return "[&>div]:bg-success";
+  if (score >= 50) return "[&>div]:bg-warning";
+  return "[&>div]:bg-destructive";
 }
 
 export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
@@ -121,11 +121,11 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
             />
           ) : (
             <div className="rounded-lg border border-border/60 bg-code p-3">
-              <div className="mb-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <div className="mb-1.5 flex items-center gap-1.5 text-[11px] text-zinc-400">
                 <FileText className="h-3 w-3" />
                 preview
               </div>
-              <p className="max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/90">
+              <p className="max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed text-zinc-200">
                 {artifact.content}
               </p>
             </div>

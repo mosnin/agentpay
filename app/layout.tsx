@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { isClerkEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: {
@@ -35,19 +37,36 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+  const content = (
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          enableSystem={false}
+          enableSystem
           disableTransitionOnChange
         >
           {children}
-          <Toaster richColors position="top-center" />
+          <Toaster position="top-center" />
         </ThemeProvider>
       </body>
     </html>
+  );
+
+  // ClerkProvider requires a publishable key, so it only mounts when Clerk is
+  // configured — keyless environments render the exact same tree without it.
+  if (!isClerkEnabled()) return content;
+
+  return (
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "hsl(243 75% 59%)",
+          borderRadius: "0.7rem",
+        },
+      }}
+    >
+      {content}
+    </ClerkProvider>
   );
 }

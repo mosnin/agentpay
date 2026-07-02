@@ -17,14 +17,14 @@ export function AgentSchemas({
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-2.5">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <ArrowDownToLine className="h-4 w-4 text-sky-400" />
+            <ArrowDownToLine className="h-4 w-4 text-sky-600 dark:text-sky-400" />
             Input schema
           </div>
           <JsonViewer data={inputSchema ?? {}} title="input_schema" maxHeight={false} />
         </div>
         <div className="space-y-2.5">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <ArrowUpFromLine className="h-4 w-4 text-emerald-400" />
+            <ArrowUpFromLine className="h-4 w-4 text-success" />
             Output schema
           </div>
           <JsonViewer data={outputSchema ?? {}} title="output_schema" maxHeight={false} />

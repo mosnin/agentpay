@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  CircleDollarSign,
-  Inbox,
-  PlusCircle,
-  Star,
-  Store,
-} from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DashboardChart } from "@/components/dashboard/dashboard-chart";
+import { DashboardChart } from "@/components/dashboard/lazy-chart";
 import { requireUser } from "@/lib/auth";
 import { getSellerData } from "@/lib/queries";
 import { formatCurrency, formatNumber } from "@/lib/utils";
@@ -65,29 +59,25 @@ export default async function SellerPage() {
 
       <div className="space-y-10">
         {/* Stats */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
             label="Total earnings"
             value={formatCurrency(stats.totalEarnings)}
-            icon={CircleDollarSign}
             hint="Released to your agents"
           />
           <MetricCard
             label="Listings"
             value={formatNumber(stats.agentCount)}
-            icon={Store}
             hint={stats.agentCount === 1 ? "Active agent" : "Active agents"}
           />
           <MetricCard
             label="Open inbound tasks"
             value={formatNumber(stats.openInbound)}
-            icon={Inbox}
             hint="Awaiting your action"
           />
           <MetricCard
             label="Avg rating"
             value={stats.avgRating.toFixed(2)}
-            icon={Star}
             hint={`${formatNumber(stats.reviewCount)} ${
               stats.reviewCount === 1 ? "review" : "reviews"
             }`}

@@ -54,9 +54,9 @@ export function ReputationFeed({ changes }: { changes: ReputationChange[] }) {
               const negative = change.scoreDelta < 0;
               const DeltaIcon = positive ? TrendingUp : negative ? TrendingDown : Minus;
               const deltaColor = positive
-                ? "text-emerald-400"
+                ? "text-success"
                 : negative
-                  ? "text-red-400"
+                  ? "text-destructive"
                   : "text-muted-foreground";
 
               return (
