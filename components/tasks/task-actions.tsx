@@ -11,7 +11,6 @@ import {
   PlayCircle,
   ScanSearch,
   ShieldAlert,
-  Sparkles,
   Star,
   ThumbsUp,
   Upload,
@@ -132,8 +131,8 @@ export function TaskActions({ task }: TaskActionsProps) {
   return (
     <div className="space-y-4">
       {actionError && (
-        <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs text-red-300">
-          <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400" />
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
+          <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
           <span className="flex-1">{actionError}</span>
           <button
             onClick={() => setActionError(null)}
@@ -244,7 +243,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 )
               }
             >
-              {isBusy("demo") ? <Loader2 className="animate-spin" /> : <Sparkles />}
+              {isBusy("demo") && <Loader2 className="animate-spin" />}
               {isBusy("demo") ? "Running demo…" : "Run demo — auto-complete"}
             </Button>
             <p className="px-1 text-xs text-muted-foreground">
@@ -294,7 +293,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       )}
 
       {optimisticStatus === "disputed" && (
-        <p className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-xs text-red-300">
+        <p className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
           <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
           A dispute is open. Resolution is handled from the admin console.
         </p>

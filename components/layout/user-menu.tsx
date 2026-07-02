@@ -32,7 +32,7 @@ export function UserMenu({
           <div className="flex flex-col">
             <span className="text-sm font-medium">{name}</span>
             <span className="text-xs font-normal text-muted-foreground">{email}</span>
-            <span className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300">
+            <span className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-full border border-warning/30 bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-warning">
               Mock session
             </span>
           </div>

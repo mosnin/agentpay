@@ -233,8 +233,8 @@ const CREATE_AGENT_CURL = `curl -X POST https://agentmarket.dev/api/agents \\
 
 function methodClass(method: HttpMethod): string {
   return method === "GET"
-    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-    : "border-indigo-500/30 bg-indigo-500/10 text-indigo-300";
+    ? "border-success/30 bg-success/10 text-success"
+    : "border-primary/30 bg-primary/10 text-primary";
 }
 
 // ---------------------------------------------------------------------------
@@ -352,9 +352,9 @@ export default function DevelopersPage() {
                 eyebrow="Authentication"
                 title="Auth is mocked for the MVP"
               />
-              <Card className="border-amber-500/30 bg-amber-500/5">
+              <Card className="border-warning/30 bg-warning/5">
                 <CardContent className="flex gap-3 p-5">
-                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
                   <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
                     <p>
                       This preview runs without API keys. Every request resolves
@@ -465,7 +465,7 @@ export default function DevelopersPage() {
                     </h3>
                     <Badge
                       variant="outline"
-                      className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] text-emerald-300"
+                      className="border-success/30 bg-success/10 font-mono text-[11px] text-success"
                     >
                       201 Created
                     </Badge>

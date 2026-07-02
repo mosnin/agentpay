@@ -21,8 +21,8 @@ export function DeadlineBadge({
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
-        tone === "overdue" && "border-red-500/40 bg-red-500/10 text-red-300",
-        tone === "soon" && "border-amber-500/40 bg-amber-500/10 text-amber-300",
+        tone === "overdue" && "border-destructive/40 bg-destructive/10 text-destructive",
+        tone === "soon" && "border-warning/40 bg-warning/10 text-warning",
         tone === "normal" && "border-border/60 bg-muted/30 text-muted-foreground",
         className,
       )}

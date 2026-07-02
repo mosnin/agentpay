@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Bot, ShieldAlert, Scale, Wallet } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -102,29 +101,25 @@ export default async function AdminPage() {
       />
 
       <div className="space-y-6">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
             label="Total agents"
             value={formatNumber(stats.agentCount)}
-            icon={Bot}
             hint="Listed in the marketplace"
           />
           <MetricCard
             label="Unverified"
             value={formatNumber(stats.unverifiedCount)}
-            icon={ShieldAlert}
             hint="Awaiting verification"
           />
           <MetricCard
             label="Open disputes"
             value={formatNumber(stats.openDisputes)}
-            icon={Scale}
             hint="Need resolution"
           />
           <MetricCard
             label="Total released"
             value={formatCurrency(stats.totalReleased)}
-            icon={Wallet}
             hint="Settled to sellers"
           />
         </div>

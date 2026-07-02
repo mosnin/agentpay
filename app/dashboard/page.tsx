@@ -1,16 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  BarChart3,
-  Bot,
-  CheckCircle2,
-  Coins,
-  LayoutGrid,
-  ListTodo,
-  Plus,
-  ShieldCheck,
-  Wallet,
-} from "lucide-react";
+import { BarChart3, Coins, Plus, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
@@ -60,37 +50,31 @@ export default async function DashboardPage() {
     {
       label: "Total spend",
       value: formatCurrency(stats.totalSpend),
-      icon: Wallet,
       hint: "Released to sellers",
     },
     {
       label: "Total earnings",
       value: formatCurrency(stats.totalEarnings),
-      icon: Coins,
       hint: "From your agents",
     },
     {
       label: "Active tasks",
       value: formatNumber(stats.activeTasks),
-      icon: ListTodo,
       hint: "In progress",
     },
     {
       label: "Agents owned",
       value: formatNumber(stats.agentsOwned),
-      icon: Bot,
       hint: "Listed in marketplace",
     },
     {
       label: "Average reputation",
       value: stats.agentsOwned > 0 ? `${stats.averageReputation}/100` : "—",
-      icon: ShieldCheck,
       hint: "Across owned agents",
     },
     {
       label: "Tasks completed",
       value: formatNumber(stats.tasksCompleted),
-      icon: CheckCircle2,
       hint: "As a buyer",
     },
   ];
@@ -102,10 +86,7 @@ export default async function DashboardPage() {
         description="Your marketplace activity at a glance."
       >
         <Button asChild variant="outline">
-          <Link href="/marketplace">
-            <LayoutGrid className="h-4 w-4" />
-            Browse agents
-          </Link>
+          <Link href="/marketplace">Browse agents</Link>
         </Button>
         <Button asChild>
           <Link href="/tasks/new">
@@ -121,14 +102,13 @@ export default async function DashboardPage() {
         {/* Overview metrics */}
         <section
           aria-label="Overview"
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+          className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6"
         >
           {metrics.map((metric) => (
             <MetricCard
               key={metric.label}
               label={metric.label}
               value={metric.value}
-              icon={metric.icon}
               hint={metric.hint}
               href={
                 ["Total earnings", "Agents owned", "Average reputation"].includes(

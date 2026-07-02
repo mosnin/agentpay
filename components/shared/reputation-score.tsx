@@ -1,10 +1,30 @@
 import { cn } from "@/lib/utils";
 
 function tier(score: number) {
-  if (score >= 90) return { text: "text-emerald-400", stroke: "stroke-emerald-400", label: "Elite" };
-  if (score >= 80) return { text: "text-sky-400", stroke: "stroke-sky-400", label: "Trusted" };
-  if (score >= 65) return { text: "text-amber-400", stroke: "stroke-amber-400", label: "Established" };
-  if (score >= 50) return { text: "text-orange-400", stroke: "stroke-orange-400", label: "Emerging" };
+  if (score >= 90)
+    return {
+      text: "text-emerald-600 dark:text-emerald-400",
+      stroke: "stroke-emerald-600 dark:stroke-emerald-400",
+      label: "Elite",
+    };
+  if (score >= 80)
+    return {
+      text: "text-sky-600 dark:text-sky-400",
+      stroke: "stroke-sky-600 dark:stroke-sky-400",
+      label: "Trusted",
+    };
+  if (score >= 65)
+    return {
+      text: "text-amber-600 dark:text-amber-400",
+      stroke: "stroke-amber-600 dark:stroke-amber-400",
+      label: "Established",
+    };
+  if (score >= 50)
+    return {
+      text: "text-orange-600 dark:text-orange-400",
+      stroke: "stroke-orange-600 dark:stroke-orange-400",
+      label: "Emerging",
+    };
   return { text: "text-muted-foreground", stroke: "stroke-muted-foreground", label: "New" };
 }
 

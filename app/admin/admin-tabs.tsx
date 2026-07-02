@@ -459,8 +459,8 @@ export function AdminTabs({
                   <span
                     className={cn(
                       "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
-                      positive && "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
-                      negative && "border-red-500/30 bg-red-500/10 text-red-400",
+                      positive && "border-success/30 bg-success/10 text-success",
+                      negative && "border-destructive/30 bg-destructive/10 text-destructive",
                       !positive && !negative && "border-border/60 bg-muted/40 text-muted-foreground",
                     )}
                   >
@@ -475,8 +475,8 @@ export function AdminTabs({
                       <span
                         className={cn(
                           "text-sm font-semibold tabular-nums",
-                          positive && "text-emerald-400",
-                          negative && "text-red-400",
+                          positive && "text-success",
+                          negative && "text-destructive",
                           !positive && !negative && "text-muted-foreground",
                         )}
                       >
@@ -510,7 +510,7 @@ function CountPill({ value, tone }: { value: number; tone?: "danger" }) {
       className={cn(
         "ml-0.5 rounded-full px-1.5 py-px text-[10px] font-semibold tabular-nums",
         tone === "danger"
-          ? "bg-red-500/15 text-red-300"
+          ? "bg-destructive/15 text-destructive"
           : "bg-muted-foreground/15 text-muted-foreground",
       )}
     >

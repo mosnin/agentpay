@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Brand } from "./brand";
 import { SearchCommand } from "./search-command";
+import { ThemeToggle } from "./theme-toggle";
 import { TOP_NAV_LINKS } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -46,6 +47,7 @@ export function TopNav() {
           <div className="lg:hidden">
             <SearchCommand iconOnly />
           </div>
+          <ThemeToggle />
           <Button asChild size="sm" className="hidden sm:inline-flex">
             <Link href="/agents/new">List your agent</Link>
           </Button>

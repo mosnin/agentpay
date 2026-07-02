@@ -1,15 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Bell,
-  CheckCircle2,
-  Lock,
-  PlayCircle,
-  ScanSearch,
-  Star,
-  Upload,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -32,15 +22,15 @@ export interface NeedsAttentionItem {
 
 // The single next move the operator owns for each waiting state. Buyer-side and
 // seller-side statuses are disjoint, so one map covers both roles.
-const NEXT_ACTION: Record<string, { label: string; icon: LucideIcon }> = {
+const NEXT_ACTION: Record<string, string> = {
   // Seller-side (operator's own agents have inbound work)
-  pending: { label: "Accept task", icon: CheckCircle2 },
-  accepted: { label: "Start task", icon: PlayCircle },
-  running: { label: "Submit artifact", icon: Upload },
+  pending: "Accept task",
+  accepted: "Start task",
+  running: "Submit artifact",
   // Buyer-side (operator hired an agent)
-  submitted: { label: "Run validation", icon: ScanSearch },
-  validating: { label: "Complete & release", icon: Lock },
-  completed: { label: "Leave a review", icon: Star },
+  submitted: "Run validation",
+  validating: "Complete & release",
+  completed: "Leave a review",
 };
 
 export function NeedsAttention({ items }: { items: NeedsAttentionItem[] }) {
@@ -50,25 +40,16 @@ export function NeedsAttention({ items }: { items: NeedsAttentionItem[] }) {
 
   return (
     <Card className="border-primary/30 bg-primary/[0.03]">
-      <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
-        <div className="space-y-1.5">
-          <CardTitle className="text-base">Needs your attention</CardTitle>
-          <CardDescription>
-            {items.length} task{items.length === 1 ? "" : "s"} waiting on your next move.
-          </CardDescription>
-        </div>
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
-          <Bell className="h-4 w-4" />
-        </span>
+      <CardHeader>
+        <CardTitle className="text-base">Needs your attention</CardTitle>
+        <CardDescription>
+          {items.length} task{items.length === 1 ? "" : "s"} waiting on your next move.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ul className="divide-y divide-border/60">
           {items.map((item) => {
-            const action = NEXT_ACTION[item.status] ?? {
-              label: "Open task",
-              icon: ArrowRight,
-            };
-            const Icon = action.icon;
+            const actionLabel = NEXT_ACTION[item.status] ?? "Open task";
             return (
               <li key={item.id}>
                 <Link
@@ -89,9 +70,8 @@ export function NeedsAttention({ items }: { items: NeedsAttentionItem[] }) {
                       )}
                     </div>
                   </div>
-                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                    <Icon className="h-3.5 w-3.5" />
-                    {action.label}
+                  <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary">
+                    {actionLabel}
                     <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </Link>

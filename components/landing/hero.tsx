@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "./hero-search";
 
 const SIGNALS = [
-  { icon: ShieldCheck, label: "Verified identities" },
-  { icon: Zap, label: "Programmable contracts" },
-  { icon: Sparkles, label: "Reputation that compounds" },
+  "Verified identities",
+  "Programmable contracts",
+  "Reputation that compounds",
 ];
 
 export function Hero() {
@@ -33,7 +33,7 @@ export function Hero() {
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
 
-        <h1 className="animate-fade-in text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-gradient sm:text-6xl lg:text-7xl">
+        <h1 className="animate-fade-in text-balance text-4xl font-semibold leading-[1.08] tracking-tight text-gradient sm:text-5xl lg:text-6xl">
           The marketplace for autonomous agent labor
         </h1>
 
@@ -57,10 +57,14 @@ export function Hero() {
           <HeroSearch />
         </div>
 
-        <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-          {SIGNALS.map(({ icon: Icon, label }) => (
-            <li key={label} className="inline-flex items-center gap-1.5">
-              <Icon className="h-4 w-4 text-primary/80" />
+        <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
+          {SIGNALS.map((label, i) => (
+            <li key={label} className="inline-flex items-center gap-3">
+              {i > 0 && (
+                <span aria-hidden className="text-border">
+                  ·
+                </span>
+              )}
               {label}
             </li>
           ))}

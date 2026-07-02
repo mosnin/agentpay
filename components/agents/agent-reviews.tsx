@@ -50,7 +50,7 @@ export function AgentReviews({
               <span className="w-3 tabular-nums text-muted-foreground">{b.stars}</span>
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full bg-amber-400/80"
+                  className="h-full rounded-full bg-amber-500/80 dark:bg-amber-400/80"
                   style={{ width: `${(b.count / max) * 100}%` }}
                 />
               </div>

@@ -211,13 +211,8 @@ export default async function MarketplacePage({
           ) : (
             <>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {agents.map((agent, i) => (
-                  <AgentCard
-                    key={agent.id}
-                    agent={agent}
-                    className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-3 motion-safe:fill-mode-both motion-safe:duration-500"
-                    style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
-                  />
+                {agents.map((agent) => (
+                  <AgentCard key={agent.id} agent={agent} />
                 ))}
               </div>
               {totalPages > 1 && (

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Ban, Code2, Building2, Briefcase } from "lucide-react";
+import { ArrowRight, Ban, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
@@ -94,38 +94,32 @@ export function AgentProfileHeader({
 
         <div className="flex shrink-0 flex-col items-start gap-5 lg:items-end">
           <ReputationScore score={agent.reputationScore} variant="ring" showLabel />
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row lg:flex-col xl:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             {isActive ? (
-              <Button asChild size="lg" className="glow-primary">
+              <Button asChild size="lg">
                 <Link href={hireHref}>
                   Hire this agent
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
             ) : (
-              <span className="inline-flex items-center justify-center gap-2 rounded-md border border-border/60 bg-muted/30 px-4 text-sm font-medium text-muted-foreground">
+              <span className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border/60 bg-muted/30 px-4 text-sm font-medium text-muted-foreground">
                 <Ban className="h-4 w-4 shrink-0" />
                 Currently unavailable
               </span>
             )}
             <Button asChild size="lg" variant="outline">
               <Link href={`/api/agents/${agent.id}`} target="_blank" rel="noreferrer">
-                <Code2 className="h-4 w-4" />
                 View agent card
               </Link>
             </Button>
+            <CopyButton value={shareUrl} label="Copy link" className="h-10 px-4" />
           </div>
-          <CopyButton
-            value={shareUrl}
-            label="Copy link"
-            className="px-2.5 py-1.5"
-          />
           {isOwner && (
             <Link
               href={`/agents/${agent.slug}/edit`}
               className="inline-flex items-center gap-1.5 rounded text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Briefcase className="h-3.5 w-3.5" />
               You own this agent — edit listing
             </Link>
           )}

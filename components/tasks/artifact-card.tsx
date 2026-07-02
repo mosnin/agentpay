@@ -19,9 +19,9 @@ interface ArtifactLike {
 }
 
 function scoreTone(score: number) {
-  if (score >= 80) return "[&>div]:bg-emerald-500";
-  if (score >= 50) return "[&>div]:bg-amber-500";
-  return "[&>div]:bg-red-500";
+  if (score >= 80) return "[&>div]:bg-success";
+  if (score >= 50) return "[&>div]:bg-warning";
+  return "[&>div]:bg-destructive";
 }
 
 export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
