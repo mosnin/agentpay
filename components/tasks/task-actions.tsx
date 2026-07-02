@@ -16,9 +16,12 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  TaskStatusIsland,
+  type IslandState,
+} from "@/components/tasks/task-status-island";
 import {
   acceptTask,
   startTask,
@@ -61,13 +64,39 @@ const STATUS_GUIDE: Record<string, string> = {
   completed: "All done. Leave a review to update this agent's reputation.",
 };
 
+// While an action runs, the floating status island narrates it — one quiet
+// channel instead of stacked toasts. Success settles for a beat, then clears.
+const BUSY_LABELS: Record<string, string> = {
+  accept: "Accepting task…",
+  start: "Starting task…",
+  validate: "Running validation…",
+  complete: "Releasing payment…",
+  cancel: "Cancelling task…",
+  demo: "Running demo — accept, deliver, validate…",
+};
+
 export function TaskActions({ task }: TaskActionsProps) {
   const [pending, startTransition] = React.useTransition();
   const [busyKey, setBusyKey] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
+  const [island, setIsland] = React.useState<IslandState | null>(null);
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(task.status);
+  const islandTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const id = task.id;
+
+  // Show an outcome on the island briefly, then dismiss it.
+  function settleIsland(state: IslandState, holdMs = 2000) {
+    if (islandTimer.current) clearTimeout(islandTimer.current);
+    setIsland(state);
+    islandTimer.current = setTimeout(() => setIsland(null), holdMs);
+  }
+
+  React.useEffect(() => {
+    return () => {
+      if (islandTimer.current) clearTimeout(islandTimer.current);
+    };
+  }, []);
 
   function run(
     key: string,
@@ -77,14 +106,15 @@ export function TaskActions({ task }: TaskActionsProps) {
   ) {
     setBusyKey(key);
     setActionError(null);
+    setIsland({ label: BUSY_LABELS[key] ?? "Working…", tone: "busy" });
     startTransition(async () => {
       if (nextStatus) setOptimisticStatus(nextStatus);
       const res = await action();
       if (res.ok) {
-        toast.success(successMessage);
+        settleIsland({ label: successMessage, tone: "success" });
       } else {
         setActionError(res.error ?? "Action failed. Please try again.");
-        toast.error(res.error);
+        settleIsland({ label: res.error ?? "Action failed", tone: "error" }, 2600);
       }
       setBusyKey(null);
     });
@@ -93,18 +123,20 @@ export function TaskActions({ task }: TaskActionsProps) {
   function onRunValidation() {
     setBusyKey("validate");
     setActionError(null);
+    setIsland({ label: BUSY_LABELS.validate, tone: "busy" });
     startTransition(async () => {
       setOptimisticStatus("validating");
       const res = await runValidation(id);
       if (res.ok) {
         const score = res.data?.score ?? 0;
         const passed = res.data?.status === "passed";
-        const message = `Validation ${passed ? "passed" : "failed"} · score ${score}/100`;
-        if (passed) toast.success(message);
-        else toast.error(message);
+        settleIsland({
+          label: `Validation ${passed ? "passed" : "failed"} · ${score}/100`,
+          tone: passed ? "success" : "error",
+        });
       } else {
         setActionError(res.error ?? "Validation failed to run.");
-        toast.error(res.error);
+        settleIsland({ label: res.error ?? "Validation failed to run", tone: "error" }, 2600);
       }
       setBusyKey(null);
     });
@@ -130,6 +162,7 @@ export function TaskActions({ task }: TaskActionsProps) {
 
   return (
     <div className="space-y-4">
+      <TaskStatusIsland state={island} />
       {actionError && (
         <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
           <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
@@ -238,7 +271,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 run(
                   "demo",
                   () => simulateTask(id),
-                  "Demo complete · task auto-advanced and payment released",
+                  "Demo complete · payment released",
                   "completed",
                 )
               }

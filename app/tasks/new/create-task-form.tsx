@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ContractExpand } from "@/components/tasks/contract-expand";
 import {
   Card,
   CardContent,
@@ -600,6 +601,17 @@ export function CreateTaskForm({
             <CardContent className="pt-6">
               {contract ? (
                 <div className="space-y-5">
+                  <div className="flex justify-end">
+                    <ContractExpand
+                      contract={{
+                        title: contract.title,
+                        inputPayload: contract.inputPayload,
+                        outputSchema: contract.outputSchema,
+                        validationRules: contract.validationRules,
+                        successCriteria: contract.successCriteria,
+                      }}
+                    />
+                  </div>
                   <TaskContractPreview
                     contract={{
                       title: contract.title,

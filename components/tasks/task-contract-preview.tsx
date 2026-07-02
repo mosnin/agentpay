@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { PAYMENT_MODES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-interface ContractLike {
+export interface ContractPreviewData {
   title?: string;
   inputPayload?: unknown;
   outputSchema?: unknown;
@@ -13,6 +13,8 @@ interface ContractLike {
   paymentMode?: string | null;
   contractHash?: string | null;
 }
+
+type ContractLike = ContractPreviewData;
 
 function renderValidationRules(rules: unknown) {
   if (!rules) return null;

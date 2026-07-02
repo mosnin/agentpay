@@ -133,6 +133,15 @@ See [`.env.example`](./.env.example).
 
 ---
 
+## UI motion primitives
+
+Signature interactions (task-status Dynamic Island, expandable agent quick
+views, the API-peek side panel, the feedback morph dock) are built on four
+adapted [cult-ui](https://cult-ui.com) primitives in `components/ui/`.
+**Before changing them or their placements, read
+[`docs/motion-primitives.md`](docs/motion-primitives.md)** — it documents the
+adaptations and the regression checklist.
+
 ## How the mock systems work
 
 ### Auth (`lib/auth.ts`) — Clerk, with a keyless fallback

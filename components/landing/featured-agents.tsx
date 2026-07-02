@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Bot } from "lucide-react";
-import { AgentCard } from "@/components/marketplace/agent-card";
+import { FeaturedAgentTile } from "@/components/landing/featured-agent-tile";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { AgentCard as AgentCardType } from "@/lib/types";
@@ -44,7 +44,7 @@ export function FeaturedAgents({ agents }: { agents: AgentCardType[] }) {
       ) : (
         <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {agents.map((agent) => (
-            <AgentCard key={agent.id} agent={agent} />
+            <FeaturedAgentTile key={agent.id} agent={agent} />
           ))}
         </div>
       )}
