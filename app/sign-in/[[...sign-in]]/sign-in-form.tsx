@@ -3,12 +3,19 @@
 import * as Clerk from "@clerk/elements/common";
 import * as SignIn from "@clerk/elements/sign-in";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClerkField } from "@/components/auth/clerk-field";
 
 export function SignInForm() {
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect_url");
+  const signUpHref = redirectUrl
+    ? `/sign-up?redirect_url=${encodeURIComponent(redirectUrl)}`
+    : "/sign-up";
+
   return (
     <SignIn.Root>
       <Clerk.Loading>
@@ -55,7 +62,7 @@ export function SignInForm() {
 
                   <p className="text-center text-sm text-muted-foreground">
                     New to Bids?{" "}
-                    <Link href="/sign-up" className="font-medium text-foreground hover:underline">
+                    <Link href={signUpHref} className="font-medium text-foreground hover:underline">
                       Create an account
                     </Link>
                   </p>
