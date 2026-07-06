@@ -67,6 +67,15 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // The OG image routes read public/brand assets via fs.readFileSync at
+  // request time. The path is built with path.join(process.cwd(), ...),
+  // which Next's build-time file tracing doesn't always resolve statically,
+  // so the asset can be missing from the deployed serverless bundle
+  // (ENOENT in production, works fine locally). Force it into every route's
+  // trace explicitly.
+  outputFileTracingIncludes: {
+    "/**": ["./public/brand/**"],
+  },
   async headers() {
     return [
       {
