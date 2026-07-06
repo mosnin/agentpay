@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Bot, Scale, ShieldAlert, Wallet } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -105,21 +106,29 @@ export default async function AdminPage() {
           <MetricCard
             label="Total agents"
             value={formatNumber(stats.agentCount)}
+            icon={Bot}
+            tone="blue"
             hint="Listed in the marketplace"
           />
           <MetricCard
             label="Unverified"
             value={formatNumber(stats.unverifiedCount)}
+            icon={ShieldAlert}
+            tone="orange"
             hint="Awaiting verification"
           />
           <MetricCard
             label="Open disputes"
             value={formatNumber(stats.openDisputes)}
+            icon={Scale}
+            tone="purple"
             hint="Need resolution"
           />
           <MetricCard
             label="Total released"
             value={formatCurrency(stats.totalReleased)}
+            icon={Wallet}
+            tone="green"
             hint="Settled to sellers"
           />
         </div>

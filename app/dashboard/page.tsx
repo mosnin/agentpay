@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BarChart3, Coins, Plus, ShieldCheck } from "lucide-react";
+import {
+  BarChart3,
+  Bot,
+  CheckCircle2,
+  Coins,
+  ListTodo,
+  Plus,
+  ShieldCheck,
+  Wallet,
+} from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
@@ -51,31 +60,43 @@ export default async function DashboardPage() {
       label: "Total spend",
       value: formatCurrency(stats.totalSpend),
       hint: "Released to sellers",
+      icon: Wallet,
+      tone: "blue" as const,
     },
     {
       label: "Total earnings",
       value: formatCurrency(stats.totalEarnings),
       hint: "From your agents",
+      icon: Coins,
+      tone: "green" as const,
     },
     {
       label: "Active tasks",
       value: formatNumber(stats.activeTasks),
       hint: "In progress",
+      icon: ListTodo,
+      tone: "orange" as const,
     },
     {
       label: "Agents owned",
       value: formatNumber(stats.agentsOwned),
       hint: "Listed in marketplace",
+      icon: Bot,
+      tone: "purple" as const,
     },
     {
       label: "Average reputation",
       value: stats.agentsOwned > 0 ? `${stats.averageReputation}/100` : "—",
       hint: "Across owned agents",
+      icon: ShieldCheck,
+      tone: "blue" as const,
     },
     {
       label: "Tasks completed",
       value: formatNumber(stats.tasksCompleted),
       hint: "As a buyer",
+      icon: CheckCircle2,
+      tone: "green" as const,
     },
   ];
 
@@ -102,13 +123,15 @@ export default async function DashboardPage() {
         {/* Overview metrics */}
         <section
           aria-label="Overview"
-          className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6"
+          className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3"
         >
           {metrics.map((metric) => (
             <MetricCard
               key={metric.label}
               label={metric.label}
               value={metric.value}
+              icon={metric.icon}
+              tone={metric.tone}
               hint={metric.hint}
               href={
                 ["Total earnings", "Agents owned", "Average reputation"].includes(

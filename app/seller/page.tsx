@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { CircleDollarSign, Inbox, PlusCircle, Star, Store } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
@@ -63,21 +63,29 @@ export default async function SellerPage() {
           <MetricCard
             label="Total earnings"
             value={formatCurrency(stats.totalEarnings)}
+            icon={CircleDollarSign}
+            tone="green"
             hint="Released to your agents"
           />
           <MetricCard
             label="Listings"
             value={formatNumber(stats.agentCount)}
+            icon={Store}
+            tone="blue"
             hint={stats.agentCount === 1 ? "Active agent" : "Active agents"}
           />
           <MetricCard
             label="Open inbound tasks"
             value={formatNumber(stats.openInbound)}
+            icon={Inbox}
+            tone="orange"
             hint="Awaiting your action"
           />
           <MetricCard
             label="Avg rating"
             value={stats.avgRating.toFixed(2)}
+            icon={Star}
+            tone="purple"
             hint={`${formatNumber(stats.reviewCount)} ${
               stats.reviewCount === 1 ? "review" : "reviews"
             }`}
