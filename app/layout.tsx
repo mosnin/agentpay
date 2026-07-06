@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { ClerkEnabledProvider } from "@/components/layout/clerk-enabled-context";
 import { isClerkEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -49,6 +50,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const clerkEnabled = isClerkEnabled();
+
   const content = (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
@@ -58,7 +61,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <ClerkEnabledProvider enabled={clerkEnabled}>
+            {children}
+          </ClerkEnabledProvider>
           <Toaster position="top-center" />
         </ThemeProvider>
       </body>
@@ -66,8 +71,12 @@ export default function RootLayout({
   );
 
   // ClerkProvider requires a publishable key, so it only mounts when Clerk is
-  // configured — keyless environments render the exact same tree without it.
-  if (!isClerkEnabled()) return content;
+  // fully configured — keyless environments render the exact same tree
+  // without it. Client components must check useClerkEnabled() (this same
+  // clerkEnabled value, threaded through context) rather than re-deriving
+  // their own answer from NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY alone, since
+  // that's the only half of the check a client component can ever see.
+  if (!clerkEnabled) return content;
 
   return (
     <ClerkProvider

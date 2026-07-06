@@ -11,10 +11,8 @@ import { ThemeToggle } from "./theme-toggle";
 import { TOP_NAV_LINKS } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useClerkEnabled } from "@/components/layout/clerk-enabled-context";
 import { cn } from "@/lib/utils";
-
-// Inlined at build time — auth affordances only render when Clerk is configured.
-const CLERK_ENABLED = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 /** "Sign in" link for signed-out visitors. Mounted only when Clerk is
  * configured, so the hook always runs inside ClerkProvider. */
@@ -31,6 +29,7 @@ function SignInLink() {
 export function TopNav() {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const clerkEnabled = useClerkEnabled();
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -64,7 +63,7 @@ export function TopNav() {
             <SearchCommand iconOnly />
           </div>
           <ThemeToggle />
-          {CLERK_ENABLED && <SignInLink />}
+          {clerkEnabled && <SignInLink />}
           <Button asChild size="sm" className="hidden sm:inline-flex">
             {/* Protected route — signed-out visitors are routed through sign-in. */}
             <Link href="/agents/new">List your agent</Link>
