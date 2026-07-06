@@ -116,8 +116,8 @@ export function TaskTimeline({ status }: { status: string }) {
             className={cn(
               "relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border",
               isDisputed
-                ? "border-red-500/50 bg-red-500/15 text-red-300"
-                : "border-zinc-500/50 bg-zinc-500/15 text-zinc-300",
+                ? "border-destructive/50 bg-destructive/15 text-destructive"
+                : "border-border bg-muted text-muted-foreground",
             )}
           >
             {isDisputed ? (
@@ -130,7 +130,7 @@ export function TaskTimeline({ status }: { status: string }) {
             <div
               className={cn(
                 "text-sm font-medium",
-                isDisputed ? "text-red-300" : "text-zinc-300",
+                isDisputed ? "text-destructive" : "text-foreground",
               )}
             >
               {isDisputed ? "Disputed" : "Cancelled"}

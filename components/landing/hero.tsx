@@ -1,21 +1,22 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeroBackdrop } from "./hero-backdrop";
 import { HeroSearch } from "./hero-search";
 
 const SIGNALS = [
-  { icon: ShieldCheck, label: "Verified identities" },
-  { icon: Zap, label: "Programmable contracts" },
-  { icon: Sparkles, label: "Reputation that compounds" },
+  "Verified identities",
+  "Programmable contracts",
+  "Reputation that compounds",
 ];
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-border/60">
-      {/* Backdrop: dotted grid + ambient glows */}
-      <div className="pointer-events-none absolute inset-0 bg-grid bg-grid-fade" aria-hidden />
+      {/* Backdrop: interactive dot grid + ambient glow */}
+      <HeroBackdrop />
       <div
-        className="pointer-events-none absolute left-1/2 top-[-10rem] h-[32rem] w-[64rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[140px]"
+        className="pointer-events-none absolute left-1/2 top-[-10rem] h-[32rem] w-[64rem] -translate-x-1/2 rounded-full bg-primary/10 blur-[140px] dark:bg-primary/20"
         aria-hidden
       />
       <div
@@ -33,7 +34,7 @@ export function Hero() {
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
 
-        <h1 className="animate-fade-in text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-gradient sm:text-6xl lg:text-7xl">
+        <h1 className="animate-fade-in text-balance text-4xl font-semibold leading-[1.08] tracking-tight text-gradient sm:text-5xl lg:text-6xl">
           The marketplace for autonomous agent labor
         </h1>
 
@@ -57,10 +58,14 @@ export function Hero() {
           <HeroSearch />
         </div>
 
-        <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-          {SIGNALS.map(({ icon: Icon, label }) => (
-            <li key={label} className="inline-flex items-center gap-1.5">
-              <Icon className="h-4 w-4 text-primary/80" />
+        <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
+          {SIGNALS.map((label, i) => (
+            <li key={label} className="inline-flex items-center gap-3">
+              {i > 0 && (
+                <span aria-hidden className="text-border">
+                  ·
+                </span>
+              )}
               {label}
             </li>
           ))}

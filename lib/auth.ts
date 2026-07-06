@@ -1,34 +1,99 @@
+import { cache } from "react";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "./prisma";
 
 // ---------------------------------------------------------------------------
-// Local mock auth.
+// Auth — Clerk when configured, demo operator otherwise.
 //
-// Clerk is not configured for the MVP, so the whole app acts as a single
-// signed-in operator (the seeded demo user) who owns the demo organization.
-// Every "current user" call resolves to this account. To swap in real auth,
-// replace the body of getCurrentUser() with a Clerk session lookup — the rest
-// of the app only depends on this interface.
+// When NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY are set, every
+// "current user" call resolves the Clerk session and just-in-time provisions
+// a local User row (matched by email so pre-existing accounts — including the
+// seeded admin — adopt their Clerk identity on first sign-in).
+//
+// Without keys the app runs keyless as the seeded demo operator, so local
+// dev, CI, and preview environments need no Clerk account. This mirrors the
+// payments layer's mock/live switch (lib/payments/x402Adapter.ts).
+//
+// Authorization stays in the database either way: `role` on User is the
+// source of truth (promote an account with: UPDATE "User" SET role='admin').
 // ---------------------------------------------------------------------------
 
-export const DEMO_USER_EMAIL = "operator@agentmarket.dev";
+export const DEMO_USER_EMAIL = "operator@bids.sh";
 export const DEMO_ORG_SLUG = "northwind-labs";
+
+/** True when Clerk is configured (server-side check — both keys present). */
+export function isClerkEnabled() {
+  return Boolean(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY,
+  );
+}
 
 export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
-export async function getCurrentUser() {
-  return prisma.user.findUnique({
-    where: { email: DEMO_USER_EMAIL },
+async function getClerkBackedUser() {
+  const { userId: clerkId } = await auth();
+  if (!clerkId) return null;
+
+  const existing = await prisma.user.findUnique({
+    where: { clerkId },
+    include: { organization: true },
+  });
+  if (existing) return existing;
+
+  // First request for this Clerk identity — provision (or adopt) a local row.
+  const cu = await currentUser();
+  if (!cu) return null;
+  const email =
+    cu.primaryEmailAddress?.emailAddress ??
+    cu.emailAddresses[0]?.emailAddress ??
+    `${clerkId}@users.bids.sh`;
+  const name =
+    [cu.firstName, cu.lastName].filter(Boolean).join(" ").trim() ||
+    cu.username ||
+    null;
+
+  return prisma.user.upsert({
+    where: { email },
+    update: { clerkId, name: name ?? undefined, image: cu.imageUrl },
+    create: { email, clerkId, name, image: cu.imageUrl },
     include: { organization: true },
   });
 }
 
-/** Throws if the demo user is missing (database not seeded). */
+// cache() dedupes the lookup across a single server request — layouts,
+// pages, and actions can all call getCurrentUser() and share one query.
+export const getCurrentUser = cache(async () => {
+  if (isClerkEnabled()) {
+    return getClerkBackedUser();
+  }
+  return prisma.user.findUnique({
+    where: { email: DEMO_USER_EMAIL },
+    include: { organization: true },
+  });
+});
+
+/** Throws if there is no signed-in user (or, keyless, if the DB isn't seeded). */
 export async function requireUser() {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error(
-      "No current user found. Run `npm run db:seed` to create the demo operator.",
+      isClerkEnabled()
+        ? "Not signed in."
+        : "No current user found. Run `npm run db:seed` to create the demo operator.",
     );
+  }
+  return user;
+}
+
+/**
+ * Require the current user AND that they hold the "admin" role.
+ * Throws an authorization error otherwise — callers should catch and return
+ * a 403 / notFound() response rather than letting the exception bubble up.
+ */
+export async function requireAdmin() {
+  const user = await requireUser();
+  if (user.role !== "admin") {
+    throw new Error("Forbidden: admin role required.");
   }
   return user;
 }

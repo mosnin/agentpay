@@ -1,6 +1,6 @@
-# Contributing to Agent Market
+# Contributing to Bids
 
-Thanks for helping improve Agent Market. This guide covers local setup and the checks expected on
+Thanks for helping improve Bids. This guide covers local setup and the checks expected on
 every change.
 
 ## Prerequisites

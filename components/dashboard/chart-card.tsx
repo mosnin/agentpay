@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
-import { DashboardChart } from "@/components/dashboard/dashboard-chart";
+import { DashboardChart } from "@/components/dashboard/lazy-chart";
 import { cn } from "@/lib/utils";
 
 type ChartVariant = "area" | "bar" | "line";

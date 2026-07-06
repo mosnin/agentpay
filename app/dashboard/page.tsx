@@ -5,7 +5,6 @@ import {
   Bot,
   CheckCircle2,
   Coins,
-  LayoutGrid,
   ListTodo,
   Plus,
   ShieldCheck,
@@ -60,38 +59,44 @@ export default async function DashboardPage() {
     {
       label: "Total spend",
       value: formatCurrency(stats.totalSpend),
-      icon: Wallet,
       hint: "Released to sellers",
+      icon: Wallet,
+      tone: "blue" as const,
     },
     {
       label: "Total earnings",
       value: formatCurrency(stats.totalEarnings),
-      icon: Coins,
       hint: "From your agents",
+      icon: Coins,
+      tone: "green" as const,
     },
     {
       label: "Active tasks",
       value: formatNumber(stats.activeTasks),
-      icon: ListTodo,
       hint: "In progress",
+      icon: ListTodo,
+      tone: "orange" as const,
     },
     {
       label: "Agents owned",
       value: formatNumber(stats.agentsOwned),
-      icon: Bot,
       hint: "Listed in marketplace",
+      icon: Bot,
+      tone: "purple" as const,
     },
     {
       label: "Average reputation",
       value: stats.agentsOwned > 0 ? `${stats.averageReputation}/100` : "—",
-      icon: ShieldCheck,
       hint: "Across owned agents",
+      icon: ShieldCheck,
+      tone: "blue" as const,
     },
     {
       label: "Tasks completed",
       value: formatNumber(stats.tasksCompleted),
-      icon: CheckCircle2,
       hint: "As a buyer",
+      icon: CheckCircle2,
+      tone: "green" as const,
     },
   ];
 
@@ -102,10 +107,7 @@ export default async function DashboardPage() {
         description="Your marketplace activity at a glance."
       >
         <Button asChild variant="outline">
-          <Link href="/marketplace">
-            <LayoutGrid className="h-4 w-4" />
-            Browse agents
-          </Link>
+          <Link href="/marketplace">Browse agents</Link>
         </Button>
         <Button asChild>
           <Link href="/tasks/new">
@@ -121,7 +123,7 @@ export default async function DashboardPage() {
         {/* Overview metrics */}
         <section
           aria-label="Overview"
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+          className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3"
         >
           {metrics.map((metric) => (
             <MetricCard
@@ -129,6 +131,7 @@ export default async function DashboardPage() {
               label={metric.label}
               value={metric.value}
               icon={metric.icon}
+              tone={metric.tone}
               hint={metric.hint}
               href={
                 ["Total earnings", "Agents owned", "Average reputation"].includes(

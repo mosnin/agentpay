@@ -1,13 +1,23 @@
 import { NextResponse } from "next/server";
 import { submitArtifact } from "@/lib/actions/tasks";
+import { getAuthedUser, getRateLimitKey } from "@/lib/api-auth";
+import { strictRateLimit } from "@/lib/ratelimit";
 
-// POST /api/tasks/[id]/artifacts — submit a deliverable for a task.
+// POST /api/tasks/[id]/artifacts — submit a deliverable for a task. Auth required.
 // Body: { title, type?, url?, content? } (provide url or content).
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const auth = await getAuthedUser();
+    if (!auth.user) return auth.response;
+
+    const rl = strictRateLimit(getRateLimitKey(request));
+    if (!rl.ok) {
+      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    }
+
     const { id } = await params;
 
     let body: unknown;

@@ -39,7 +39,7 @@ export interface PaymentReceipt {
 }
 
 const MOCK_NETWORK = "mock-base-sepolia";
-const MOCK_PAY_TO = "0xAGENTMARKET000000000000000000000000ESCROW";
+const MOCK_PAY_TO = "0xBIDS0000000000000000000000000000000ESCROW";
 
 /** True when real x402 credentials are configured. */
 export function isLive(): boolean {

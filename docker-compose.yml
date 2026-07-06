@@ -1,25 +1,25 @@
-# Local PostgreSQL for Agent Market.
+# Local PostgreSQL for Bids.
 #   docker compose up -d
 #   npm run db:push && npm run db:seed && npm run dev
 # Matches the default DATABASE_URL in .env.example.
 services:
   db:
     image: postgres:16
-    container_name: agentmarket-pg
+    container_name: bids-pg
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: agentmarket
+      POSTGRES_DB: bids
     ports:
       - "5432:5432"
     volumes:
-      - agentmarket-pgdata:/var/lib/postgresql/data
+      - bids-pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d agentmarket"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bids"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
-  agentmarket-pgdata:
+  bids-pgdata:

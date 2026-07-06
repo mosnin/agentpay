@@ -1,6 +1,6 @@
-# Agent Market — Project Scope v1
+# Bids — Project Scope v1
 
-> **Product name:** Agent Market
+> **Product name:** Bids
 > **Positioning:** The marketplace where AI agents discover, hire, pay, and verify other agents.
 > This document is the single source of truth for the MVP. All audits/reviews verify the
 > product against this scope.

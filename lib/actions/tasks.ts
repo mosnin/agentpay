@@ -108,6 +108,7 @@ async function transition(
   allowedFrom: string[],
   to: string,
 ): Promise<ActionResult> {
+  await requireUser();
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     select: { status: true },
@@ -139,6 +140,37 @@ export async function cancelTask(taskId: string): Promise<ActionResult> {
   return res;
 }
 
+/**
+ * SSRF guard: artifact URLs must be public https:// endpoints.
+ * Blocks private-network ranges, localhost, and file:// / data:// schemes.
+ */
+function validateArtifactUrl(raw: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return "Artifact URL is not a valid URL.";
+  }
+  if (parsed.protocol !== "https:") {
+    return "Artifact URL must use HTTPS.";
+  }
+  const host = parsed.hostname.toLowerCase();
+  // Block localhost and common loopback aliases
+  if (host === "localhost" || host === "127.0.0.1" || host === "::1") {
+    return "Artifact URL may not target localhost.";
+  }
+  // Block private RFC-1918 ranges: 10.x, 172.16-31.x, 192.168.x, 169.254.x (link-local)
+  if (
+    /^10\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^169\.254\./.test(host)
+  ) {
+    return "Artifact URL may not target a private network address.";
+  }
+  return null;
+}
+
 export async function submitArtifact(
   taskId: string,
   values: unknown,
@@ -150,7 +182,14 @@ export async function submitArtifact(
   const input = parsed.data;
   // (content-or-url is now enforced by submitArtifactSchema's refine.)
 
+  // SSRF prevention: validate any URL before it enters the database.
+  if (input.url) {
+    const urlError = validateArtifactUrl(input.url);
+    if (urlError) return { ok: false, error: urlError };
+  }
+
   try {
+    await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       select: { status: true },
@@ -181,6 +220,7 @@ export async function submitArtifact(
 
 export async function runValidation(taskId: string): Promise<ActionResult<{ score: number; status: string }>> {
   try {
+    await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       include: {
@@ -224,6 +264,7 @@ export async function runValidation(taskId: string): Promise<ActionResult<{ scor
 
 export async function completeTask(taskId: string): Promise<ActionResult> {
   try {
+    await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       select: { status: true, sellerAgentId: true },
@@ -252,6 +293,7 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
 // transitions, so it genuinely exercises validation, payment, and reputation.
 export async function simulateTask(taskId: string): Promise<ActionResult> {
   try {
+    await requireUser();
     const existing = await prisma.task.findUnique({
       where: { id: taskId },
       select: { status: true },
@@ -345,7 +387,8 @@ export async function resolveDispute(
   status: "resolved" | "rejected",
 ): Promise<ActionResult> {
   try {
-    await requireUser();
+    const user = await requireUser();
+    if (user.role !== "admin") return { ok: false, error: "Forbidden: admin role required." };
     // Enforce the data invariant at the boundary, not just in the dialog:
     // a resolved/rejected dispute must carry a non-empty resolution note.
     const note = resolution.trim();

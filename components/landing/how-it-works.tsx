@@ -1,57 +1,33 @@
-import {
-  Compass,
-  FileCode2,
-  Handshake,
-  Activity,
-  UploadCloud,
-  BadgeCheck,
-  Star,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { SectionHeading } from "./section-heading";
+import { MarketCircuit } from "./market-circuit";
 
 type Step = {
-  icon: LucideIcon;
   title: string;
   description: string;
 };
 
+// Five beats, not seven cards. The circuit carries the picture; the rail
+// carries the words.
 const STEPS: Step[] = [
   {
-    icon: Compass,
     title: "Discover",
-    description: "Search and compare agents by capability, price, rating, and verification.",
+    description: "Compare agents by capability, price, rating, and verification.",
   },
   {
-    icon: FileCode2,
-    title: "Create task contract",
-    description: "Define the objective, input payload, output schema, and success criteria.",
+    title: "Contract",
+    description: "Objective, input payload, output schema, success criteria — signed and hashed.",
   },
   {
-    icon: Handshake,
-    title: "Agent accepts",
-    description: "The selected agent reviews the contract and accepts the engagement.",
+    title: "Execute",
+    description: "The agent accepts and works; you follow a live, transparent timeline.",
   },
   {
-    icon: Activity,
-    title: "Track execution",
-    description: "Follow live status from accepted to running with a transparent timeline.",
+    title: "Validate",
+    description: "Every artifact is scored against your rules before money moves.",
   },
   {
-    icon: UploadCloud,
-    title: "Submit & validate artifact",
-    description: "The agent submits an artifact that is checked against your validation rules.",
-  },
-  {
-    icon: BadgeCheck,
-    title: "Complete & release payment",
-    description: "On a passing validation, escrowed funds are released to the seller.",
-  },
-  {
-    icon: Star,
-    title: "Review & reputation",
-    description: "Leave a rating; outcomes feed each agent's compounding reputation score.",
+    title: "Settle",
+    description: "Escrow releases on a pass, and the outcome compounds the agent's reputation.",
   },
 ];
 
@@ -61,31 +37,44 @@ export function HowItWorks() {
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
         <SectionHeading
           eyebrow="How it works"
-          title="A full task lifecycle, end to end"
-          description="Every engagement runs through the same accountable workflow — from discovery to payment and reputation."
+          title="Work on one rail, money on the other"
+          description="Every engagement runs the same accountable loop: the contract drives the work, escrow guards the payment, and validation is the gate between them."
         />
 
-        <ol className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <li key={step.title}>
-                <Card className="relative flex h-full flex-col gap-3 p-5 transition-colors hover:border-primary/30">
-                  <div className="flex items-center justify-between">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="font-mono text-sm font-medium text-muted-foreground">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                  </div>
-                  <h3 className="text-[15px] font-semibold text-foreground">{step.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{step.description}</p>
-                </Card>
+        <div className="mt-14 grid grid-cols-1 items-center gap-12 lg:grid-cols-5">
+          {/* The circuit is the focal point — hidden only where it can't be legible. */}
+          <div className="hidden md:block lg:col-span-3">
+            <MarketCircuit />
+          </div>
+
+          <ol className="lg:col-span-2">
+            {STEPS.map((step, index) => (
+              <li
+                key={step.title}
+                className="group relative flex gap-5 pb-8 last:pb-0"
+              >
+                {/* Rail */}
+                {index < STEPS.length - 1 && (
+                  <span
+                    aria-hidden
+                    className="absolute left-[15px] top-8 h-full w-px bg-border/70"
+                  />
+                )}
+                <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background font-mono text-[11px] font-medium text-muted-foreground transition-colors group-hover:border-primary/50 group-hover:text-primary">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div className="pt-1">
+                  <h3 className="text-[15px] font-semibold text-foreground">
+                    {step.title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {step.description}
+                  </p>
+                </div>
               </li>
-            );
-          })}
-        </ol>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   );

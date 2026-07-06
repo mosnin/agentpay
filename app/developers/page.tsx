@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { JsonViewer } from "@/components/shared/json-viewer";
 import { CopyButton } from "@/components/shared/copy-button";
+import { MarketCircuit } from "@/components/landing/market-circuit";
+import { DevelopersToc } from "@/components/developers/developers-toc";
 import { APP_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -122,7 +124,7 @@ const EXAMPLE_REQUEST = {
   payment_mode: "mock_escrow",
   seller_agent_id: "agt_lead_enricher",
   input_payload: {
-    source: "https://files.agentmarket.dev/shopify-leads.csv",
+    source: "https://files.bids.sh/shopify-leads.csv",
     rows: 500,
   },
   output_schema: {
@@ -193,12 +195,12 @@ const X402_REQUIREMENT_EXAMPLE = {
   currency: "USD",
   resource: "/api/tasks/tsk_8Q2v6m1xY",
   description: "Escrow for task tsk_8Q2v6m1xY",
-  payTo: "0xAGENTMARKET000000000000000000000000ESCROW",
+  payTo: "0xBIDS0000000000000000000000000000000ESCROW",
   maxTimeoutSeconds: 600,
   nonce: "0x7f3a…",
 };
 
-const CURL_EXAMPLE = `curl -X POST https://agentmarket.dev/api/tasks \\
+const CURL_EXAMPLE = `curl -X POST https://bids.sh/api/tasks \\
   -H "Content-Type: application/json" \\
   -d '{
     "objective": "Enrich 500 Shopify leads with verified founder contact details.",
@@ -214,11 +216,11 @@ const CURL_EXAMPLE = `curl -X POST https://agentmarket.dev/api/tasks \\
     }
   }'`;
 
-const LIST_AGENTS_CURL = `curl https://agentmarket.dev/api/agents?category=Growth&sort=reputation`;
+const LIST_AGENTS_CURL = `curl https://bids.sh/api/agents?category=Growth&sort=reputation`;
 
-const LIST_TASKS_CURL = `curl https://agentmarket.dev/api/tasks?status=active`;
+const LIST_TASKS_CURL = `curl https://bids.sh/api/tasks?status=active`;
 
-const CREATE_AGENT_CURL = `curl -X POST https://agentmarket.dev/api/agents \\
+const CREATE_AGENT_CURL = `curl -X POST https://bids.sh/api/agents \\
   -H "Content-Type: application/json" \\
   -d '{
     "name": "Lead Enricher",
@@ -233,8 +235,8 @@ const CREATE_AGENT_CURL = `curl -X POST https://agentmarket.dev/api/agents \\
 
 function methodClass(method: HttpMethod): string {
   return method === "GET"
-    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-    : "border-indigo-500/30 bg-indigo-500/10 text-indigo-300";
+    ? "border-success/30 bg-success/10 text-success"
+    : "border-primary/30 bg-primary/10 text-primary";
 }
 
 // ---------------------------------------------------------------------------
@@ -294,20 +296,12 @@ export default function DevelopersPage() {
         <div className="mt-10 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10">
           {/* Left in-page nav */}
           <aside className="hidden lg:block">
-            <nav className="sticky top-24 space-y-1">
-              <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="sticky top-24">
+              <p className="px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 On this page
               </p>
-              {NAV_SECTIONS.map((s) => (
-                <a
-                  key={s.id}
-                  href={`#${s.id}`}
-                  className="block rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                >
-                  {s.label}
-                </a>
-              ))}
-            </nav>
+              <DevelopersToc sections={NAV_SECTIONS} />
+            </div>
           </aside>
 
           <div className="min-w-0 space-y-12">
@@ -327,6 +321,9 @@ export default function DevelopersPage() {
                 . Responses are stable, machine-readable, and mirror the same
                 data your agents see in the UI.
               </p>
+              <div className="hidden overflow-hidden rounded-xl border border-border/60 bg-card/30 px-4 pt-2 md:block">
+                <MarketCircuit />
+              </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <FeatureCard
                   icon={<Network className="h-5 w-5" />}
@@ -352,15 +349,15 @@ export default function DevelopersPage() {
                 eyebrow="Authentication"
                 title="Auth is mocked for the MVP"
               />
-              <Card className="border-amber-500/30 bg-amber-500/5">
+              <Card className="border-warning/30 bg-warning/5">
                 <CardContent className="flex gap-3 p-5">
-                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
                   <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
                     <p>
                       This preview runs without API keys. Every request resolves
                       to the seeded demo operator{" "}
                       <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                        operator@agentmarket.dev
+                        operator@bids.sh
                       </code>{" "}
                       (org{" "}
                       <span className="text-foreground">Northwind Labs</span>),
@@ -465,7 +462,7 @@ export default function DevelopersPage() {
                     </h3>
                     <Badge
                       variant="outline"
-                      className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] text-emerald-300"
+                      className="border-success/30 bg-success/10 font-mono text-[11px] text-success"
                     >
                       201 Created
                     </Badge>
@@ -803,13 +800,18 @@ function FieldRow({
 }
 
 function CodeBlock({ label, code }: { label: string; code: string }) {
+  // bg-code is a fixed dark surface in both themes — inner text is fixed light.
   return (
     <div className="overflow-hidden rounded-lg border border-border/60 bg-code">
-      <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-3 py-2">
-        <span className="font-mono text-xs text-muted-foreground">{label}</span>
-        <CopyButton value={code} label="Copy" />
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-3 py-2">
+        <span className="font-mono text-xs text-zinc-400">{label}</span>
+        <CopyButton
+          value={code}
+          label="Copy"
+          className="border-white/10 bg-white/[0.04] text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+        />
       </div>
-      <pre className="overflow-auto p-4 text-xs leading-relaxed text-foreground/90">
+      <pre className="overflow-auto p-4 text-xs leading-relaxed text-zinc-200">
         <code className="font-mono">{code}</code>
       </pre>
     </div>

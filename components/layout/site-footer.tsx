@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Brand } from "./brand";
 
 const COLUMNS = [
@@ -30,7 +31,7 @@ const COLUMNS = [
   },
 ];
 
-export function SiteFooter() {
+export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
   return (
     <footer className="border-t border-border/60 bg-card/20">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -59,12 +60,28 @@ export function SiteFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row">
-          <span>© {new Date().getFullYear()} Agent Market. MVP demo.</span>
-          <span className="text-xs">
-            Payments, validation &amp; interop run on local mock adapters.
-          </span>
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row">
+          <div className="flex flex-col items-center gap-1 sm:items-start">
+            <span>© {new Date().getFullYear()} Bids. MVP demo.</span>
+            <span className="text-xs">
+              Payments, validation &amp; interop run on local mock adapters.
+            </span>
+          </div>
+          <ThemeSwitcher />
         </div>
+
+        {/* The reveal payoff: an oversized wordmark uncovered as the page
+            scrolls away. Clipped to the type, faded into the surface. */}
+        {reveal && (
+          <div
+            aria-hidden
+            className="pointer-events-none mt-10 select-none overflow-hidden"
+          >
+            <span className="block bg-gradient-to-b from-foreground/[0.07] to-transparent bg-clip-text text-[18vw] font-semibold leading-[0.8] tracking-tighter text-transparent">
+              Bids
+            </span>
+          </div>
+        )}
       </div>
     </footer>
   );

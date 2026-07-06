@@ -9,67 +9,75 @@
     --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo,
       Consolas, monospace;
 
-    /* Light theme (kept for completeness; app is dark-first). */
-    --background: 0 0% 100%;
-    --foreground: 224 20% 9%;
+    /* Light-first, neutral "ops dashboard" palette:
+       light-gray page, white surfaces, hairline borders. Primary is
+       near-black (filled buttons); blue (--info) is the data/control accent. */
+    --background: 240 6% 96%;
+    --foreground: 240 6% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 224 20% 9%;
+    --card-foreground: 240 6% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 20% 9%;
-    --primary: 243 75% 59%;
+    --popover-foreground: 240 6% 10%;
+    --primary: 240 6% 10%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 224 20% 12%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 220 14% 94%;
-    --accent-foreground: 224 20% 12%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 5% 94%;
+    --accent-foreground: 240 6% 10%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --success: 152 60% 40%;
+    --success: 142 71% 42%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 45%;
-    --warning-foreground: 0 0% 10%;
-    --border: 220 13% 91%;
-    --input: 220 13% 88%;
-    --ring: 243 75% 59%;
-    --chart-1: 243 75% 59%;
-    --chart-2: 199 89% 48%;
-    --chart-3: 152 60% 45%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 280 65% 60%;
-    --radius: 0.7rem;
+    --warning: 25 95% 53%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 217 91% 60%;
+    --chart-1: 217 91% 60%;
+    --chart-2: 25 95% 53%;
+    --chart-3: 262 83% 66%;
+    --chart-4: 142 71% 42%;
+    --chart-5: 240 4% 55%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 224 24% 4%;
-    --foreground: 210 20% 98%;
-    --card: 224 20% 6.5%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 24% 5%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 243 80% 67%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 222 16% 12%;
-    --secondary-foreground: 210 20% 96%;
-    --muted: 222 16% 11%;
-    --muted-foreground: 218 12% 58%;
-    --accent: 222 16% 14%;
-    --accent-foreground: 210 20% 98%;
+    /* Same system inverted: near-black page, dark surfaces, near-white
+       primary buttons, same blue data accent. */
+    --background: 240 6% 7%;
+    --foreground: 0 0% 98%;
+    --card: 240 5% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 6% 10%;
+    --secondary: 240 4% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 14%;
+    --muted-foreground: 240 5% 64%;
+    --accent: 240 4% 17%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 72% 56%;
     --destructive-foreground: 0 0% 100%;
-    --success: 152 58% 48%;
-    --success-foreground: 152 80% 6%;
-    --warning: 38 92% 55%;
-    --warning-foreground: 38 92% 8%;
-    --border: 220 14% 15%;
-    --input: 220 14% 17%;
-    --ring: 243 80% 67%;
-    --chart-1: 243 80% 67%;
-    --chart-2: 199 89% 56%;
-    --chart-3: 152 58% 52%;
-    --chart-4: 38 92% 58%;
-    --chart-5: 280 70% 68%;
+    --success: 142 66% 46%;
+    --success-foreground: 0 0% 100%;
+    --warning: 25 95% 56%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 63%;
+    --info-foreground: 0 0% 100%;
+    --border: 240 4% 18%;
+    --input: 240 4% 20%;
+    --ring: 217 91% 63%;
+    --chart-1: 217 91% 63%;
+    --chart-2: 25 95% 56%;
+    --chart-3: 262 83% 70%;
+    --chart-4: 142 66% 46%;
+    --chart-5: 240 5% 60%;
   }
 }
 
@@ -89,20 +97,22 @@
 }
 
 @layer utilities {
-  /* Subtle glass surface used across panels and nav. */
+  /* Subtle glass surface used across panels and nav — token-based so it
+     holds up in both themes. */
   .glass {
-    @apply border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl;
+    @apply border border-border/60 bg-background/70 backdrop-blur-xl;
   }
   .glass-strong {
-    @apply border border-white/[0.08] bg-white/[0.04] backdrop-blur-2xl;
+    @apply border border-border/70 bg-background/80 backdrop-blur-2xl;
   }
 
-  /* Gradient text for hero + headings. */
+  /* Hero headline treatment: a quiet vertical fade that adds depth without
+     washing out the words. Theme-aware — resolves to foreground. */
   .text-gradient {
-    @apply bg-gradient-to-br from-white via-white to-white/55 bg-clip-text text-transparent;
+    @apply bg-gradient-to-b from-foreground to-foreground/80 bg-clip-text text-transparent;
   }
   .text-gradient-primary {
-    @apply bg-gradient-to-br from-primary via-primary to-primary/60 bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-primary via-primary to-primary/70 bg-clip-text text-transparent;
   }
 
   /* Faint dotted grid background for hero / empty canvases. */
@@ -116,12 +126,6 @@
   .bg-grid-fade {
     -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
     mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
-  }
-
-  /* Ambient gradient glow. */
-  .glow-primary {
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.1),
-      0 8px 40px -8px hsl(var(--primary) / 0.35);
   }
 
   .no-scrollbar::-webkit-scrollbar {

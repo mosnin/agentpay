@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
-import { Bot, ShieldAlert, Scale, Wallet } from "lucide-react";
+import { notFound } from "next/navigation";
+import { Bot, Scale, ShieldAlert, Wallet } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
 import { getAdminData } from "@/lib/queries";
+import { requireAdmin } from "@/lib/auth";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { AdminTabs } from "./admin-tabs";
 
 export const metadata: Metadata = {
-  title: "Admin — Agent Market",
+  title: "Admin",
   description: "Moderate agents, disputes, payments, and reputation.",
 };
 
 export default async function AdminPage() {
+  try {
+    await requireAdmin();
+  } catch {
+    notFound();
+  }
+
   const data = await getAdminData();
 
   const agents = data.agents.map((a) => ({
@@ -94,29 +102,33 @@ export default async function AdminPage() {
       />
 
       <div className="space-y-6">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
             label="Total agents"
             value={formatNumber(stats.agentCount)}
             icon={Bot}
+            tone="blue"
             hint="Listed in the marketplace"
           />
           <MetricCard
             label="Unverified"
             value={formatNumber(stats.unverifiedCount)}
             icon={ShieldAlert}
+            tone="orange"
             hint="Awaiting verification"
           />
           <MetricCard
             label="Open disputes"
             value={formatNumber(stats.openDisputes)}
             icon={Scale}
+            tone="purple"
             hint="Need resolution"
           />
           <MetricCard
             label="Total released"
             value={formatCurrency(stats.totalReleased)}
             icon={Wallet}
+            tone="green"
             hint="Settled to sellers"
           />
         </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { LayoutDashboard, Briefcase, LogOut, UserRound } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,17 +14,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { initials } from "@/lib/utils";
 
-export function UserMenu({
-  name = "Ada Operator",
-  email = "operator@agentmarket.dev",
+// Inlined at build time — decides which menu variant renders on the client.
+const CLERK_ENABLED = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
+function MenuShell({
+  name,
+  email,
+  image,
+  badge,
+  onSignOut,
 }: {
-  name?: string;
-  email?: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  badge?: React.ReactNode;
+  onSignOut?: () => void;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring">
         <Avatar className="h-8 w-8 border border-border/60">
+          {image && <AvatarImage src={image} alt="" />}
           <AvatarFallback className="bg-muted text-xs">{initials(name)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -32,9 +43,7 @@ export function UserMenu({
           <div className="flex flex-col">
             <span className="text-sm font-medium">{name}</span>
             <span className="text-xs font-normal text-muted-foreground">{email}</span>
-            <span className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300">
-              Mock session
-            </span>
+            {badge}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -54,10 +63,60 @@ export function UserMenu({
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled>
-          <LogOut className="mr-2 h-4 w-4" /> Sign out
-        </DropdownMenuItem>
+        {onSignOut ? (
+          <DropdownMenuItem onSelect={onSignOut}>
+            <LogOut className="mr-2 h-4 w-4" /> Sign out
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem disabled>
+            <LogOut className="mr-2 h-4 w-4" /> Sign out
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function ClerkUserMenu() {
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  if (!user) return null;
+
+  const name =
+    user.fullName ||
+    user.username ||
+    user.primaryEmailAddress?.emailAddress ||
+    "Account";
+  const email = user.primaryEmailAddress?.emailAddress ?? "";
+
+  return (
+    <MenuShell
+      name={name}
+      email={email}
+      image={user.imageUrl}
+      onSignOut={() => void signOut({ redirectUrl: "/" })}
+    />
+  );
+}
+
+export function UserMenu({
+  name = "Ada Operator",
+  email = "operator@bids.sh",
+}: {
+  name?: string;
+  email?: string;
+}) {
+  if (CLERK_ENABLED) return <ClerkUserMenu />;
+
+  return (
+    <MenuShell
+      name={name}
+      email={email}
+      badge={
+        <span className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-full border border-warning/30 bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-warning">
+          Mock session
+        </span>
+      }
+    />
   );
 }

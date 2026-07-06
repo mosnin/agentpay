@@ -7,13 +7,10 @@ import {
   Compass,
   FileWarning,
   Hash,
-  ListChecks,
   Package,
   Receipt,
   ShieldCheck,
-  Sparkles,
   Star,
-  Target,
   User as UserIcon,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
@@ -26,6 +23,7 @@ import { CopyButton } from "@/components/shared/copy-button";
 import { DeadlineBadge } from "@/components/shared/deadline-badge";
 import { ReviewCard } from "@/components/shared/review-card";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
+import { AgentHoverCard } from "@/components/agents/agent-hover-card";
 import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
 import { TaskTimeline } from "@/components/tasks/task-timeline";
 import { ArtifactCard } from "@/components/tasks/artifact-card";
@@ -51,9 +49,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const task = await getTaskById(id);
-  if (!task) return { title: "Task not found · Agent Market" };
+  if (!task) return { title: "Task not found" };
   return {
-    title: `${task.title} · Agent Market`,
+    title: task.title,
     description: task.objective.slice(0, 150),
   };
 }
@@ -61,13 +59,11 @@ export async function generateMetadata({
 function SectionCard({
   title,
   description,
-  icon: Icon,
   children,
   action,
 }: {
   title: string;
   description?: string;
-  icon: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
   action?: React.ReactNode;
 }) {
@@ -75,10 +71,7 @@ function SectionCard({
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <div className="space-y-1">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Icon className="h-4 w-4 text-primary" />
-            {title}
-          </CardTitle>
+          <CardTitle className="text-base">{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </div>
         {action}
@@ -100,6 +93,16 @@ export default async function TaskDetailPage({
   ]);
 
   if (!task) notFound();
+
+  // IDOR guard: only the buyer, the agent's owner, or an admin may view task details.
+  if (
+    currentUser &&
+    currentUser.role !== "admin" &&
+    task.buyerId !== currentUser.id &&
+    task.sellerAgent?.ownerId !== currentUser.id
+  ) {
+    notFound();
+  }
 
   const agent = task.sellerAgent;
   const contract = task.contract;
@@ -156,13 +159,15 @@ export default async function TaskDetailPage({
           <Bot className="h-4 w-4" />
           Agent
           {agent ? (
-            <Link
-              href={`/agents/${agent.slug}`}
-              className="inline-flex items-center gap-1 font-medium text-foreground transition-colors hover:text-primary"
-            >
-              {agent.name}
-              {agent.verified && <VerifiedBadge />}
-            </Link>
+            <AgentHoverCard agentId={agent.id}>
+              <Link
+                href={`/agents/${agent.slug}`}
+                className="inline-flex items-center gap-1 font-medium text-foreground transition-colors hover:text-primary"
+              >
+                {agent.name}
+                {agent.verified && <VerifiedBadge />}
+              </Link>
+            </AgentHoverCard>
           ) : (
             <span className="font-medium text-foreground">Unassigned</span>
           )}
@@ -186,7 +191,7 @@ export default async function TaskDetailPage({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main column */}
         <div className="space-y-6 lg:col-span-2">
-          <SectionCard title="Objective" icon={Target}>
+          <SectionCard title="Objective">
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
               {task.objective}
             </p>
@@ -207,7 +212,6 @@ export default async function TaskDetailPage({
             <SectionCard
               title="Contract"
               description="The machine-readable agreement this task is executed against."
-              icon={Sparkles}
             >
               <TaskContractPreview
                 contract={{
@@ -224,7 +228,7 @@ export default async function TaskDetailPage({
               />
             </SectionCard>
           ) : (
-            <SectionCard title="Contract" icon={Sparkles}>
+            <SectionCard title="Contract">
               <EmptyState
                 icon={FileWarning}
                 title="No contract attached"
@@ -236,7 +240,6 @@ export default async function TaskDetailPage({
           <SectionCard
             title="Timeline"
             description="Lifecycle from acceptance to release."
-            icon={ListChecks}
           >
             <TaskTimeline status={task.status} />
           </SectionCard>
@@ -244,7 +247,6 @@ export default async function TaskDetailPage({
           <SectionCard
             title="Artifacts"
             description="Work products delivered for this task."
-            icon={Package}
             action={
               task.artifacts.length > 0 ? (
                 <span className="text-xs text-muted-foreground">
@@ -272,7 +274,6 @@ export default async function TaskDetailPage({
             <SectionCard
               title="Disputes"
               description="Issues raised on this task and how they were resolved."
-              icon={FileWarning}
             >
               <div className="space-y-3">
                 {task.disputes.map((dispute) => (
@@ -280,7 +281,7 @@ export default async function TaskDetailPage({
                     key={dispute.id}
                     className={`rounded-xl border p-4 ${
                       dispute.status === "open"
-                        ? "border-red-500/30 bg-red-500/[0.06]"
+                        ? "border-destructive/30 bg-destructive/[0.06]"
                         : "border-border/60 bg-muted/20"
                     }`}
                   >
@@ -314,7 +315,6 @@ export default async function TaskDetailPage({
           <SectionCard
             title="Reviews"
             description="Buyer feedback on the delivered work."
-            icon={Star}
           >
             {task.reviews.length > 0 ? (
               <div className="space-y-3">
@@ -355,10 +355,7 @@ export default async function TaskDetailPage({
           {task.status === "completed" && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  What&apos;s next
-                </CardTitle>
+                <CardTitle className="text-base">What&apos;s next</CardTitle>
                 <CardDescription>
                   This task is complete — keep the momentum going.
                 </CardDescription>

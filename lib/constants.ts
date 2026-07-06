@@ -59,15 +59,15 @@ export const TASK_LIFECYCLE = [
 ] as const;
 
 export const TASK_STATUS_CONFIG: Record<string, StatusConfig> = {
-  draft: { label: "Draft", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-300", dot: "bg-zinc-400" },
-  pending: { label: "Pending", className: "border-amber-500/30 bg-amber-500/10 text-amber-300", dot: "bg-amber-400" },
-  accepted: { label: "Accepted", className: "border-blue-500/30 bg-blue-500/10 text-blue-300", dot: "bg-blue-400" },
-  running: { label: "Running", className: "border-sky-500/30 bg-sky-500/10 text-sky-300", dot: "bg-sky-400 animate-pulse" },
-  submitted: { label: "Submitted", className: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300", dot: "bg-cyan-400" },
-  validating: { label: "Validating", className: "border-violet-500/30 bg-violet-500/10 text-violet-300", dot: "bg-violet-400 animate-pulse" },
-  completed: { label: "Completed", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300", dot: "bg-emerald-400" },
-  disputed: { label: "Disputed", className: "border-red-500/30 bg-red-500/10 text-red-300", dot: "bg-red-400" },
-  cancelled: { label: "Cancelled", className: "border-zinc-600/30 bg-zinc-600/10 text-zinc-400", dot: "bg-zinc-500" },
+  draft: { label: "Draft", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-700 dark:text-zinc-300", dot: "bg-zinc-500 dark:bg-zinc-400" },
+  pending: { label: "Pending", className: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300", dot: "bg-amber-500 dark:bg-amber-400" },
+  accepted: { label: "Accepted", className: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300", dot: "bg-blue-500 dark:bg-blue-400" },
+  running: { label: "Running", className: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300", dot: "bg-sky-500 dark:bg-sky-400 animate-pulse" },
+  submitted: { label: "Submitted", className: "border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300", dot: "bg-cyan-500 dark:bg-cyan-400" },
+  validating: { label: "Validating", className: "border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300", dot: "bg-violet-500 dark:bg-violet-400 animate-pulse" },
+  completed: { label: "Completed", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500 dark:bg-emerald-400" },
+  disputed: { label: "Disputed", className: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300", dot: "bg-red-500 dark:bg-red-400" },
+  cancelled: { label: "Cancelled", className: "border-zinc-600/30 bg-zinc-600/10 text-zinc-600 dark:text-zinc-400", dot: "bg-zinc-500" },
 };
 
 /**
@@ -120,31 +120,31 @@ export function reputationEventLabel(type: string): string {
 }
 
 export const PAYMENT_STATUS_CONFIG: Record<string, StatusConfig> = {
-  pending: { label: "Pending", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-300", dot: "bg-zinc-400" },
-  escrowed: { label: "Escrowed", className: "border-amber-500/30 bg-amber-500/10 text-amber-300", dot: "bg-amber-400" },
-  released: { label: "Released", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300", dot: "bg-emerald-400" },
-  refunded: { label: "Refunded", className: "border-blue-500/30 bg-blue-500/10 text-blue-300", dot: "bg-blue-400" },
-  failed: { label: "Failed", className: "border-red-500/30 bg-red-500/10 text-red-300", dot: "bg-red-400" },
+  pending: { label: "Pending", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-700 dark:text-zinc-300", dot: "bg-zinc-500 dark:bg-zinc-400" },
+  escrowed: { label: "Escrowed", className: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300", dot: "bg-amber-500 dark:bg-amber-400" },
+  released: { label: "Released", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500 dark:bg-emerald-400" },
+  refunded: { label: "Refunded", className: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300", dot: "bg-blue-500 dark:bg-blue-400" },
+  failed: { label: "Failed", className: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300", dot: "bg-red-500 dark:bg-red-400" },
 };
 
 export const VALIDATION_STATUS_CONFIG: Record<string, StatusConfig> = {
-  pending: { label: "Not validated", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-300", dot: "bg-zinc-400" },
-  passed: { label: "Passed", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300", dot: "bg-emerald-400" },
-  failed: { label: "Failed", className: "border-red-500/30 bg-red-500/10 text-red-300", dot: "bg-red-400" },
+  pending: { label: "Not validated", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-700 dark:text-zinc-300", dot: "bg-zinc-500 dark:bg-zinc-400" },
+  passed: { label: "Passed", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500 dark:bg-emerald-400" },
+  failed: { label: "Failed", className: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300", dot: "bg-red-500 dark:bg-red-400" },
 };
 
 export const AGENT_STATUS_CONFIG: Record<string, StatusConfig> = {
-  draft: { label: "Draft", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-300", dot: "bg-zinc-400" },
-  active: { label: "Active", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300", dot: "bg-emerald-400" },
-  paused: { label: "Paused", className: "border-amber-500/30 bg-amber-500/10 text-amber-300", dot: "bg-amber-400" },
-  suspended: { label: "Suspended", className: "border-red-500/30 bg-red-500/10 text-red-300", dot: "bg-red-400" },
+  draft: { label: "Draft", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-700 dark:text-zinc-300", dot: "bg-zinc-500 dark:bg-zinc-400" },
+  active: { label: "Active", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500 dark:bg-emerald-400" },
+  paused: { label: "Paused", className: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300", dot: "bg-amber-500 dark:bg-amber-400" },
+  suspended: { label: "Suspended", className: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300", dot: "bg-red-500 dark:bg-red-400" },
 };
 
 export const DISPUTE_STATUS_CONFIG: Record<string, StatusConfig> = {
-  open: { label: "Open", className: "border-red-500/30 bg-red-500/10 text-red-300", dot: "bg-red-400" },
-  reviewing: { label: "Reviewing", className: "border-amber-500/30 bg-amber-500/10 text-amber-300", dot: "bg-amber-400" },
-  resolved: { label: "Resolved", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300", dot: "bg-emerald-400" },
-  rejected: { label: "Rejected", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-400", dot: "bg-zinc-500" },
+  open: { label: "Open", className: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300", dot: "bg-red-500 dark:bg-red-400" },
+  reviewing: { label: "Reviewing", className: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300", dot: "bg-amber-500 dark:bg-amber-400" },
+  resolved: { label: "Resolved", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500 dark:bg-emerald-400" },
+  rejected: { label: "Rejected", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-600 dark:text-zinc-400", dot: "bg-zinc-500" },
 };
 
 export const MARKETPLACE_SORTS = [
@@ -163,9 +163,9 @@ export function getStatusConfig(
   key: string | null | undefined,
 ): StatusConfig {
   if (key && map[key]) return map[key];
-  return { label: key ?? "Unknown", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-300", dot: "bg-zinc-400" };
+  return { label: key ?? "Unknown", className: "border-zinc-500/30 bg-zinc-500/10 text-zinc-700 dark:text-zinc-300", dot: "bg-zinc-500 dark:bg-zinc-400" };
 }
 
 export const CURRENCY = "USD";
-export const APP_NAME = "Agent Market";
+export const APP_NAME = "Bids";
 export const APP_TAGLINE = "The marketplace for autonomous agent labor";

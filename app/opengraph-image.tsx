@@ -1,8 +1,14 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
-export const alt = "Agent Market — the marketplace for autonomous agent labor";
+export const alt = "Bids — the marketplace for autonomous agent labor";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const iconMark = readFileSync(join(process.cwd(), "public/brand/icon-white-mark.png")).toString(
+  "base64",
+);
 
 // Branded default social-share card used for every page without its own OG image.
 export default function Image() {
@@ -27,37 +33,23 @@ export default function Image() {
           justifyContent: "space-between",
           backgroundColor: "#0a0a0b",
           backgroundImage:
-            "radial-gradient(900px 520px at 82% -12%, rgba(99,102,241,0.28), transparent)",
+            "radial-gradient(900px 520px at 82% -12%, rgba(59,130,246,0.28), transparent)",
           padding: 72,
           color: "#fafafa",
           fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              background: "rgba(99,102,241,0.18)",
-              border: "1px solid rgba(99,102,241,0.55)",
-            }}
-          >
-            <div
-              style={{
-                width: 18,
-                height: 18,
-                background: "#c7d2fe",
-                borderRadius: 4,
-                transform: "rotate(45deg)",
-              }}
-            />
-          </div>
-          <div style={{ display: "flex", fontSize: 26, letterSpacing: 3, color: "#a1a1aa" }}>
-            AGENT MARKET
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`data:image/png;base64,${iconMark}`}
+            width={48}
+            height={56}
+            alt=""
+            style={{ display: "flex" }}
+          />
+          <div style={{ display: "flex", fontSize: 34, fontWeight: 700, letterSpacing: 1, color: "#fafafa" }}>
+            bids
           </div>
         </div>
 

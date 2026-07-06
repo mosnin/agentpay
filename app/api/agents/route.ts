@@ -3,6 +3,8 @@ import { getAgents } from "@/lib/queries";
 import { createAgent } from "@/lib/actions/agents";
 import { getAgentCard } from "@/lib/interop/a2aAdapter";
 import type { MarketplaceSort } from "@/lib/constants";
+import { getRateLimitKey } from "@/lib/api-auth";
+import { strictRateLimit } from "@/lib/ratelimit";
 
 // GET /api/agents — list agents as machine-readable A2A cards.
 // Query params: q (search), category, sort (reputation|rating|completion|price_asc|price_desc|newest)
@@ -37,6 +39,11 @@ export async function GET(request: NextRequest) {
 // Auth is mocked for the MVP: the agent is created on behalf of the demo operator.
 export async function POST(request: Request) {
   try {
+    const rl = strictRateLimit(getRateLimitKey(request));
+    if (!rl.ok) {
+      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    }
+
     let raw: unknown;
     try {
       raw = await request.json();
