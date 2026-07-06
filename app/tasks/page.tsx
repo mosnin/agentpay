@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TaskStatusBadge } from "@/components/shared/task-status-badge";
 import { DeadlineBadge } from "@/components/shared/deadline-badge";
-import { requireUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import { getUserTasksPaginated, TASKS_PAGE_SIZE } from "@/lib/queries";
 import { TASK_FILTERS, statusesForFilter } from "@/lib/constants";
 import { cn, formatCurrency, formatNumber, formatRelativeTime } from "@/lib/utils";
@@ -25,7 +25,7 @@ export default async function TasksPage({
 }: {
   searchParams: Promise<{ status?: string; page?: string }>;
 }) {
-  const user = await requireUser();
+  const user = await requireOnboardedUser();
   const { status, page: pageRaw } = await searchParams;
   const active = TASK_FILTERS.find((f) => f.key === status) ?? TASK_FILTERS[0];
   const page = Math.max(1, parseInt(pageRaw ?? "1", 10) || 1);

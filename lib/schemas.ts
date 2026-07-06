@@ -139,6 +139,18 @@ export type DisputeInput = z.infer<typeof disputeSchema>;
 // Developer API: POST /api/tasks structured contract
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Onboarding
+// ---------------------------------------------------------------------------
+
+export const completeOnboardingSchema = z.object({
+  intent: z.enum(["buyer", "seller", "both"]).optional(),
+  organizationMode: z.enum(["create", "select", "skip"]),
+  organizationName: z.string().min(2).max(80).optional(),
+  organizationId: z.string().optional(),
+});
+export type CompleteOnboardingInput = z.infer<typeof completeOnboardingSchema>;
+
 export const apiCreateTaskSchema = z.object({
   objective: z.string().min(3),
   title: z.string().optional(),

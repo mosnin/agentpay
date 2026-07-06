@@ -27,7 +27,7 @@ import {
   ReputationFeed,
   type ReputationChange,
 } from "@/components/dashboard/reputation-feed";
-import { requireUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import { getDashboardData } from "@/lib/queries";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  const user = await requireUser();
+  const user = await requireOnboardedUser();
   const data = await getDashboardData(user.id);
   const {
     stats,

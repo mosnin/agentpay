@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "./prisma";
 
@@ -81,6 +82,22 @@ export async function requireUser() {
         ? "Not signed in."
         : "No current user found. Run `npm run db:seed` to create the demo operator.",
     );
+  }
+  return user;
+}
+
+/**
+ * Require the current user AND that they've completed the onboarding wizard.
+ * Only enforced with Clerk configured — the keyless demo operator is a fixed
+ * fallback identity, not a real signup, so it's never sent through onboarding.
+ * Use this instead of requireUser() in protected PAGES; server actions and
+ * API routes should keep using requireUser()/requireAdmin() directly, since
+ * redirecting mid-mutation doesn't make sense there.
+ */
+export async function requireOnboardedUser() {
+  const user = await requireUser();
+  if (isClerkEnabled() && !user.onboardedAt) {
+    redirect("/onboarding");
   }
   return user;
 }

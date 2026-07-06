@@ -7,7 +7,7 @@ import { MetricCard } from "@/components/shared/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardChart } from "@/components/dashboard/lazy-chart";
-import { requireUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import { getSellerData } from "@/lib/queries";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { SellerAgents } from "./seller-agents";
@@ -36,7 +36,7 @@ function buildPipeline(tasks: Awaited<ReturnType<typeof getSellerData>>["inbound
 }
 
 export default async function SellerPage() {
-  const user = await requireUser();
+  const user = await requireOnboardedUser();
   const data = await getSellerData(user.id);
   const { stats } = data;
 

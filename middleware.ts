@@ -11,6 +11,7 @@ const isProtectedRoute = createRouteMatcher([
   "/admin(.*)",
   "/agents/new(.*)",
   "/agents/(.*)/edit(.*)",
+  "/onboarding(.*)",
   "/api/tasks(.*)",
 ]);
 

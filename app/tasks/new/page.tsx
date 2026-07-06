@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { getAgentSelectOptions } from "@/lib/queries";
-import { requireUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import { CreateTaskForm } from "./create-task-form";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function CreateTaskPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await requireUser();
+  await requireOnboardedUser();
   const [agents, sp] = await Promise.all([
     getAgentSelectOptions(),
     searchParams,
