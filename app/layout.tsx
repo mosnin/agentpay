@@ -71,6 +71,8 @@ export default function RootLayout({
 
   return (
     <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
       appearance={{
         variables: {
           colorPrimary: "hsl(240 6% 10%)",

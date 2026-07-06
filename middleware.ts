@@ -37,7 +37,12 @@ function baseMiddleware(request: NextRequest) {
 export default hasClerk
   ? clerkMiddleware(async (auth, request) => {
       if (isProtectedRoute(request)) {
-        await auth.protect();
+        // Without an explicit unauthenticatedUrl, Clerk falls back to its
+        // hosted Account Portal (accounts.<domain>) instead of this app's
+        // own /sign-in page.
+        await auth.protect(undefined, {
+          unauthenticatedUrl: new URL("/sign-in", request.url).toString(),
+        });
       }
       return baseMiddleware(request);
     })
