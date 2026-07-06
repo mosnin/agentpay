@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
 import { getAdminData } from "@/lib/queries";
-import { requireAdmin } from "@/lib/auth";
+import { isClerkEnabled, requireAdmin } from "@/lib/auth";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { AdminTabs } from "./admin-tabs";
 
@@ -95,7 +95,7 @@ export default async function AdminPage() {
   const { stats } = data;
 
   return (
-    <AppShell>
+    <AppShell isAdmin showMockBanner={!isClerkEnabled()}>
       <PageHeader
         title="Admin"
         description="Moderate agents, disputes, payments, and reputation."

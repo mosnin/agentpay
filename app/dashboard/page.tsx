@@ -27,7 +27,7 @@ import {
   ReputationFeed,
   type ReputationChange,
 } from "@/components/dashboard/reputation-feed";
-import { requireOnboardedUser } from "@/lib/auth";
+import { isClerkEnabled, requireOnboardedUser } from "@/lib/auth";
 import { getDashboardData } from "@/lib/queries";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <AppShell>
+    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
       <PageHeader
         title={firstName ? `Welcome back, ${firstName}` : "Dashboard"}
         description="Your marketplace activity at a glance."

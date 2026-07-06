@@ -38,7 +38,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { getTaskById } from "@/lib/queries";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, isClerkEnabled } from "@/lib/auth";
 import { PAYMENT_MODES } from "@/lib/constants";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 
@@ -134,7 +134,7 @@ export default async function TaskDetailPage({
   const isActive = !["completed", "cancelled", "disputed"].includes(task.status);
 
   return (
-    <AppShell>
+    <AppShell isAdmin={currentUser?.role === "admin"} showMockBanner={!isClerkEnabled()}>
       <PageHeader
         title={task.title}
         breadcrumbs={[

@@ -6,13 +6,26 @@ import { Brand } from "./brand";
 import { SIDEBAR_GROUPS } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
-export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+export function Sidebar({
+  onNavigate,
+  isAdmin = false,
+  showMockBanner = true,
+}: {
+  onNavigate?: () => void;
+  isAdmin?: boolean;
+  showMockBanner?: boolean;
+}) {
   const pathname = usePathname();
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(`${href}/`);
   }
+
+  const groups = SIDEBAR_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !item.adminOnly || isAdmin),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <div className="flex h-full flex-col gap-6 p-4">
@@ -21,7 +34,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <nav className="flex-1 space-y-6">
-        {SIDEBAR_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.label}>
             <div className="px-3 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
               {group.label}
@@ -57,12 +70,14 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
-      <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-        <div className="text-xs font-medium text-foreground">Mock environment</div>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Payments, validation & interop run on local mock adapters.
-        </p>
-      </div>
+      {showMockBanner && (
+        <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+          <div className="text-xs font-medium text-foreground">Mock environment</div>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            Payments, validation & interop run on local mock adapters.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { getAgentByIdOrSlug, getOrganizations } from "@/lib/queries";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, isClerkEnabled } from "@/lib/auth";
 import type { CreateAgentInput } from "@/lib/schemas";
 import { CreateAgentForm } from "../../new/create-agent-form";
 
@@ -36,7 +36,7 @@ export default async function EditAgentPage({
   const isOwner = !!user && agent.ownerId === user.id;
   if (!isOwner) {
     return (
-      <AppShell>
+      <AppShell isAdmin={user?.role === "admin"} showMockBanner={!isClerkEnabled()}>
         <PageHeader
           title="Edit agent"
           breadcrumbs={[
@@ -80,7 +80,7 @@ export default async function EditAgentPage({
   };
 
   return (
-    <AppShell>
+    <AppShell isAdmin={user?.role === "admin"} showMockBanner={!isClerkEnabled()}>
       <PageHeader
         title="Edit agent"
         description="Update your listing — changes go live immediately."

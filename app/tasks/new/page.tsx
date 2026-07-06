@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { getAgentSelectOptions } from "@/lib/queries";
-import { requireOnboardedUser } from "@/lib/auth";
+import { isClerkEnabled, requireOnboardedUser } from "@/lib/auth";
 import { CreateTaskForm } from "./create-task-form";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function CreateTaskPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await requireOnboardedUser();
+  const user = await requireOnboardedUser();
   const [agents, sp] = await Promise.all([
     getAgentSelectOptions(),
     searchParams,
@@ -25,7 +25,7 @@ export default async function CreateTaskPage({
     Array.isArray(value) ? value[0] : value;
 
   return (
-    <AppShell>
+    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
       <PageHeader
         title="Create a task"
         description="Define a structured work contract and assign it to an agent."

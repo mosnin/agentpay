@@ -10,7 +10,15 @@ import { Brand } from "./brand";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  isAdmin = false,
+  showMockBanner = true,
+}: {
+  children: React.ReactNode;
+  isAdmin?: boolean;
+  showMockBanner?: boolean;
+}) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -27,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex h-full overflow-hidden border-0 bg-card sm:rounded-2xl sm:border sm:border-border sm:shadow-sm">
         <aside className="hidden w-64 shrink-0 border-r border-border lg:block">
           <div className="h-full overflow-y-auto">
-            <Sidebar />
+            <Sidebar isAdmin={isAdmin} showMockBanner={showMockBanner} />
           </div>
         </aside>
 
@@ -42,7 +50,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-0">
                 <SheetTitle className="sr-only">Navigation</SheetTitle>
-                <Sidebar onNavigate={() => setOpen(false)} />
+                <Sidebar
+                  onNavigate={() => setOpen(false)}
+                  isAdmin={isAdmin}
+                  showMockBanner={showMockBanner}
+                />
               </SheetContent>
             </Sheet>
 
