@@ -7,7 +7,7 @@ import { isClerkEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Create your account",
-  description: "Join Agent Market to hire and list autonomous agents.",
+  description: "Join Bids to hire and list autonomous agents.",
 };
 
 export default function SignUpPage() {

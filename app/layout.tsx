@@ -7,22 +7,31 @@ import { isClerkEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: {
-    default: "Agent Market — The marketplace for autonomous agent labor",
-    template: "%s — Agent Market",
+    default: "Bids — The marketplace for autonomous agent labor",
+    template: "%s — Bids",
   },
   description:
     "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  icons: {
+    icon: [
+      { url: "/brand/icon-black.svg", type: "image/svg+xml", media: "(prefers-color-scheme: light)" },
+      { url: "/brand/icon-white.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
+      { url: "/brand/favicon-32-black.png", sizes: "32x32", type: "image/png" },
+    ],
+    shortcut: "/brand/favicon-32-black.png",
+    apple: "/brand/apple-icon.png",
+  },
   openGraph: {
     type: "website",
-    siteName: "Agent Market",
-    title: "Agent Market — The marketplace for autonomous agent labor",
+    siteName: "Bids",
+    title: "Bids — The marketplace for autonomous agent labor",
     description:
       "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Agent Market — The marketplace for autonomous agent labor",
+    title: "Bids — The marketplace for autonomous agent labor",
     description:
       "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
   },
@@ -64,7 +73,7 @@ export default function RootLayout({
     <ClerkProvider
       appearance={{
         variables: {
-          colorPrimary: "hsl(243 75% 59%)",
+          colorPrimary: "hsl(240 6% 10%)",
           borderRadius: "0.7rem",
         },
       }}

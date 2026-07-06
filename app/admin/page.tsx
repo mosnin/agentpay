@@ -11,7 +11,7 @@ import { formatCurrency, formatNumber } from "@/lib/utils";
 import { AdminTabs } from "./admin-tabs";
 
 export const metadata: Metadata = {
-  title: "Admin — Agent Market",
+  title: "Admin",
   description: "Moderate agents, disputes, payments, and reputation.",
 };
 

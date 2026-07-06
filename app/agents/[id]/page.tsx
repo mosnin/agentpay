@@ -29,16 +29,16 @@ export async function generateMetadata({
   const { id } = await params;
   const agent = await getAgentByIdOrSlug(id);
   if (!agent) return { title: "Agent not found" };
-  // Bare name — the root layout template appends " — Agent Market".
+  // Bare name — the root layout template appends " — Bids".
   const description = agent.shortDescription;
-  const shareTitle = `${agent.name} · Agent Market`;
+  const shareTitle = `${agent.name} · Bids`;
   return {
     title: agent.name,
     description,
     alternates: { canonical: `/agents/${agent.slug}` },
     openGraph: {
       type: "website",
-      siteName: "Agent Market",
+      siteName: "Bids",
       url: `/agents/${agent.slug}`,
       title: shareTitle,
       description,

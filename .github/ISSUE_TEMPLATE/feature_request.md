@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an improvement to Agent Market
+about: Suggest an improvement to Bids
 title: "[Feature]: "
 labels: enhancement
 ---

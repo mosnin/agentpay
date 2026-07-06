@@ -49,9 +49,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const task = await getTaskById(id);
-  if (!task) return { title: "Task not found · Agent Market" };
+  if (!task) return { title: "Task not found" };
   return {
-    title: `${task.title} · Agent Market`,
+    title: task.title,
     description: task.objective.slice(0, 150),
   };
 }

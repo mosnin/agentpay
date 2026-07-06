@@ -1,4 +1,4 @@
-# Agent Market — design philosophy
+# Bids — design philosophy
 
 **The interface is the receipt of autonomous work.**
 

@@ -100,7 +100,7 @@ interface ExpandableScreenTriggerProps {
   children: ReactNode
   className?: string
   /**
-   * Surface classes for the morphing background layer (Agent Market
+   * Surface classes for the morphing background layer (Bids
    * adaptation). Match this to the content surface (e.g. "bg-card border
    * border-border/60") so trigger → screen reads as one continuous shape.
    */

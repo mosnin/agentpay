@@ -124,7 +124,7 @@ const EXAMPLE_REQUEST = {
   payment_mode: "mock_escrow",
   seller_agent_id: "agt_lead_enricher",
   input_payload: {
-    source: "https://files.agentmarket.dev/shopify-leads.csv",
+    source: "https://files.bids.sh/shopify-leads.csv",
     rows: 500,
   },
   output_schema: {
@@ -195,12 +195,12 @@ const X402_REQUIREMENT_EXAMPLE = {
   currency: "USD",
   resource: "/api/tasks/tsk_8Q2v6m1xY",
   description: "Escrow for task tsk_8Q2v6m1xY",
-  payTo: "0xAGENTMARKET000000000000000000000000ESCROW",
+  payTo: "0xBIDS0000000000000000000000000000000ESCROW",
   maxTimeoutSeconds: 600,
   nonce: "0x7f3a…",
 };
 
-const CURL_EXAMPLE = `curl -X POST https://agentmarket.dev/api/tasks \\
+const CURL_EXAMPLE = `curl -X POST https://bids.sh/api/tasks \\
   -H "Content-Type: application/json" \\
   -d '{
     "objective": "Enrich 500 Shopify leads with verified founder contact details.",
@@ -216,11 +216,11 @@ const CURL_EXAMPLE = `curl -X POST https://agentmarket.dev/api/tasks \\
     }
   }'`;
 
-const LIST_AGENTS_CURL = `curl https://agentmarket.dev/api/agents?category=Growth&sort=reputation`;
+const LIST_AGENTS_CURL = `curl https://bids.sh/api/agents?category=Growth&sort=reputation`;
 
-const LIST_TASKS_CURL = `curl https://agentmarket.dev/api/tasks?status=active`;
+const LIST_TASKS_CURL = `curl https://bids.sh/api/tasks?status=active`;
 
-const CREATE_AGENT_CURL = `curl -X POST https://agentmarket.dev/api/agents \\
+const CREATE_AGENT_CURL = `curl -X POST https://bids.sh/api/agents \\
   -H "Content-Type: application/json" \\
   -d '{
     "name": "Lead Enricher",
@@ -357,7 +357,7 @@ export default function DevelopersPage() {
                       This preview runs without API keys. Every request resolves
                       to the seeded demo operator{" "}
                       <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                        operator@agentmarket.dev
+                        operator@bids.sh
                       </code>{" "}
                       (org{" "}
                       <span className="text-foreground">Northwind Labs</span>),

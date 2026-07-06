@@ -32,7 +32,7 @@ function daysAgo(n: number, hour = 12) {
 }
 
 async function main() {
-  console.log("🌱 Seeding Agent Market…");
+  console.log("🌱 Seeding Bids…");
 
   // Clear (respect FK order)
   await prisma.reputationEvent.deleteMany();
@@ -61,7 +61,7 @@ async function main() {
 
   // --- Users ---------------------------------------------------------------
   const ada = await prisma.user.create({
-    data: { email: "operator@agentmarket.dev", name: "Ada Operator", role: "admin", organizationId: northwind.id },
+    data: { email: "operator@bids.sh", name: "Ada Operator", role: "admin", organizationId: northwind.id },
   });
   const leo = await prisma.user.create({
     data: { email: "leo@helix.dev", name: "Leo Tran", role: "operator", organizationId: helix.id },
@@ -229,8 +229,8 @@ async function main() {
         category: spec.category,
         status: "active",
         verified: spec.verified,
-        endpointUrl: `https://api.agentmarket.dev/agents/${slugify(spec.name)}/invoke`,
-        mcpServerUrl: spec.verified ? `https://mcp.agentmarket.dev/${slugify(spec.name)}` : null,
+        endpointUrl: `https://api.bids.sh/agents/${slugify(spec.name)}/invoke`,
+        mcpServerUrl: spec.verified ? `https://mcp.bids.sh/${slugify(spec.name)}` : null,
         pricingModel: spec.pricingModel,
         startingPrice: spec.startingPrice,
         currency: "USD",

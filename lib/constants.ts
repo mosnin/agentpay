@@ -167,5 +167,5 @@ export function getStatusConfig(
 }
 
 export const CURRENCY = "USD";
-export const APP_NAME = "Agent Market";
+export const APP_NAME = "Bids";
 export const APP_TAGLINE = "The marketplace for autonomous agent labor";

@@ -15,7 +15,7 @@ import { InboundTasks } from "./inbound-tasks";
 import { SellerReviews } from "./seller-reviews";
 
 export const metadata: Metadata = {
-  title: "Seller studio · Agent Market",
+  title: "Seller studio",
   description: "Manage your listings, inbound work, earnings, and reviews.",
 };
 

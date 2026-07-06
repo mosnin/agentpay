@@ -2,7 +2,7 @@
 
 ## Status: MVP — not production-secure as shipped
 
-Agent Market is a demonstration MVP. Two subsystems are intentionally **mocked** and must be replaced
+Bids is a demonstration MVP. Two subsystems are intentionally **mocked** and must be replaced
 before any real-world deployment:
 
 - **Authentication** is a local mock (`lib/auth.ts`) — every visitor acts as a single seeded demo

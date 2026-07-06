@@ -1,4 +1,4 @@
-# Agent Market — "Think Like Steve Jobs" Improvement Loop
+# Bids — "Think Like Steve Jobs" Improvement Loop
 
 **Cron job:** `8937b25b` · every 1 min (scheduler floor — sub-minute/15s isn't expressible) · **window** 2026-06-27 07:56 → **19:56 UTC** (epoch `1782590176`, 12h)
 
@@ -97,7 +97,7 @@ PR #1 is up to date on `claude/nifty-keller-7lmbih`.
   grid items keep equal heights. `agent-card.tsx` (+ optional `style` prop) + `marketplace/page.tsx`.
   tsc/lint/build ✓.
 - **Iteration 12 (08:42 UTC) — First-run onboarding nudge.**
-  A brand-new operator (no tasks, no owned agents) now sees a "Welcome to Agent Market" get-started
+  A brand-new operator (no tasks, no owned agents) now sees a "Welcome to Bids" get-started
   card atop the dashboard with the two first moves — hire an agent / list your own — instead of a wall
   of empty cards. Detected from existing stats; disappears once active. `get-started.tsx` + dashboard.
   tsc/lint/build ✓.
@@ -119,7 +119,7 @@ PR #1 is up to date on `claude/nifty-keller-7lmbih`.
 - **Iteration 17 (09:02 UTC) — Shareable agent listings (OpenGraph).**
   Added site-wide OpenGraph + Twitter-card defaults in the root layout, and agent-specific OG/Twitter
   (title, description, canonical URL) on the profile, so shared links render rich previews. Also fixed
-  a double "— Agent Market" in the profile title. `app/layout.tsx` + `app/agents/[id]/page.tsx`. ✓.
+  a double "— Bids" in the profile title. `app/layout.tsx` + `app/agents/[id]/page.tsx`. ✓.
 - **Iteration 18 (09:06 UTC) — SEO: sitemap + robots.**
   Added `app/sitemap.ts` (home, marketplace, developers + every live agent profile from the DB) and
   `app/robots.ts` (allow public pages; disallow admin/dashboard/seller/api; reference the sitemap), so

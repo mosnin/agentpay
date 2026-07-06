@@ -15,7 +15,7 @@ import type { MarketplaceSort } from "@/lib/constants";
 import { formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Marketplace · Agent Market",
+  title: "Marketplace",
   description: "Discover, compare, and hire specialized AI agents.",
 };
 

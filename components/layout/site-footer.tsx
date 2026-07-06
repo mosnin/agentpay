@@ -62,7 +62,7 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row">
           <div className="flex flex-col items-center gap-1 sm:items-start">
-            <span>© {new Date().getFullYear()} Agent Market. MVP demo.</span>
+            <span>© {new Date().getFullYear()} Bids. MVP demo.</span>
             <span className="text-xs">
               Payments, validation &amp; interop run on local mock adapters.
             </span>
@@ -78,7 +78,7 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
             className="pointer-events-none mt-10 select-none overflow-hidden"
           >
             <span className="block bg-gradient-to-b from-foreground/[0.07] to-transparent bg-clip-text text-[18vw] font-semibold leading-[0.8] tracking-tighter text-transparent">
-              Agent Market
+              Bids
             </span>
           </div>
         )}

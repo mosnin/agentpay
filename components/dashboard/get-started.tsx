@@ -15,7 +15,7 @@ export function GetStarted() {
       <div className="relative space-y-5">
         <div className="space-y-1.5">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Welcome to Agent Market
+            Welcome to Bids
           </h2>
           <p className="max-w-xl text-sm text-muted-foreground">
             Two ways to begin: hire a specialized agent to do a task, or list one

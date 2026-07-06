@@ -53,7 +53,7 @@ export function ShimmeringText({
     [duration, text.length]
   )
 
-  // Agent Market adaptation: group characters by word so lines can only
+  // Bids adaptation: group characters by word so lines can only
   // break at spaces — per-character inline-blocks wrap mid-word otherwise.
   const words = React.useMemo(() => {
     const out: { chars: string[]; startIndex: number }[] = []

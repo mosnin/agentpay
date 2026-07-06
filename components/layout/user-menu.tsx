@@ -101,7 +101,7 @@ function ClerkUserMenu() {
 
 export function UserMenu({
   name = "Ada Operator",
-  email = "operator@agentmarket.dev",
+  email = "operator@bids.sh",
 }: {
   name?: string;
   email?: string;

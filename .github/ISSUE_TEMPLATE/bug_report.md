@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Something in Agent Market isn't working as expected
+about: Something in Bids isn't working as expected
 title: "[Bug]: "
 labels: bug
 ---

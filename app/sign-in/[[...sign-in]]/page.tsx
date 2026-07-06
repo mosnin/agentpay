@@ -7,7 +7,7 @@ import { isClerkEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to Agent Market.",
+  description: "Sign in to Bids.",
 };
 
 export default function SignInPage() {

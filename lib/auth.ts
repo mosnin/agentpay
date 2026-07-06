@@ -18,7 +18,7 @@ import { prisma } from "./prisma";
 // source of truth (promote an account with: UPDATE "User" SET role='admin').
 // ---------------------------------------------------------------------------
 
-export const DEMO_USER_EMAIL = "operator@agentmarket.dev";
+export const DEMO_USER_EMAIL = "operator@bids.sh";
 export const DEMO_ORG_SLUG = "northwind-labs";
 
 /** True when Clerk is configured (server-side check — both keys present). */
@@ -46,7 +46,7 @@ async function getClerkBackedUser() {
   const email =
     cu.primaryEmailAddress?.emailAddress ??
     cu.emailAddresses[0]?.emailAddress ??
-    `${clerkId}@users.agentmarket.dev`;
+    `${clerkId}@users.bids.sh`;
   const name =
     [cu.firstName, cu.lastName].filter(Boolean).join(" ").trim() ||
     cu.username ||

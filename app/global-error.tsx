@@ -57,7 +57,7 @@ export default function GlobalError({
               color: "rgba(250,250,250,0.6)",
             }}
           >
-            A critical error interrupted Agent Market. Try reloading — if it keeps
+            A critical error interrupted Bids. Try reloading — if it keeps
             happening, please report it.
           </p>
           <button
