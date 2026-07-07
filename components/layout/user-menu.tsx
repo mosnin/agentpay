@@ -12,10 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useClerkEnabled } from "@/components/layout/clerk-enabled-context";
 import { initials } from "@/lib/utils";
-
-// Inlined at build time — decides which menu variant renders on the client.
-const CLERK_ENABLED = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 function MenuShell({
   name,
@@ -106,7 +104,8 @@ export function UserMenu({
   name?: string;
   email?: string;
 }) {
-  if (CLERK_ENABLED) return <ClerkUserMenu />;
+  const clerkEnabled = useClerkEnabled();
+  if (clerkEnabled) return <ClerkUserMenu />;
 
   return (
     <MenuShell

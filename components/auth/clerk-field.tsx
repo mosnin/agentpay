@@ -15,6 +15,7 @@ export function ClerkField({
   placeholder,
   autoComplete,
   optional,
+  hint,
 }: {
   name: string;
   label: string;
@@ -22,6 +23,7 @@ export function ClerkField({
   placeholder?: string;
   autoComplete?: string;
   optional?: boolean;
+  hint?: string;
 }) {
   return (
     <Clerk.Field name={name} className="space-y-2">
@@ -37,6 +39,7 @@ export function ClerkField({
         <Input id={name} placeholder={placeholder} />
       </Clerk.Input>
       <Clerk.FieldError className="block text-xs font-medium text-destructive" />
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </Clerk.Field>
   );
 }

@@ -7,7 +7,7 @@ import { MetricCard } from "@/components/shared/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardChart } from "@/components/dashboard/lazy-chart";
-import { requireOnboardedUser } from "@/lib/auth";
+import { isClerkEnabled, requireOnboardedUser } from "@/lib/auth";
 import { getSellerData } from "@/lib/queries";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { SellerAgents } from "./seller-agents";
@@ -44,7 +44,7 @@ export default async function SellerPage() {
   const hasPipeline = pipeline.some((p) => p.value > 0);
 
   return (
-    <AppShell>
+    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
       <PageHeader
         title="Seller studio"
         description="Manage your listings, inbound work, earnings, and reviews."

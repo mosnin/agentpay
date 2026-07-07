@@ -11,26 +11,70 @@ import { ThemeToggle } from "./theme-toggle";
 import { TOP_NAV_LINKS } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useClerkEnabled } from "@/components/layout/clerk-enabled-context";
 import { cn } from "@/lib/utils";
 
-// Inlined at build time — auth affordances only render when Clerk is configured.
-const CLERK_ENABLED = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-
-/** "Sign in" link for signed-out visitors. Mounted only when Clerk is
- * configured, so the hook always runs inside ClerkProvider. */
-function SignInLink() {
-  const { isLoaded, isSignedIn } = useUser();
-  if (!isLoaded || isSignedIn) return null;
+function ListAgentCta() {
   return (
-    <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-      <Link href="/sign-in">Sign in</Link>
+    <Button asChild size="sm" className="hidden sm:inline-flex">
+      {/* Protected route — signed-out visitors are routed through sign-in. */}
+      <Link href="/agents/new">List your agent</Link>
     </Button>
+  );
+}
+
+/** Auth-aware CTAs. Mounted only when Clerk is configured, so the hook
+ * always runs inside ClerkProvider. Signed-out visitors get a clear way
+ * into an account; signed-in users get the seller CTA. */
+function AuthCtas() {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return null;
+  if (isSignedIn) return <ListAgentCta />;
+  return (
+    <>
+      <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+        <Link href="/sign-in">Sign in</Link>
+      </Button>
+      <Button asChild size="sm">
+        <Link href="/sign-up">Get started</Link>
+      </Button>
+    </>
+  );
+}
+
+/** Same decision for the mobile sheet's bottom CTAs. */
+function SheetAuthCtas({ onNavigate }: { onNavigate: () => void }) {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return null;
+  if (isSignedIn) {
+    return (
+      <Button asChild className="mt-3">
+        <Link href="/agents/new" onClick={onNavigate}>
+          List your agent
+        </Link>
+      </Button>
+    );
+  }
+  return (
+    <>
+      <Button asChild variant="outline" className="mt-3">
+        <Link href="/sign-in" onClick={onNavigate}>
+          Sign in
+        </Link>
+      </Button>
+      <Button asChild>
+        <Link href="/sign-up" onClick={onNavigate}>
+          Get started
+        </Link>
+      </Button>
+    </>
   );
 }
 
 export function TopNav() {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const clerkEnabled = useClerkEnabled();
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -64,11 +108,7 @@ export function TopNav() {
             <SearchCommand iconOnly />
           </div>
           <ThemeToggle />
-          {CLERK_ENABLED && <SignInLink />}
-          <Button asChild size="sm" className="hidden sm:inline-flex">
-            {/* Protected route — signed-out visitors are routed through sign-in. */}
-            <Link href="/agents/new">List your agent</Link>
-          </Button>
+          {clerkEnabled ? <AuthCtas /> : <ListAgentCta />}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -90,11 +130,15 @@ export function TopNav() {
                     {link.title}
                   </Link>
                 ))}
-                <Button asChild className="mt-3">
-                  <Link href="/agents/new" onClick={() => setOpen(false)}>
-                    List your agent
-                  </Link>
-                </Button>
+                {clerkEnabled ? (
+                  <SheetAuthCtas onNavigate={() => setOpen(false)} />
+                ) : (
+                  <Button asChild className="mt-3">
+                    <Link href="/agents/new" onClick={() => setOpen(false)}>
+                      List your agent
+                    </Link>
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>

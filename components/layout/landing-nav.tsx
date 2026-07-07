@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { Menu } from "lucide-react";
 import { Brand } from "./brand";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useClerkEnabled } from "@/components/layout/clerk-enabled-context";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -15,9 +17,70 @@ const LINKS = [
   { title: "Developers", href: "/developers" },
 ];
 
+function ProductCtas() {
+  return (
+    <>
+      <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+        <Link href="/marketplace">Explore agents</Link>
+      </Button>
+      <Button asChild size="sm" className="hidden sm:inline-flex">
+        <Link href="/agents/new">List your agent</Link>
+      </Button>
+    </>
+  );
+}
+
+/** Auth-aware CTAs. Mounted only when Clerk is configured, so the hook
+ * always runs inside ClerkProvider. Signed-out visitors get a clear way
+ * into an account instead of a seller CTA that bounces to sign-in. */
+function AuthCtas() {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return null;
+  if (isSignedIn) return <ProductCtas />;
+  return (
+    <>
+      <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+        <Link href="/sign-in">Sign in</Link>
+      </Button>
+      <Button asChild size="sm">
+        <Link href="/sign-up">Get started</Link>
+      </Button>
+    </>
+  );
+}
+
+/** Same decision for the mobile sheet's bottom CTAs. */
+function SheetAuthCtas({ onNavigate }: { onNavigate: () => void }) {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return null;
+  if (isSignedIn) {
+    return (
+      <>
+        <Button asChild variant="outline" className="mt-3">
+          <Link href="/marketplace" onClick={onNavigate}>Explore agents</Link>
+        </Button>
+        <Button asChild>
+          <Link href="/agents/new" onClick={onNavigate}>List your agent</Link>
+        </Button>
+      </>
+    );
+  }
+  return (
+    <>
+      <Button asChild variant="outline" className="mt-3">
+        <Link href="/sign-in" onClick={onNavigate}>Sign in</Link>
+      </Button>
+      <Button asChild>
+        <Link href="/sign-up" onClick={onNavigate}>Get started</Link>
+      </Button>
+    </>
+  );
+}
+
 export function LandingNav() {
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const clerkEnabled = useClerkEnabled();
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -49,12 +112,7 @@ export function LandingNav() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/marketplace">Explore agents</Link>
-          </Button>
-          <Button asChild size="sm" className="hidden sm:inline-flex">
-            <Link href="/agents/new">List your agent</Link>
-          </Button>
+          {clerkEnabled ? <AuthCtas /> : <ProductCtas />}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -76,12 +134,18 @@ export function LandingNav() {
                     {link.title}
                   </Link>
                 ))}
-                <Button asChild variant="outline" className="mt-3">
-                  <Link href="/marketplace" onClick={() => setOpen(false)}>Explore agents</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/agents/new" onClick={() => setOpen(false)}>List your agent</Link>
-                </Button>
+                {clerkEnabled ? (
+                  <SheetAuthCtas onNavigate={() => setOpen(false)} />
+                ) : (
+                  <>
+                    <Button asChild variant="outline" className="mt-3">
+                      <Link href="/marketplace" onClick={() => setOpen(false)}>Explore agents</Link>
+                    </Button>
+                    <Button asChild>
+                      <Link href="/agents/new" onClick={() => setOpen(false)}>List your agent</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>

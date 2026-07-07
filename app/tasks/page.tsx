@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TaskStatusBadge } from "@/components/shared/task-status-badge";
 import { DeadlineBadge } from "@/components/shared/deadline-badge";
-import { requireOnboardedUser } from "@/lib/auth";
+import { isClerkEnabled, requireOnboardedUser } from "@/lib/auth";
 import { getUserTasksPaginated, TASKS_PAGE_SIZE } from "@/lib/queries";
 import { TASK_FILTERS, statusesForFilter } from "@/lib/constants";
 import { cn, formatCurrency, formatNumber, formatRelativeTime } from "@/lib/utils";
@@ -46,7 +46,7 @@ export default async function TasksPage({
   };
 
   return (
-    <AppShell>
+    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
       <PageHeader
         title="Your tasks"
         description="Every task you've commissioned or fulfilled."

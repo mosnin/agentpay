@@ -9,6 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClerkField } from "@/components/auth/clerk-field";
 
+function LoadingCard() {
+  return (
+    <Card className="flex w-full max-w-sm items-center justify-center py-20">
+      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+    </Card>
+  );
+}
+
 export function SignUpForm() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect_url");
@@ -17,7 +25,7 @@ export function SignUpForm() {
     : "/sign-in";
 
   return (
-    <SignUp.Root>
+    <SignUp.Root fallback={<LoadingCard />}>
       <Clerk.Loading>
         {(isGlobalLoading) => (
           <>
@@ -26,7 +34,7 @@ export function SignUpForm() {
                 <CardHeader className="space-y-1.5 text-center">
                   <CardTitle className="text-xl">Create your account</CardTitle>
                   <CardDescription>
-                    Join Bids to hire and list autonomous agents.
+                    A few details, a quick email check, and you&apos;re in.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
@@ -43,6 +51,7 @@ export function SignUpForm() {
                     type="email"
                     autoComplete="email"
                     placeholder="you@company.com"
+                    hint="We'll send a verification code to this address."
                   />
 
                   <ClerkField
@@ -50,6 +59,7 @@ export function SignUpForm() {
                     label="Password"
                     type="password"
                     autoComplete="new-password"
+                    hint="At least 8 characters."
                   />
 
                   <SignUp.Action submit asChild>
@@ -60,7 +70,7 @@ export function SignUpForm() {
                           Creating account…
                         </>
                       ) : (
-                        "Continue"
+                        "Create account"
                       )}
                     </Button>
                   </SignUp.Action>
@@ -79,7 +89,7 @@ export function SignUpForm() {
               <Card className="w-full max-w-sm">
                 <CardHeader className="space-y-1.5 text-center">
                   <CardTitle className="text-xl">Almost there</CardTitle>
-                  <CardDescription>Just a couple more details.</CardDescription>
+                  <CardDescription>One more detail to finish setting up.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <Clerk.GlobalError className="block text-sm font-medium text-destructive" />
@@ -97,27 +107,47 @@ export function SignUpForm() {
               <SignUp.Strategy name="email_code">
                 <Card className="w-full max-w-sm">
                   <CardHeader className="space-y-1.5 text-center">
-                    <CardTitle className="text-xl">Check your email</CardTitle>
+                    <CardTitle className="text-xl">Verify your email</CardTitle>
                     <CardDescription>
-                      We sent you a verification code.
+                      We emailed you a 6-digit code. Enter it below to finish
+                      creating your account.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-5">
                     <Clerk.GlobalError className="block text-sm font-medium text-destructive" />
+
                     <ClerkField
                       name="code"
                       label="Verification code"
                       autoComplete="one-time-code"
+                      hint="Didn't get it? Check your spam folder."
                     />
+
                     <SignUp.Action submit asChild>
                       <Button className="w-full" disabled={isGlobalLoading}>
                         {isGlobalLoading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          "Verify"
+                          "Verify & continue"
                         )}
                       </Button>
                     </SignUp.Action>
+
+                    <div className="text-center text-sm">
+                      <SignUp.Action
+                        resend
+                        asChild
+                        fallback={({ resendableAfter }) => (
+                          <p className="text-xs text-muted-foreground">
+                            You can request a new code in {resendableAfter}s
+                          </p>
+                        )}
+                      >
+                        <button type="button" className="font-medium text-foreground hover:underline">
+                          Resend code
+                        </button>
+                      </SignUp.Action>
+                    </div>
                   </CardContent>
                 </Card>
               </SignUp.Strategy>

@@ -15,6 +15,7 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   description?: string;
+  adminOnly?: boolean;
 }
 
 export const SIDEBAR_GROUPS: { label: string; items: NavItem[] }[] = [
@@ -37,7 +38,7 @@ export const SIDEBAR_GROUPS: { label: string; items: NavItem[] }[] = [
     label: "Manage",
     items: [
       { title: "Seller studio", href: "/seller", icon: Briefcase, description: "Listings & earnings" },
-      { title: "Admin", href: "/admin", icon: ShieldCheck, description: "Moderation" },
+      { title: "Admin", href: "/admin", icon: ShieldCheck, description: "Moderation", adminOnly: true },
     ],
   },
   {
