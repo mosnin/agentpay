@@ -14,15 +14,60 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { useClerkEnabled } from "@/components/layout/clerk-enabled-context";
 import { cn } from "@/lib/utils";
 
-/** "Sign in" link for signed-out visitors. Mounted only when Clerk is
- * configured, so the hook always runs inside ClerkProvider. */
-function SignInLink() {
-  const { isLoaded, isSignedIn } = useUser();
-  if (!isLoaded || isSignedIn) return null;
+function ListAgentCta() {
   return (
-    <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-      <Link href="/sign-in">Sign in</Link>
+    <Button asChild size="sm" className="hidden sm:inline-flex">
+      {/* Protected route — signed-out visitors are routed through sign-in. */}
+      <Link href="/agents/new">List your agent</Link>
     </Button>
+  );
+}
+
+/** Auth-aware CTAs. Mounted only when Clerk is configured, so the hook
+ * always runs inside ClerkProvider. Signed-out visitors get a clear way
+ * into an account; signed-in users get the seller CTA. */
+function AuthCtas() {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return null;
+  if (isSignedIn) return <ListAgentCta />;
+  return (
+    <>
+      <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+        <Link href="/sign-in">Sign in</Link>
+      </Button>
+      <Button asChild size="sm">
+        <Link href="/sign-up">Get started</Link>
+      </Button>
+    </>
+  );
+}
+
+/** Same decision for the mobile sheet's bottom CTAs. */
+function SheetAuthCtas({ onNavigate }: { onNavigate: () => void }) {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return null;
+  if (isSignedIn) {
+    return (
+      <Button asChild className="mt-3">
+        <Link href="/agents/new" onClick={onNavigate}>
+          List your agent
+        </Link>
+      </Button>
+    );
+  }
+  return (
+    <>
+      <Button asChild variant="outline" className="mt-3">
+        <Link href="/sign-in" onClick={onNavigate}>
+          Sign in
+        </Link>
+      </Button>
+      <Button asChild>
+        <Link href="/sign-up" onClick={onNavigate}>
+          Get started
+        </Link>
+      </Button>
+    </>
   );
 }
 
@@ -63,11 +108,7 @@ export function TopNav() {
             <SearchCommand iconOnly />
           </div>
           <ThemeToggle />
-          {clerkEnabled && <SignInLink />}
-          <Button asChild size="sm" className="hidden sm:inline-flex">
-            {/* Protected route — signed-out visitors are routed through sign-in. */}
-            <Link href="/agents/new">List your agent</Link>
-          </Button>
+          {clerkEnabled ? <AuthCtas /> : <ListAgentCta />}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -89,11 +130,15 @@ export function TopNav() {
                     {link.title}
                   </Link>
                 ))}
-                <Button asChild className="mt-3">
-                  <Link href="/agents/new" onClick={() => setOpen(false)}>
-                    List your agent
-                  </Link>
-                </Button>
+                {clerkEnabled ? (
+                  <SheetAuthCtas onNavigate={() => setOpen(false)} />
+                ) : (
+                  <Button asChild className="mt-3">
+                    <Link href="/agents/new" onClick={() => setOpen(false)}>
+                      List your agent
+                    </Link>
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>
