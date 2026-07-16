@@ -1,13 +1,26 @@
 "use client";
 
-import * as Clerk from "@clerk/elements/common";
-import * as SignIn from "@clerk/elements/sign-in";
+import * as React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+// The classic custom-flow hook (isLoaded/signIn/setActive). The main
+// entrypoint's useSignIn returns Core 3's new signals API instead.
+import { useSignIn } from "@clerk/nextjs/legacy";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClerkField } from "@/components/auth/clerk-field";
+import { AuthField, clerkErrorMessage } from "@/components/auth/auth-field";
+
+// The verification methods this form knows how to drive, as returned in
+// signIn.supportedFirstFactors.
+type FirstFactor = {
+  strategy: string;
+  emailAddressId?: string;
+  safeIdentifier?: string;
+};
+
+type Step = "start" | "password" | "code" | "reset-code" | "new-password";
 
 function LoadingCard() {
   return (
@@ -18,259 +31,460 @@ function LoadingCard() {
 }
 
 export function SignInForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const { isSignedIn } = useAuth();
+  const { isLoaded, signIn, setActive } = useSignIn();
+
   const redirectUrl = searchParams.get("redirect_url");
+  const target = redirectUrl || "/dashboard";
   const signUpHref = redirectUrl
     ? `/sign-up?redirect_url=${encodeURIComponent(redirectUrl)}`
     : "/sign-up";
 
+  const [step, setStep] = React.useState<Step>("start");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [code, setCode] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [factors, setFactors] = React.useState<FirstFactor[]>([]);
+  const [safeIdentifier, setSafeIdentifier] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
+  const [pending, setPending] = React.useState(false);
+  const [resendIn, setResendIn] = React.useState(0);
+
+  // Already signed in — nothing to do here.
+  React.useEffect(() => {
+    if (isSignedIn) router.replace(target);
+  }, [isSignedIn, router, target]);
+
+  React.useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendIn]);
+
+  if (!isLoaded || isSignedIn) return <LoadingCard />;
+
+  async function finish(createdSessionId: string | null) {
+    await setActive!({ session: createdSessionId });
+    router.push(target);
+  }
+
+  function goTo(next: Step) {
+    setError(null);
+    setCode("");
+    setStep(next);
+  }
+
+  async function sendCode(strategy: "email_code" | "reset_password_email_code") {
+    const factor = factors.find((f) => f.strategy === strategy);
+    if (!factor?.emailAddressId) {
+      setError(
+        strategy === "email_code"
+          ? "Email-code sign-in isn't available for this account."
+          : "Password reset isn't available for this account.",
+      );
+      return false;
+    }
+    await signIn!.prepareFirstFactor(
+      strategy === "email_code"
+        ? { strategy, emailAddressId: factor.emailAddressId }
+        : { strategy, emailAddressId: factor.emailAddressId },
+    );
+    setSafeIdentifier(factor.safeIdentifier ?? email);
+    setResendIn(30);
+    return true;
+  }
+
+  async function handleStart(e: React.FormEvent) {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+    try {
+      const attempt = await signIn!.create({ identifier: email });
+      if (attempt.status === "complete") {
+        await finish(attempt.createdSessionId);
+        return;
+      }
+      const supported = (attempt.supportedFirstFactors ?? []) as FirstFactor[];
+      setFactors(supported);
+      if (supported.some((f) => f.strategy === "password")) {
+        goTo("password");
+      } else if (supported.some((f) => f.strategy === "email_code")) {
+        const factor = supported.find((f) => f.strategy === "email_code")!;
+        await signIn!.prepareFirstFactor({
+          strategy: "email_code",
+          emailAddressId: factor.emailAddressId!,
+        });
+        setSafeIdentifier(factor.safeIdentifier ?? email);
+        setResendIn(30);
+        goTo("code");
+      } else {
+        setError("No supported sign-in method is available for this account.");
+      }
+    } catch (err) {
+      setError(clerkErrorMessage(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handlePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+    try {
+      const attempt = await signIn!.attemptFirstFactor({ strategy: "password", password });
+      if (attempt.status === "complete") {
+        await finish(attempt.createdSessionId);
+      } else {
+        setError("Additional verification is required to finish signing in.");
+      }
+    } catch (err) {
+      setError(clerkErrorMessage(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleCode(e: React.FormEvent) {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+    try {
+      const attempt = await signIn!.attemptFirstFactor({ strategy: "email_code", code });
+      if (attempt.status === "complete") {
+        await finish(attempt.createdSessionId);
+      } else {
+        setError("Additional verification is required to finish signing in.");
+      }
+    } catch (err) {
+      setError(clerkErrorMessage(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleResetCode(e: React.FormEvent) {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+    try {
+      const attempt = await signIn!.attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code,
+      });
+      if (attempt.status === "needs_new_password") {
+        goTo("new-password");
+      } else if (attempt.status === "complete") {
+        await finish(attempt.createdSessionId);
+      } else {
+        setError("Additional verification is required to finish signing in.");
+      }
+    } catch (err) {
+      setError(clerkErrorMessage(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleNewPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setError("Passwords don't match.");
+      return;
+    }
+    setPending(true);
+    setError(null);
+    try {
+      const attempt = await signIn!.resetPassword({ password: newPassword });
+      if (attempt.status === "complete") {
+        await finish(attempt.createdSessionId);
+      } else {
+        setError("Additional verification is required to finish signing in.");
+      }
+    } catch (err) {
+      setError(clerkErrorMessage(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function switchTo(strategy: "email_code" | "reset_password_email_code") {
+    setPending(true);
+    setError(null);
+    try {
+      if (await sendCode(strategy)) {
+        goTo(strategy === "email_code" ? "code" : "reset-code");
+      }
+    } catch (err) {
+      setError(clerkErrorMessage(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function resend(strategy: "email_code" | "reset_password_email_code") {
+    setPending(true);
+    setError(null);
+    try {
+      await sendCode(strategy);
+    } catch (err) {
+      setError(clerkErrorMessage(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const globalError = error && (
+    <p className="text-sm font-medium text-destructive">{error}</p>
+  );
+
+  const hasEmailCode = factors.some((f) => f.strategy === "email_code");
+
   return (
-    <SignIn.Root fallback={<LoadingCard />}>
-      <Clerk.Loading>
-        {(isGlobalLoading) => (
-          <>
-            {/* Step 1 — who are you? */}
-            <SignIn.Step name="start">
-              <Card className="w-full max-w-sm">
-                <CardHeader className="space-y-1.5 text-center">
-                  <CardTitle className="text-xl">Sign in to Bids</CardTitle>
-                  <CardDescription>
-                    Enter your account email and we&apos;ll take you to the next step.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <Clerk.GlobalError className="block text-sm font-medium text-destructive" />
+    <>
+      {step === "start" && (
+        <Card className="w-full max-w-sm">
+          <CardHeader className="space-y-1.5 text-center">
+            <CardTitle className="text-xl">Sign in to Bids</CardTitle>
+            <CardDescription>
+              Enter your account email and we&apos;ll take you to the next step.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleStart} className="space-y-5">
+              {globalError}
+              <AuthField
+                id="email"
+                label="Email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@company.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Button className="w-full" disabled={pending}>
+                {pending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    One moment…
+                  </>
+                ) : (
+                  "Continue"
+                )}
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                New to Bids?{" "}
+                <Link href={signUpHref} className="font-medium text-foreground hover:underline">
+                  Create an account
+                </Link>
+              </p>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
-                  <ClerkField
-                    name="identifier"
-                    label="Email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@company.com"
-                  />
+      {step === "password" && (
+        <Card className="w-full max-w-sm">
+          <CardHeader className="space-y-1.5 text-center">
+            <CardTitle className="text-xl">Enter your password</CardTitle>
+            <CardDescription>Signing in as {email}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePassword} className="space-y-5">
+              {globalError}
+              <AuthField
+                id="password"
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <Button className="w-full" disabled={pending}>
+                {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
+              </Button>
+              <div className="flex items-center justify-between text-sm">
+                <button
+                  type="button"
+                  onClick={() => switchTo("reset_password_email_code")}
+                  disabled={pending}
+                  className="font-medium text-foreground hover:underline"
+                >
+                  Forgot password?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo("start")}
+                  disabled={pending}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Use a different email
+                </button>
+              </div>
+              {hasEmailCode && (
+                <div className="text-center text-sm">
+                  <button
+                    type="button"
+                    onClick={() => switchTo("email_code")}
+                    disabled={pending}
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Email me a sign-in code instead
+                  </button>
+                </div>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
-                  <SignIn.Action submit asChild>
-                    <Button className="w-full" disabled={isGlobalLoading}>
-                      {isGlobalLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          One moment…
-                        </>
-                      ) : (
-                        "Continue"
-                      )}
-                    </Button>
-                  </SignIn.Action>
-
-                  <p className="text-center text-sm text-muted-foreground">
-                    New to Bids?{" "}
-                    <Link href={signUpHref} className="font-medium text-foreground hover:underline">
-                      Create an account
-                    </Link>
+      {step === "code" && (
+        <Card className="w-full max-w-sm">
+          <CardHeader className="space-y-1.5 text-center">
+            <CardTitle className="text-xl">Check your email</CardTitle>
+            <CardDescription>
+              We sent a sign-in code to {safeIdentifier}. Enter it below.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCode} className="space-y-5">
+              {globalError}
+              <AuthField
+                id="code"
+                label="Verification code"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                hint="Didn't get it? Check your spam folder."
+              />
+              <Button className="w-full" disabled={pending}>
+                {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue"}
+              </Button>
+              <div className="space-y-2 text-center text-sm">
+                {resendIn > 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    You can request a new code in {resendIn}s
                   </p>
-                </CardContent>
-              </Card>
-            </SignIn.Step>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => resend("email_code")}
+                    disabled={pending}
+                    className="font-medium text-foreground hover:underline"
+                  >
+                    Resend code
+                  </button>
+                )}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => goTo("start")}
+                    disabled={pending}
+                    className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Use a different email
+                  </button>
+                </div>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
-            {/* Step 2 — prove it. One card per verification method, each
-                saying exactly what happened and what to do next. */}
-            <SignIn.Step name="verifications">
-              <SignIn.Strategy name="password">
-                <Card className="w-full max-w-sm">
-                  <CardHeader className="space-y-1.5 text-center">
-                    <CardTitle className="text-xl">Enter your password</CardTitle>
-                    <CardDescription>
-                      Signing in as <SignIn.SafeIdentifier />
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-5">
-                    <Clerk.GlobalError className="block text-sm font-medium text-destructive" />
+      {step === "reset-code" && (
+        <Card className="w-full max-w-sm">
+          <CardHeader className="space-y-1.5 text-center">
+            <CardTitle className="text-xl">Check your email</CardTitle>
+            <CardDescription>
+              We sent a password reset code to {safeIdentifier}. Enter it below.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleResetCode} className="space-y-5">
+              {globalError}
+              <AuthField
+                id="reset-code"
+                label="Reset code"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                hint="Didn't get it? Check your spam folder."
+              />
+              <Button className="w-full" disabled={pending}>
+                {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue"}
+              </Button>
+              <div className="text-center text-sm">
+                {resendIn > 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    You can request a new code in {resendIn}s
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => resend("reset_password_email_code")}
+                    disabled={pending}
+                    className="font-medium text-foreground hover:underline"
+                  >
+                    Resend code
+                  </button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
-                    <ClerkField
-                      name="password"
-                      label="Password"
-                      type="password"
-                      autoComplete="current-password"
-                    />
-
-                    <SignIn.Action submit asChild>
-                      <Button className="w-full" disabled={isGlobalLoading}>
-                        {isGlobalLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "Sign in"
-                        )}
-                      </Button>
-                    </SignIn.Action>
-
-                    <div className="flex items-center justify-between text-sm">
-                      <SignIn.Action navigate="forgot-password" asChild>
-                        <button type="button" className="font-medium text-foreground hover:underline">
-                          Forgot password?
-                        </button>
-                      </SignIn.Action>
-                      <SignIn.Action navigate="start" asChild>
-                        <button type="button" className="text-muted-foreground transition-colors hover:text-foreground">
-                          Use a different email
-                        </button>
-                      </SignIn.Action>
-                    </div>
-                  </CardContent>
-                </Card>
-              </SignIn.Strategy>
-
-              <SignIn.Strategy name="email_code">
-                <Card className="w-full max-w-sm">
-                  <CardHeader className="space-y-1.5 text-center">
-                    <CardTitle className="text-xl">Check your email</CardTitle>
-                    <CardDescription>
-                      We sent a sign-in code to <SignIn.SafeIdentifier />. Enter it below.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-5">
-                    <Clerk.GlobalError className="block text-sm font-medium text-destructive" />
-
-                    <ClerkField
-                      name="code"
-                      label="Verification code"
-                      autoComplete="one-time-code"
-                      hint="Didn't get it? Check your spam folder."
-                    />
-
-                    <SignIn.Action submit asChild>
-                      <Button className="w-full" disabled={isGlobalLoading}>
-                        {isGlobalLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "Continue"
-                        )}
-                      </Button>
-                    </SignIn.Action>
-
-                    <div className="space-y-2 text-center text-sm">
-                      <SignIn.Action
-                        resend
-                        asChild
-                        fallback={({ resendableAfter }) => (
-                          <p className="text-xs text-muted-foreground">
-                            You can request a new code in {resendableAfter}s
-                          </p>
-                        )}
-                      >
-                        <button type="button" className="font-medium text-foreground hover:underline">
-                          Resend code
-                        </button>
-                      </SignIn.Action>
-                      <div>
-                        <SignIn.Action navigate="start" asChild>
-                          <button type="button" className="text-xs text-muted-foreground transition-colors hover:text-foreground">
-                            Use a different email
-                          </button>
-                        </SignIn.Action>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </SignIn.Strategy>
-
-              <SignIn.Strategy name="reset_password_email_code">
-                <Card className="w-full max-w-sm">
-                  <CardHeader className="space-y-1.5 text-center">
-                    <CardTitle className="text-xl">Check your email</CardTitle>
-                    <CardDescription>
-                      We sent a password reset code to <SignIn.SafeIdentifier />. Enter it below.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-5">
-                    <Clerk.GlobalError className="block text-sm font-medium text-destructive" />
-
-                    <ClerkField
-                      name="code"
-                      label="Reset code"
-                      autoComplete="one-time-code"
-                      hint="Didn't get it? Check your spam folder."
-                    />
-
-                    <SignIn.Action submit asChild>
-                      <Button className="w-full" disabled={isGlobalLoading}>
-                        {isGlobalLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "Continue"
-                        )}
-                      </Button>
-                    </SignIn.Action>
-                  </CardContent>
-                </Card>
-              </SignIn.Strategy>
-            </SignIn.Step>
-
-            {/* Forgot password — offer the reset path in one obvious button. */}
-            <SignIn.Step name="forgot-password">
-              <Card className="w-full max-w-sm">
-                <CardHeader className="space-y-1.5 text-center">
-                  <CardTitle className="text-xl">Reset your password</CardTitle>
-                  <CardDescription>
-                    We&apos;ll email you a code to confirm it&apos;s you, then you&apos;ll choose a
-                    new password.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <SignIn.SupportedStrategy name="reset_password_email_code" asChild>
-                    <Button type="button" className="w-full">
-                      Email me a reset code
-                    </Button>
-                  </SignIn.SupportedStrategy>
-                  <SignIn.Action navigate="start" asChild>
-                    <Button type="button" variant="ghost" className="w-full">
-                      Back to sign in
-                    </Button>
-                  </SignIn.Action>
-                </CardContent>
-              </Card>
-            </SignIn.Step>
-
-            {/* New password — the last step of the reset path. */}
-            <SignIn.Step name="reset-password">
-              <Card className="w-full max-w-sm">
-                <CardHeader className="space-y-1.5 text-center">
-                  <CardTitle className="text-xl">Set a new password</CardTitle>
-                  <CardDescription>
-                    Almost done — choose a new password for your account.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <Clerk.GlobalError className="block text-sm font-medium text-destructive" />
-
-                  <ClerkField
-                    name="password"
-                    label="New password"
-                    type="password"
-                    autoComplete="new-password"
-                    hint="At least 8 characters."
-                  />
-                  <ClerkField
-                    name="confirmPassword"
-                    label="Confirm password"
-                    type="password"
-                    autoComplete="new-password"
-                  />
-
-                  <SignIn.Action submit asChild>
-                    <Button className="w-full" disabled={isGlobalLoading}>
-                      {isGlobalLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Update password & sign in"
-                      )}
-                    </Button>
-                  </SignIn.Action>
-                </CardContent>
-              </Card>
-            </SignIn.Step>
-          </>
-        )}
-      </Clerk.Loading>
-    </SignIn.Root>
+      {step === "new-password" && (
+        <Card className="w-full max-w-sm">
+          <CardHeader className="space-y-1.5 text-center">
+            <CardTitle className="text-xl">Set a new password</CardTitle>
+            <CardDescription>
+              Almost done — choose a new password for your account.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleNewPassword} className="space-y-5">
+              {globalError}
+              <AuthField
+                id="new-password"
+                label="New password"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                hint="At least 8 characters."
+              />
+              <AuthField
+                id="confirm-password"
+                label="Confirm password"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <Button className="w-full" disabled={pending}>
+                {pending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Update password & sign in"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+    </>
   );
 }
