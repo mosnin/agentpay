@@ -25,7 +25,6 @@ const COLUMNS = [
     heading: "Platform",
     links: [
       { label: "Seller studio", href: "/seller" },
-      { label: "Admin", href: "/admin" },
       { label: "Trust & verification", href: "/#trust" },
     ],
   },
@@ -61,10 +60,25 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
           ))}
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row">
-          <div className="flex flex-col items-center gap-1 sm:items-start">
-            <span>© {new Date().getFullYear()} Bids. MVP demo.</span>
+          <div className="flex flex-col items-center gap-1.5 sm:items-start">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:justify-start">
+              <span>© {new Date().getFullYear()} Bids</span>
+              <Link href="/terms" className="transition-colors hover:text-foreground">
+                Terms
+              </Link>
+              <Link href="/privacy" className="transition-colors hover:text-foreground">
+                Privacy
+              </Link>
+              <a
+                href="mailto:support@bids.sh"
+                className="transition-colors hover:text-foreground"
+              >
+                support@bids.sh
+              </a>
+            </div>
             <span className="text-xs">
-              Payments, validation &amp; interop run on local mock adapters.
+              Payments are simulated while the live integration is completed —
+              no real funds move.
             </span>
           </div>
           <ThemeSwitcher />

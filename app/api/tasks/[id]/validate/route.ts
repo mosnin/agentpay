@@ -12,7 +12,7 @@ export async function POST(
     const auth = await getAuthedUser();
     if (!auth.user) return auth.response;
 
-    const rl = strictRateLimit(getRateLimitKey(request));
+    const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {
       return NextResponse.json({ error: "Too many requests." }, { status: 429 });
     }
