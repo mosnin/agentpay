@@ -22,6 +22,21 @@ import { prisma } from "./prisma";
 export const DEMO_USER_EMAIL = "operator@bids.sh";
 export const DEMO_ORG_SLUG = "northwind-labs";
 
+/**
+ * Comma-separated ADMIN_EMAILS get the admin role automatically at sign-in —
+ * promotion only, never demotion, so removing an address from the list does
+ * not strip a role that was granted by other means.
+ */
+function isAllowlistedAdmin(email: string): boolean {
+  const raw = process.env.ADMIN_EMAILS;
+  if (!raw) return false;
+  return raw
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(email.toLowerCase());
+}
+
 /** True when Clerk is configured (server-side check — both keys present). */
 export function isClerkEnabled() {
   return Boolean(
@@ -39,7 +54,16 @@ async function getClerkBackedUser() {
     where: { clerkId },
     include: { organization: true },
   });
-  if (existing) return existing;
+  if (existing) {
+    if (existing.role !== "admin" && isAllowlistedAdmin(existing.email)) {
+      return prisma.user.update({
+        where: { id: existing.id },
+        data: { role: "admin" },
+        include: { organization: true },
+      });
+    }
+    return existing;
+  }
 
   // First request for this Clerk identity — provision (or adopt) a local row.
   const cu = await currentUser();
@@ -52,11 +76,23 @@ async function getClerkBackedUser() {
     [cu.firstName, cu.lastName].filter(Boolean).join(" ").trim() ||
     cu.username ||
     null;
+  const admin = isAllowlistedAdmin(email);
 
   return prisma.user.upsert({
     where: { email },
-    update: { clerkId, name: name ?? undefined, image: cu.imageUrl },
-    create: { email, clerkId, name, image: cu.imageUrl },
+    update: {
+      clerkId,
+      name: name ?? undefined,
+      image: cu.imageUrl,
+      ...(admin ? { role: "admin" } : {}),
+    },
+    create: {
+      email,
+      clerkId,
+      name,
+      image: cu.imageUrl,
+      ...(admin ? { role: "admin" } : {}),
+    },
     include: { organization: true },
   });
 }

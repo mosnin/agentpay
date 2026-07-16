@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 // Auth is mocked for the MVP: the agent is created on behalf of the demo operator.
 export async function POST(request: Request) {
   try {
-    const rl = strictRateLimit(getRateLimitKey(request));
+    const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {
       return NextResponse.json({ error: "Too many requests." }, { status: 429 });
     }
