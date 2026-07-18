@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { mockHash } from "@/lib/utils";
+import { mockHash, safeJsonParse } from "@/lib/utils";
 import {
   createTaskSchema,
   submitArtifactSchema,
@@ -16,7 +16,12 @@ import {
   onDisputeDismissed,
   onValidationComplete,
 } from "@/lib/reputation";
-import { evaluateArtifact } from "@/lib/mockValidation";
+import {
+  validateArtifactAgainstSchema,
+  type ArtifactValidationResult,
+} from "@/lib/validation";
+import { notify } from "@/lib/notifications";
+import { dispatchTaskWebhook } from "@/lib/webhooks";
 import type { ActionResult } from "@/lib/types";
 
 function parseOutputSchema(text?: string): object | undefined {
@@ -123,7 +128,35 @@ async function transition(
 }
 
 export async function acceptTask(taskId: string): Promise<ActionResult> {
-  return transition(taskId, ["pending"], "accepted");
+  const res = await transition(taskId, ["pending"], "accepted");
+  if (res.ok) {
+    // Notification + webhook are side effects of a state change that already
+    // succeeded — best-effort, wrapped so either failing can't roll it back
+    // or surface as an error to the caller.
+    const task = await prisma.task.findUnique({
+      where: { id: taskId },
+      select: { buyerId: true, title: true },
+    });
+    if (task) {
+      try {
+        await notify({
+          userId: task.buyerId,
+          type: "task_accepted",
+          title: "Task accepted",
+          body: `The agent accepted "${task.title}" and is ready to start.`,
+          href: `/tasks/${taskId}`,
+        });
+      } catch (err) {
+        console.error("notify(task_accepted) failed", err);
+      }
+    }
+    try {
+      await dispatchTaskWebhook(taskId);
+    } catch (err) {
+      console.error("dispatchTaskWebhook(task.assigned) failed", err);
+    }
+  }
+  return res;
 }
 
 export async function startTask(taskId: string): Promise<ActionResult> {
@@ -171,10 +204,81 @@ function validateArtifactUrl(raw: string): string | null {
   return null;
 }
 
+/**
+ * Best-effort parse of artifact content into the value real schema validation
+ * should check: the parsed JSON when the content is JSON, else the raw text
+ * (a schema may legitimately expect a bare string), else `null` when there's
+ * no inline content at all (e.g. a URL-only submission — there is no fetched
+ * body to check structurally; fetching the URL server-side is out of scope
+ * here and would reopen the SSRF surface validateArtifactUrl just closed).
+ */
+function parseArtifactContentForValidation(content: string | null | undefined): unknown {
+  if (!content || !content.trim()) return null;
+  const parsed = safeJsonParse(content);
+  return parsed !== null ? parsed : content;
+}
+
+/**
+ * Human-readable validation notes, mirroring the retired mock validator's
+ * multi-line shape (lib/mockValidation.ts's `notes`) so the artifact card's
+ * existing rendering stays familiar. The final line joins every schema
+ * violation into one readable string.
+ */
+function buildValidationNotes(result: ArtifactValidationResult): string[] {
+  if (result.skipped) {
+    return ["No output schema on contract — submission skips schema validation."];
+  }
+  if (result.valid) {
+    return [
+      "Artifact present.",
+      "Output schema found on contract — running schema validation.",
+      "Schema validation passed — artifact conforms to the output schema.",
+    ];
+  }
+  return [
+    "Artifact present.",
+    "Output schema found on contract — running schema validation.",
+    `Schema validation failed: ${result.errors.join("; ")}`,
+  ];
+}
+
+/**
+ * Run real schema validation for one artifact and persist status + notes
+ * (the same fields the old mock validator wrote). Shared by submitArtifact
+ * (right after a fresh submission) and runValidation (manual re-check) so
+ * the two paths can never disagree about what "valid" means.
+ */
+async function persistArtifactValidation(params: {
+  artifactId: string;
+  outputSchema: unknown;
+  content: string | null;
+}): Promise<ArtifactValidationResult> {
+  const parsedContent = parseArtifactContentForValidation(params.content);
+  const result = validateArtifactAgainstSchema(params.outputSchema, parsedContent);
+  const notes = buildValidationNotes(result);
+
+  await prisma.artifact.update({
+    where: { id: params.artifactId },
+    data: {
+      validationStatus: result.valid ? "passed" : "failed",
+      validationNotes: notes,
+    },
+  });
+
+  return result;
+}
+
 export async function submitArtifact(
   taskId: string,
   values: unknown,
-): Promise<ActionResult> {
+): Promise<
+  ActionResult<{
+    status: "submitted" | "validating";
+    valid: boolean;
+    skipped: boolean;
+    errors: string[];
+  }>
+> {
   const parsed = submitArtifactSchema.safeParse(values);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -192,14 +296,20 @@ export async function submitArtifact(
     await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
-      select: { status: true },
+      select: {
+        status: true,
+        buyerId: true,
+        title: true,
+        sellerAgentId: true,
+        contract: { select: { outputSchema: true } },
+      },
     });
     if (!task) return { ok: false, error: "Task not found." };
     if (!["accepted", "running", "submitted"].includes(task.status)) {
       return { ok: false, error: `Cannot submit an artifact for a ${task.status} task.` };
     }
 
-    await prisma.artifact.create({
+    const artifact = await prisma.artifact.create({
       data: {
         taskId,
         title: input.title,
@@ -209,15 +319,73 @@ export async function submitArtifact(
         validationStatus: "pending",
       },
     });
-    await prisma.task.update({ where: { id: taskId }, data: { status: "submitted" } });
+
+    // Real validation runs immediately — no separate "run validation" step.
+    const outcome = await persistArtifactValidation({
+      artifactId: artifact.id,
+      outputSchema: task.contract?.outputSchema ?? null,
+      content: artifact.content,
+    });
+
+    // A valid (or skipped — no schema declared) artifact clears straight to
+    // buyer review ("validating" doubles as "awaiting buyer approval"). An
+    // invalid artifact must NOT advance: the task stays "submitted" so the
+    // agent can correct and resubmit — submitArtifact already accepts
+    // "submitted" as a resubmission state, so this is not a dead end.
+    const nextStatus: "submitted" | "validating" = outcome.valid ? "validating" : "submitted";
+    await prisma.task.update({ where: { id: taskId }, data: { status: nextStatus } });
+
+    // Feed the real pass/fail into the existing schema-compliance reputation
+    // signal (previously driven by the mock's random score). Skipped checks
+    // (no schema declared) have nothing real to attribute, so they don't fire.
+    if (task.sellerAgentId && !outcome.skipped) {
+      try {
+        await onValidationComplete(task.sellerAgentId, taskId, outcome.valid ? 100 : 0);
+      } catch (err) {
+        console.error("onValidationComplete failed", err);
+      }
+    }
+
+    try {
+      await notify({
+        userId: task.buyerId,
+        type: outcome.valid ? "approval_needed" : "artifact_submitted",
+        title: outcome.valid
+          ? "Artifact ready for your approval"
+          : "Artifact submitted — needs a fix",
+        body: outcome.valid
+          ? `"${task.title}" conforms to the contract. Review and approve to release payment.`
+          : `"${task.title}": ${outcome.errors.slice(0, 2).join("; ") || "the submission did not pass validation"}.`,
+        href: `/tasks/${taskId}`,
+      });
+    } catch (err) {
+      console.error("notify(artifact_submitted) failed", err);
+    }
+
     revalidateTask(taskId);
-    return { ok: true };
+    return {
+      ok: true,
+      data: {
+        status: nextStatus,
+        valid: outcome.valid,
+        skipped: outcome.skipped,
+        errors: outcome.errors,
+      },
+    };
   } catch (err) {
     console.error("submitArtifact failed", err);
     return { ok: false, error: "Could not submit artifact." };
   }
 }
 
+/**
+ * Manual re-check of the latest artifact. Kept for API compatibility
+ * (POST /api/tasks/[id]/validate) — submitArtifact now runs validation
+ * automatically, so this is mostly useful if a contract's schema changed
+ * after submission. Backed by the same real validator + persistence helper
+ * as submitArtifact, so it can no longer disagree with (or clobber) the
+ * result already shown on the artifact card.
+ */
 export async function runValidation(taskId: string): Promise<ActionResult<{ score: number; status: string }>> {
   try {
     await requireUser();
@@ -232,59 +400,136 @@ export async function runValidation(taskId: string): Promise<ActionResult<{ scor
     const artifact = task.artifacts[0];
     if (!artifact) return { ok: false, error: "No artifact to validate. Submit one first." };
 
-    await prisma.task.update({ where: { id: taskId }, data: { status: "validating" } });
-
-    const outcome = evaluateArtifact({
+    const outcome = await persistArtifactValidation({
       artifactId: artifact.id,
-      taskId: task.id,
-      hasArtifactBody: Boolean(artifact.content || artifact.url),
-      hasOutputSchema: Boolean(task.contract?.outputSchema),
+      outputSchema: task.contract?.outputSchema ?? null,
+      content: artifact.content,
     });
 
-    await prisma.artifact.update({
-      where: { id: artifact.id },
-      data: {
-        validationStatus: outcome.status,
-        validationScore: outcome.score,
-        validationNotes: outcome.notes,
-      },
+    await prisma.task.update({
+      where: { id: taskId },
+      data: { status: outcome.valid ? "validating" : "submitted" },
     });
 
-    if (task.sellerAgentId) {
-      await onValidationComplete(task.sellerAgentId, task.id, outcome.score);
+    if (task.sellerAgentId && !outcome.skipped) {
+      await onValidationComplete(task.sellerAgentId, task.id, outcome.valid ? 100 : 0);
     }
 
     revalidateTask(taskId);
-    return { ok: true, data: { score: outcome.score, status: outcome.status } };
+    return {
+      ok: true,
+      data: { score: outcome.valid ? 100 : 0, status: outcome.valid ? "passed" : "failed" },
+    };
   } catch (err) {
     console.error("runValidation failed", err);
     return { ok: false, error: "Validation failed to run." };
   }
 }
 
+/**
+ * Shared completion core: release payment, credit reputation, notify the
+ * seller, revalidate. completeTask and approveTask both funnel through this
+ * so payment-release logic exists in exactly one place.
+ */
+async function finishTask(params: {
+  taskId: string;
+  title: string;
+  sellerAgentId: string | null;
+  sellerAgentOwnerId: string | null;
+}): Promise<ActionResult> {
+  await prisma.task.update({ where: { id: params.taskId }, data: { status: "completed" } });
+  await releasePaymentForTask(params.taskId);
+
+  if (params.sellerAgentId) {
+    await onTaskCompleted(params.sellerAgentId, params.taskId);
+  }
+
+  if (params.sellerAgentOwnerId) {
+    try {
+      await notify({
+        userId: params.sellerAgentOwnerId,
+        type: "task_completed",
+        title: "Task completed — payment released",
+        body: `"${params.title}" was approved and payment has been released.`,
+        href: `/tasks/${params.taskId}`,
+      });
+    } catch (err) {
+      console.error("notify(task_completed) failed", err);
+    }
+  }
+
+  revalidateTask(params.taskId);
+  return { ok: true };
+}
+
 export async function completeTask(taskId: string): Promise<ActionResult> {
   try {
-    await requireUser();
+    const user = await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
-      select: { status: true, sellerAgentId: true },
+      select: {
+        status: true,
+        title: true,
+        buyerId: true,
+        sellerAgentId: true,
+        sellerAgent: { select: { ownerId: true } },
+      },
     });
     if (!task) return { ok: false, error: "Task not found." };
+    if (user.role !== "admin" && task.buyerId !== user.id) {
+      return { ok: false, error: "Only the buyer can complete this task." };
+    }
     if (!["submitted", "validating"].includes(task.status)) {
       return { ok: false, error: `Cannot complete a ${task.status} task.` };
     }
-
-    await prisma.task.update({ where: { id: taskId }, data: { status: "completed" } });
-    await releasePaymentForTask(taskId);
-    if (task.sellerAgentId) {
-      await onTaskCompleted(task.sellerAgentId, taskId);
-    }
-
-    revalidateTask(taskId);
-    return { ok: true };
+    return await finishTask({
+      taskId,
+      title: task.title,
+      sellerAgentId: task.sellerAgentId,
+      sellerAgentOwnerId: task.sellerAgent?.ownerId ?? null,
+    });
   } catch (err) {
     console.error("completeTask failed", err);
     return { ok: false, error: "Could not complete task." };
+  }
+}
+
+/**
+ * Buyer approval — the one door out of "validating" (awaiting buyer review)
+ * into "completed". This is the explicit-approval half of the trust core:
+ * a valid artifact no longer auto-releases payment, a buyer must approve it.
+ * Reuses finishTask (the same completion core completeTask calls) rather
+ * than duplicating payment release / reputation / revalidation.
+ */
+export async function approveTask(taskId: string): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
+    const task = await prisma.task.findUnique({
+      where: { id: taskId },
+      select: {
+        status: true,
+        title: true,
+        buyerId: true,
+        sellerAgentId: true,
+        sellerAgent: { select: { ownerId: true } },
+      },
+    });
+    if (!task) return { ok: false, error: "Task not found." };
+    if (user.role !== "admin" && task.buyerId !== user.id) {
+      return { ok: false, error: "Only the buyer can approve this task." };
+    }
+    if (task.status !== "validating") {
+      return { ok: false, error: `Cannot approve a ${task.status} task.` };
+    }
+    return await finishTask({
+      taskId,
+      title: task.title,
+      sellerAgentId: task.sellerAgentId,
+      sellerAgentOwnerId: task.sellerAgent?.ownerId ?? null,
+    });
+  } catch (err) {
+    console.error("approveTask failed", err);
+    return { ok: false, error: "Could not approve task." };
   }
 }
 
@@ -330,16 +575,20 @@ export async function simulateTask(taskId: string): Promise<ActionResult> {
         ),
       });
       if (!r.ok) return r;
-      status = "submitted";
-    }
-    if (status === "submitted") {
-      const r = await runValidation(taskId);
-      if (!r.ok) return r;
-      status = "validating";
+      // Real validation just ran inline (no separate mock step to fake a
+      // pass anymore) — read back where it actually landed rather than
+      // assuming "validating".
+      status = r.data?.status ?? "submitted";
     }
     if (status === "validating") {
-      const r = await completeTask(taskId);
+      const r = await approveTask(taskId);
       if (!r.ok) return r;
+    } else if (status === "submitted") {
+      return {
+        ok: false,
+        error:
+          "The demo artifact didn't pass this task's output schema. Try a task with a looser contract.",
+      };
     }
 
     revalidateTask(taskId);
@@ -363,7 +612,12 @@ export async function openDispute(
     const user = await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
-      select: { sellerAgentId: true },
+      select: {
+        title: true,
+        buyerId: true,
+        sellerAgentId: true,
+        sellerAgent: { select: { ownerId: true } },
+      },
     });
     if (!task) return { ok: false, error: "Task not found." };
 
@@ -372,6 +626,23 @@ export async function openDispute(
     });
     await prisma.task.update({ where: { id: taskId }, data: { status: "disputed" } });
     if (task.sellerAgentId) await onDisputeOpened(task.sellerAgentId, taskId);
+
+    // Notify whichever side didn't open the dispute.
+    const counterpartyId =
+      user.id === task.sellerAgent?.ownerId ? task.buyerId : task.sellerAgent?.ownerId;
+    if (counterpartyId) {
+      try {
+        await notify({
+          userId: counterpartyId,
+          type: "dispute_opened",
+          title: "A dispute was opened",
+          body: `"${task.title}": ${parsed.data.reason}`.slice(0, 200),
+          href: `/tasks/${taskId}`,
+        });
+      } catch (err) {
+        console.error("notify(dispute_opened) failed", err);
+      }
+    }
 
     revalidateTask(taskId);
     return { ok: true };

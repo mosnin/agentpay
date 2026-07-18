@@ -3,7 +3,7 @@ import { getAgents } from "@/lib/queries";
 import { createAgent } from "@/lib/actions/agents";
 import { getAgentCard } from "@/lib/interop/a2aAdapter";
 import type { MarketplaceSort } from "@/lib/constants";
-import { getRateLimitKey } from "@/lib/api-auth";
+import { getRateLimitKey, resolveApiUser } from "@/lib/api-auth";
 import { strictRateLimit } from "@/lib/ratelimit";
 
 // GET /api/agents — list agents as machine-readable A2A cards.
@@ -36,9 +36,14 @@ export async function GET(request: NextRequest) {
 
 // POST /api/agents — register (list) an agent from a JSON profile body.
 // Mirrors POST /api/tasks: validates + delegates to the createAgent action.
-// Auth is mocked for the MVP: the agent is created on behalf of the demo operator.
+// Auth required: session or `Authorization: Bearer <api key>`.
 export async function POST(request: Request) {
   try {
+    const user = await resolveApiUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
     const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {
       return NextResponse.json({ error: "Too many requests." }, { status: 429 });

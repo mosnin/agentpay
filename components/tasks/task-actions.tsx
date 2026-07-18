@@ -9,7 +9,6 @@ import {
   Loader2,
   Lock,
   PlayCircle,
-  ScanSearch,
   ShieldAlert,
   Star,
   ThumbsUp,
@@ -25,8 +24,7 @@ import {
 import {
   acceptTask,
   startTask,
-  runValidation,
-  completeTask,
+  approveTask,
   cancelTask,
   simulateTask,
 } from "@/lib/actions/tasks";
@@ -40,6 +38,8 @@ interface TaskActionsProps {
     id: string;
     status: string;
     hasReviewed: boolean;
+    /** Buyer (or admin) — the only viewers approveTask will actually allow. */
+    canApprove: boolean;
   };
 }
 
@@ -52,15 +52,14 @@ const ACTIVE_STATUSES = new Set([
 ]);
 
 // Plain-language "what happens next" for each actionable state, so the
-// operator never has to guess the next move.
+// operator never has to guess the next move. "validating" is role-aware
+// (buyer vs. everyone else) and computed below, not looked up here.
 const STATUS_GUIDE: Record<string, string> = {
   pending: "Waiting for the agent to accept. You can cancel while it's still pending.",
   accepted: "The agent accepted. Start the task to kick off execution.",
   running: "The agent is working. Submit the artifact when the deliverable is ready.",
   submitted:
-    "Artifact's in. Run validation to check it against the contract — then complete.",
-  validating:
-    "Validation is back. Complete the task to release payment, or submit a revision.",
+    "This submission didn't pass the contract's output schema — see the errors below, then submit a corrected artifact.",
   completed: "All done. Leave a review to update this agent's reputation.",
 };
 
@@ -69,10 +68,9 @@ const STATUS_GUIDE: Record<string, string> = {
 const BUSY_LABELS: Record<string, string> = {
   accept: "Accepting task…",
   start: "Starting task…",
-  validate: "Running validation…",
-  complete: "Releasing payment…",
+  approve: "Releasing payment…",
   cancel: "Cancelling task…",
-  demo: "Running demo — accept, deliver, validate…",
+  demo: "Running demo — accept, deliver, approve…",
 };
 
 export function TaskActions({ task }: TaskActionsProps) {
@@ -120,45 +118,33 @@ export function TaskActions({ task }: TaskActionsProps) {
     });
   }
 
-  function onRunValidation() {
-    setBusyKey("validate");
-    setActionError(null);
-    setIsland({ label: BUSY_LABELS.validate, tone: "busy" });
-    startTransition(async () => {
-      setOptimisticStatus("validating");
-      const res = await runValidation(id);
-      if (res.ok) {
-        const score = res.data?.score ?? 0;
-        const passed = res.data?.status === "passed";
-        settleIsland({
-          label: `Validation ${passed ? "passed" : "failed"} · ${score}/100`,
-          tone: passed ? "success" : "error",
-        });
-      } else {
-        setActionError(res.error ?? "Validation failed to run.");
-        settleIsland({ label: res.error ?? "Validation failed to run", tone: "error" }, 2600);
-      }
-      setBusyKey(null);
-    });
-  }
-
   const isBusy = (key: string) => pending && busyKey === key;
 
   const showAccept = optimisticStatus === "pending";
   const showStart = optimisticStatus === "accepted";
   const showSubmit = ["accepted", "running", "submitted"].includes(optimisticStatus);
-  const showValidate = optimisticStatus === "submitted";
-  const showComplete = ["submitted", "validating"].includes(optimisticStatus);
+  // "validating" now means "awaiting buyer approval" — a real pass already
+  // happened automatically on submission, so only the buyer (or an admin)
+  // gets the button that actually releases payment.
+  const showApprove = optimisticStatus === "validating" && task.canApprove;
   const showReview = optimisticStatus === "completed";
   const showDispute = ACTIVE_STATUSES.has(optimisticStatus);
   const showCancel = ["draft", "pending", "accepted", "running"].includes(optimisticStatus);
-  const showDemo = ACTIVE_STATUSES.has(optimisticStatus);
+  // The demo walks all the way through approval, which only the buyer (or an
+  // admin) can actually complete — gate it the same way so it can't dead-end.
+  const showDemo = ACTIVE_STATUSES.has(optimisticStatus) && task.canApprove;
 
   const isTerminal = optimisticStatus === "completed" || optimisticStatus === "cancelled";
 
   // Primary actions advance the lifecycle; secondary actions are escapes.
-  const hasPrimary =
-    showAccept || showStart || showSubmit || showValidate || showComplete;
+  const hasPrimary = showAccept || showStart || showSubmit || showApprove;
+
+  const guideText =
+    optimisticStatus === "validating"
+      ? task.canApprove
+        ? "This artifact passed validation. Approve to release payment, or open a dispute if something's wrong."
+        : "Submitted and validated — waiting on the buyer to approve and release payment."
+      : STATUS_GUIDE[optimisticStatus];
 
   return (
     <div className="space-y-4">
@@ -176,10 +162,10 @@ export function TaskActions({ task }: TaskActionsProps) {
           </button>
         </div>
       )}
-      {STATUS_GUIDE[optimisticStatus] && (
+      {guideText && (
         <p className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-          <span>{STATUS_GUIDE[optimisticStatus]}</span>
+          <span>{guideText}</span>
         </p>
       )}
       <div className="space-y-2.5">
@@ -220,36 +206,29 @@ export function TaskActions({ task }: TaskActionsProps) {
           </SubmitArtifactDialog>
         )}
 
-        {showValidate && (
-          <Button
-            variant="secondary"
-            className="w-full justify-start"
-            disabled={pending}
-            onClick={onRunValidation}
-          >
-            {isBusy("validate") ? <Loader2 className="animate-spin" /> : <ScanSearch />}
-            {isBusy("validate") ? "Running validation…" : "Run validation"}
-          </Button>
-        )}
-
-        {showComplete && (
-          <Button
-            className="w-full justify-start"
-            disabled={pending}
-            onClick={() =>
-              run(
-                "complete",
-                () => completeTask(id),
-                "Task completed · payment released",
-                "completed",
-              )
-            }
-          >
-            {isBusy("complete") ? <Loader2 className="animate-spin" /> : <Lock />}
-            {isBusy("complete")
-              ? "Releasing payment…"
-              : "Complete task & release payment"}
-          </Button>
+        {showApprove && (
+          <div className="space-y-1.5">
+            <Button
+              className="w-full justify-start"
+              disabled={pending}
+              onClick={() =>
+                run(
+                  "approve",
+                  () => approveTask(id),
+                  "Task approved · payment released",
+                  "completed",
+                )
+              }
+            >
+              {isBusy("approve") ? <Loader2 className="animate-spin" /> : <Lock />}
+              {isBusy("approve")
+                ? "Releasing payment…"
+                : "Approve & release payment"}
+            </Button>
+            <p className="px-1 text-xs text-muted-foreground">
+              Releases the escrowed budget to the agent — this can&apos;t be undone.
+            </p>
+          </div>
         )}
 
         {showReview && (
@@ -280,8 +259,8 @@ export function TaskActions({ task }: TaskActionsProps) {
               {isBusy("demo") ? "Running demo…" : "Run demo — auto-complete"}
             </Button>
             <p className="px-1 text-xs text-muted-foreground">
-              Simulates the agent: accepts, submits an artifact, validates,
-              completes, and releases payment.
+              Simulates the agent: accepts, submits an artifact, then approves
+              and releases payment once it passes validation.
             </p>
           </div>
         )}

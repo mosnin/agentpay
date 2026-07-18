@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import type { User } from "@prisma/client";
 import { getCurrentUser } from "@/lib/auth";
+import { resolveApiKeyUser } from "@/lib/api-keys";
 
 /** Returns the current user or a 401 JSON response. */
 export async function getAuthedUser(): Promise<
@@ -31,6 +33,25 @@ export async function getAdminUser(): Promise<
     };
   }
   return result;
+}
+
+/**
+ * Resolve the acting user for an API route: a presented `Authorization:
+ * Bearer bids_...` header is checked first and, on failure (unknown,
+ * revoked, malformed), fails closed — null — rather than falling back to
+ * the session, so a bad key never silently succeeds as someone else. With
+ * no such header, this resolves the existing session (Clerk, or the
+ * keyless demo operator) exactly as getCurrentUser() does today.
+ */
+export async function resolveApiUser(request: Request): Promise<User | null> {
+  const header = request.headers.get("authorization");
+  const match = header ? /^Bearer\s+(.+)$/i.exec(header.trim()) : null;
+  const token = match?.[1]?.trim();
+
+  if (token && token.startsWith("bids_")) {
+    return resolveApiKeyUser(token);
+  }
+  return getCurrentUser();
 }
 
 /** Extract a best-effort IP key for rate limiting from a Request. */

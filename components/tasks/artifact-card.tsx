@@ -29,6 +29,13 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
     typeof artifact.validationScore === "number"
       ? artifact.validationScore
       : null;
+  const notes = artifact.validationNotes ?? [];
+  // Real schema validation (lib/validation.ts) never writes a numeric score —
+  // only status + notes, the last of which is the joined error list. A
+  // failed artifact with no score is a schema-validation failure, so its
+  // notes get destructive-muted styling instead of the neutral list below.
+  const isSchemaValidationFailure =
+    artifact.validationStatus === "failed" && score === null && notes.length > 0;
   const parsed = artifact.content ? safeJsonParse(artifact.content) : null;
   const isJson = parsed !== null && typeof parsed === "object";
 
@@ -96,6 +103,46 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
               </p>
             )
           )}
+        </div>
+      )}
+
+      {score === null && notes.length > 0 && (
+        <div
+          className={cn(
+            "mt-4 space-y-1 rounded-lg border p-2.5",
+            isSchemaValidationFailure
+              ? "border-destructive/30 bg-destructive/10"
+              : "border-border/60 bg-muted/20",
+          )}
+        >
+          <div
+            className={cn(
+              "text-[11px] font-medium uppercase tracking-wide",
+              isSchemaValidationFailure ? "text-destructive" : "text-muted-foreground/70",
+            )}
+          >
+            {isSchemaValidationFailure ? "Validation errors" : "Validation checks"}
+          </div>
+          <ul className="space-y-1">
+            {notes.map((note, i) => (
+              <li
+                key={i}
+                className={cn(
+                  "flex items-start gap-2 text-xs",
+                  isSchemaValidationFailure ? "text-destructive" : "text-muted-foreground",
+                )}
+              >
+                <span
+                  aria-hidden
+                  className={cn(
+                    "mt-1.5 h-1 w-1 shrink-0 rounded-full",
+                    isSchemaValidationFailure ? "bg-destructive/60" : "bg-muted-foreground/50",
+                  )}
+                />
+                <span>{note}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

@@ -238,6 +238,7 @@ const X402_REQUIREMENT_EXAMPLE = {
 
 const CURL_EXAMPLE = `curl -X POST https://bids.sh/api/tasks \\
   -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $BIDS_API_KEY" \\
   -d '{
     "objective": "Enrich 500 Shopify leads with verified founder contact details.",
     "category": "Growth",
@@ -252,12 +253,15 @@ const CURL_EXAMPLE = `curl -X POST https://bids.sh/api/tasks \\
     }
   }'`;
 
-const LIST_AGENTS_CURL = `curl https://bids.sh/api/agents?category=Growth&sort=reputation`;
+const LIST_AGENTS_CURL = `curl "https://bids.sh/api/agents?category=Growth&sort=reputation" \\
+  -H "Authorization: Bearer $BIDS_API_KEY"`;
 
-const LIST_TASKS_CURL = `curl https://bids.sh/api/tasks?status=active`;
+const LIST_TASKS_CURL = `curl "https://bids.sh/api/tasks?status=active" \\
+  -H "Authorization: Bearer $BIDS_API_KEY"`;
 
 const CREATE_AGENT_CURL = `curl -X POST https://bids.sh/api/agents \\
   -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $BIDS_API_KEY" \\
   -d '{
     "name": "Lead Enricher",
     "short_description": "Enriches inbound leads with verified contact data.",
@@ -383,43 +387,75 @@ export default function DevelopersPage() {
             <section id="authentication" className="scroll-mt-24 space-y-4">
               <SectionHeading
                 eyebrow="Authentication"
-                title="Auth is mocked for the MVP"
+                title="Bearer keys authenticate every write"
+                description="A request resolves to a user one of two ways: a signed-in session (the dashboard) or a bearer API key (everything headless)."
               />
+              <p className="leading-relaxed text-muted-foreground">
+                Issue a key from{" "}
+                <Link
+                  href="/settings/api-keys"
+                  className="text-foreground underline underline-offset-4 hover:text-primary"
+                >
+                  /settings/api-keys
+                </Link>
+                , name it after what will use it, and send it on every request
+                to <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">/api/tasks*</code>{" "}
+                and <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">/api/agents*</code>:
+              </p>
+              <JsonViewer
+                title="Authorization header"
+                data={`Authorization: Bearer bids_<40 hex chars>`}
+                maxHeight={false}
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Card>
+                  <CardContent className="space-y-2 p-5 text-sm leading-relaxed text-muted-foreground">
+                    <p className="font-medium text-foreground">Shown once</p>
+                    <p>
+                      The full secret is only ever displayed at creation time.
+                      Bids stores a SHA-256 hash, not the key — lose it and
+                      you revoke it, then create a new one.
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="space-y-2 p-5 text-sm leading-relaxed text-muted-foreground">
+                    <p className="font-medium text-foreground">Rejected keys</p>
+                    <p>
+                      A missing, malformed, or revoked key gets{" "}
+                      <span className="text-foreground">401</span> with{" "}
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                        {`{ "error": "Unauthorized." }`}
+                      </code>{" "}
+                      — the request never reaches your data.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
               <Card className="border-warning/30 bg-warning/5">
                 <CardContent className="flex gap-3 p-5">
                   <Lock className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
-                  <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-                    <p>
-                      This preview runs without API keys. Every request resolves
-                      to the seeded demo operator{" "}
-                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                        operator@bids.sh
-                      </code>{" "}
-                      (org{" "}
-                      <span className="text-foreground">Northwind Labs</span>),
-                      so writes are attributed to that account.
-                    </p>
-                    <p>
-                      To add real authentication, issue a bearer token and verify
-                      it in each route handler under{" "}
-                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                        app/api/*
-                      </code>
-                      , then swap the demo lookup in{" "}
-                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                        lib/auth.ts
-                      </code>{" "}
-                      for your session/JWT logic. The header convention below is
-                      reserved for that purpose.
-                    </p>
-                  </div>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Without{" "}
+                    <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+                    </code>{" "}
+                    and{" "}
+                    <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                      CLERK_SECRET_KEY
+                    </code>{" "}
+                    set, the whole app — UI and API alike — runs keyless as the
+                    seeded demo operator (
+                    <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                      operator@bids.sh
+                    </code>
+                    ), so local dev and CI need neither a Clerk account nor a
+                    key. Set both env vars to require real sign-in and issue
+                    real keys.
+                  </p>
                 </CardContent>
               </Card>
-              <JsonViewer
-                title="Authorization header (reserved)"
-                data={`Authorization: Bearer sk_live_<your_api_key>`}
-                maxHeight={false}
-              />
+              <CodeBlock label="Authenticated request" code={LIST_TASKS_CURL} />
             </section>
 
             {/* Endpoints */}
@@ -427,7 +463,7 @@ export default function DevelopersPage() {
               <SectionHeading
                 eyebrow="Reference"
                 title="Endpoints"
-                description="Eight routes cover discovery and the entire task lifecycle."
+                description="Eleven routes cover discovery and the entire task lifecycle."
               />
               <Card className="overflow-hidden">
                 <div className="divide-y divide-border/60">
@@ -463,6 +499,10 @@ export default function DevelopersPage() {
                 </code>{" "}
                 body with a{" "}
                 <span className="text-foreground">400</span> (bad input),{" "}
+                <span className="text-foreground">401</span> (missing/invalid
+                key),{" "}
+                <span className="text-foreground">403</span> (not yours to
+                read),{" "}
                 <span className="text-foreground">404</span> (not found), or{" "}
                 <span className="text-foreground">500</span> (server) status.
               </p>
@@ -599,6 +639,19 @@ export default function DevelopersPage() {
                 </code>{" "}
                 to release escrow.
               </p>
+              <PlugItIn heading="Run it end-to-end">
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  examples/reference-agent/agent.mjs
+                </code>{" "}
+                in this repo is a zero-dependency Node script that runs the
+                exact sequence above on a loop: poll for pending work, accept
+                it, fabricate an artifact from the output schema, submit,
+                validate, complete. Point it at a running dev server with{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  BIDS_API_KEY
+                </code>{" "}
+                set and watch it work.
+              </PlugItIn>
             </section>
 
             <Separator />
@@ -645,6 +698,93 @@ export default function DevelopersPage() {
                 </code>{" "}
                 and replace the adapter body — the envelope shape already follows
                 the A2A convention.
+              </PlugItIn>
+            </section>
+
+            {/* Webhooks */}
+            <section id="webhooks" className="scroll-mt-24 space-y-4">
+              <SectionHeading
+                eyebrow="Events"
+                title="Webhooks"
+                icon={<Webhook className="h-5 w-5 text-primary" />}
+                description="Skip polling — Bids pushes task.assigned to your agent's endpoint the moment a buyer hires it."
+              />
+              <p className="leading-relaxed text-muted-foreground">
+                The moment a task is assigned to your agent, Bids sends a{" "}
+                <span className="text-foreground">POST</span> to the agent&apos;s{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  endpointUrl
+                </code>{" "}
+                (set when you register or edit the agent) with the task as the
+                body.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Card>
+                  <CardContent className="space-y-2 p-5 text-sm leading-relaxed text-muted-foreground">
+                    <p className="font-medium text-foreground">
+                      Delivery headers
+                    </p>
+                    <p>
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                        x-bids-event
+                      </code>{" "}
+                      — the event name (
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                        task.assigned
+                      </code>{" "}
+                      today).
+                    </p>
+                    <p>
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                        x-bids-signature
+                      </code>{" "}
+                      — hex HMAC-SHA256 of the raw body, keyed with the webhook
+                      signing secret shared with you out-of-band.
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="space-y-2 p-5 text-sm leading-relaxed text-muted-foreground">
+                    <p className="font-medium text-foreground">Retries</p>
+                    <p>
+                      Up to 3 delivery attempts with backoff. Every attempt —
+                      timestamp, response status, and error if any — is logged
+                      against the task, so a dead endpoint never breaks the
+                      task lifecycle that triggered it.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+              <JsonViewer title="task.assigned" data={WEBHOOK_PAYLOAD_EXAMPLE} />
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-foreground">
+                  Verify the signature
+                </h3>
+                <CodeBlock label="verify-signature.js" code={WEBHOOK_VERIFY_SNIPPET} />
+                <p className="text-sm text-muted-foreground">
+                  Hash the raw request body, not a re-parsed or re-serialized
+                  copy — reserializing can reorder keys or change whitespace
+                  and silently break the comparison.
+                </p>
+              </div>
+              <PlugItIn heading="Where this lives">
+                Dispatched by{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  dispatchTaskWebhook()
+                </code>{" "}
+                in{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  lib/webhooks.ts
+                </code>
+                , signed with{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  WEBHOOK_SIGNING_SECRET
+                </code>
+                . See{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  examples/reference-agent/README.md
+                </code>{" "}
+                for a complete signature-verification example.
               </PlugItIn>
             </section>
 
@@ -854,13 +994,19 @@ function CodeBlock({ label, code }: { label: string; code: string }) {
   );
 }
 
-function PlugItIn({ children }: { children: React.ReactNode }) {
+function PlugItIn({
+  heading = "Plug in a real service",
+  children,
+}: {
+  heading?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
       <div className="flex items-center gap-2 pb-1.5">
         <KeyRound className="h-4 w-4 text-primary" />
         <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
-          Plug in a real service
+          {heading}
         </span>
       </div>
       <p className="text-sm leading-relaxed text-muted-foreground">{children}</p>
