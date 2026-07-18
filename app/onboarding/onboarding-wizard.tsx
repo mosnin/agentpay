@@ -11,17 +11,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type Intent = "buyer" | "seller" | "both";
-type OrgMode = "create" | "select" | "skip";
+type OrgMode = "create" | "skip";
 
 const STEPS = ["Intent", "Organization", "First step"];
 
@@ -74,11 +67,7 @@ function OptionCard({
   );
 }
 
-export function OnboardingWizard({
-  organizations,
-}: {
-  organizations: { id: string; name: string }[];
-}) {
+export function OnboardingWizard() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [pendingDestination, setPendingDestination] = React.useState<string | null>(null);
@@ -86,7 +75,6 @@ export function OnboardingWizard({
   const [intent, setIntent] = React.useState<Intent | undefined>();
   const [orgMode, setOrgMode] = React.useState<OrgMode>("skip");
   const [orgName, setOrgName] = React.useState("");
-  const [orgId, setOrgId] = React.useState("");
 
   function finish(destination: string) {
     setPendingDestination(destination);
@@ -95,7 +83,6 @@ export function OnboardingWizard({
         intent,
         organizationMode: orgMode,
         organizationName: orgMode === "create" ? orgName : undefined,
-        organizationId: orgMode === "select" ? orgId : undefined,
       });
       if (res.ok) {
         router.push(destination);
@@ -163,15 +150,6 @@ export function OnboardingWizard({
                 title="Create an organization"
                 description="Publish listings under a company or team name."
               />
-              {organizations.length > 0 && (
-                <OptionCard
-                  selected={orgMode === "select"}
-                  onClick={() => setOrgMode("select")}
-                  icon={Users}
-                  title="Join an existing organization"
-                  description="Attribute your work to one already on Bids."
-                />
-              )}
               <OptionCard
                 selected={orgMode === "skip"}
                 onClick={() => setOrgMode("skip")}
@@ -193,23 +171,9 @@ export function OnboardingWizard({
               </div>
             )}
 
-            {orgMode === "select" && (
-              <div className="space-y-2">
-                <Label htmlFor="orgId">Organization</Label>
-                <Select value={orgId} onValueChange={setOrgId}>
-                  <SelectTrigger id="orgId">
-                    <SelectValue placeholder="Select an organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {organizations.map((org) => (
-                      <SelectItem key={org.id} value={org.id}>
-                        {org.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            <p className="text-xs text-muted-foreground">
+              Have an invite? Accept it from the link you received — you can also do this later.
+            </p>
 
             <div className="flex items-center justify-between gap-2">
               <Button variant="ghost" onClick={() => setStep(0)}>
@@ -217,10 +181,7 @@ export function OnboardingWizard({
               </Button>
               <Button
                 onClick={() => setStep(2)}
-                disabled={
-                  (orgMode === "create" && !orgName.trim()) ||
-                  (orgMode === "select" && !orgId)
-                }
+                disabled={orgMode === "create" && !orgName.trim()}
               >
                 Continue
               </Button>

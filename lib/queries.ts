@@ -43,10 +43,14 @@ function sortToOrderBy(sort: MarketplaceSort | undefined) {
 
 // --- Free-text agent search -------------------------------------------------
 // Shared by every agent search entry point (marketplace URL search, the A2A
-// JSON listing API, and the ⌘K palette's quick search) so a query like
-// "csv dedupe" can surface an agent named "Data Cleaning Agent" as long as
-// the words show up somewhere relevant — description, category, or a listed
-// capability — not just the name.
+// JSON listing API, and the ⌘K palette's quick search) so a multi-word query
+// can surface an agent whose name alone wouldn't match — e.g. "csv cleanup"
+// finding the Data Cleaning Agent via its capability list — as long as each
+// word appears somewhere relevant: description, category, or a capability.
+// Matching is plain case-insensitive substring (no stemming/fuzzy matching —
+// see the ownership notes on trigram/tsvector), so near-miss spellings that
+// aren't literal substrings of the stored text (e.g. "dedupe" vs. a stored
+// "deduplication") won't match; that's an accepted limit of `contains`.
 
 const MAX_SEARCH_TOKENS = 6;
 const MIN_SEARCH_TOKEN_LENGTH = 2;
