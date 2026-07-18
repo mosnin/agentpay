@@ -268,7 +268,11 @@ async function main() {
     `Reference agent starting — base=${BASE_URL} key=${API_KEY.slice(0, 12)}… agent=${AGENT_ID ?? "(any owned)"}`,
   );
 
-  let delay = MIN_DELAY_MS;
+  // emptyStreak counts consecutive polls that found nothing to do. Delay is
+  // derived from it (rather than doubled in place) so the very first empty
+  // poll waits MIN_DELAY_MS, not MIN_DELAY_MS * 2 — the streak resets to 0
+  // the moment a task is found, so throughput recovers immediately.
+  let emptyStreak = 0;
   while (!stopping) {
     let didWork = false;
     try {
@@ -278,7 +282,8 @@ async function main() {
     }
     if (stopping) break;
 
-    delay = didWork ? MIN_DELAY_MS : Math.min(delay * 2, MAX_DELAY_MS);
+    emptyStreak = didWork ? 0 : emptyStreak + 1;
+    const delay = Math.min(MIN_DELAY_MS * 2 ** Math.max(emptyStreak - 1, 0), MAX_DELAY_MS);
     log(`Sleeping ${Math.round(delay / 1000)}s before the next poll…`);
     await sleep(delay);
   }
