@@ -39,10 +39,63 @@ interface AgentHit {
   verified: boolean;
 }
 
+// Shape returned by GET /api/search (lib/queries.ts#searchAgentsQuick) — a
+// lean projection, already ranked verified-desc / reputation-desc server-side.
+interface AgentSearchHit {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  verified: boolean;
+  reputationScore: number;
+}
+
+const LIVE_SEARCH_MIN_LENGTH = 2;
+const LIVE_SEARCH_DEBOUNCE_MS = 200;
+
+/**
+ * One agent row, shared by the preloaded (cmdk-filtered) agent list and the
+ * live server-search results — identical composition either way so the two
+ * data sources are visually indistinguishable.
+ */
+function AgentResultItem({
+  agent,
+  onSelect,
+  value,
+  forceMount,
+}: {
+  agent: { id: string; name: string; category: string; verified: boolean };
+  onSelect: () => void;
+  value: string;
+  forceMount?: boolean;
+}) {
+  return (
+    <CommandItem value={value} forceMount={forceMount} onSelect={onSelect}>
+      <Bot className="mr-2 h-4 w-4 text-muted-foreground" />
+      <span>{agent.name}</span>
+      {agent.verified && (
+        <ShieldCheck className="ml-1.5 h-3.5 w-3.5 shrink-0 text-primary" />
+      )}
+      {agent.category && (
+        <span className="ml-auto text-xs text-muted-foreground">
+          {agent.category}
+        </span>
+      )}
+    </CommandItem>
+  );
+}
+
 export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const [agents, setAgents] = React.useState<AgentHit[]>([]);
   const [recents, setRecents] = React.useState<RecentAgent[]>([]);
+  // Live, debounced /api/search results — populated once the typed query
+  // reaches LIVE_SEARCH_MIN_LENGTH chars. Keeps whatever it last held on a
+  // failed fetch (see the effect below), so a network hiccup never clears
+  // results the user can already see.
+  const [paletteQuery, setPaletteQuery] = React.useState("");
+  const [liveAgents, setLiveAgents] = React.useState<AgentSearchHit[]>([]);
+  const isLiveSearch = paletteQuery.trim().length >= LIVE_SEARCH_MIN_LENGTH;
   // Default to the ⌘ glyph (matches SSR); correct to "Ctrl" on non-Mac after
   // mount so Windows/Linux users see the shortcut that actually works for them.
   const [shortcut, setShortcut] = React.useState("⌘K");
@@ -104,6 +157,47 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
     if (open) setRecents(readRecentAgents());
   }, [open]);
 
+  // Reset the live-search box each time the palette closes, so reopening
+  // ⌘K always starts from a blank query — matching the previous
+  // (uncontrolled) input's behavior instead of resuming a stale search.
+  React.useEffect(() => {
+    if (!open) {
+      setPaletteQuery("");
+      setLiveAgents([]);
+    }
+  }, [open]);
+
+  // Debounced live search: once the typed query reaches the minimum length,
+  // wait for a pause in typing, then ask the server (which can match on
+  // description/category/capability, not just name) and swap the "Agents"
+  // group over to those results. A failed or slow fetch just leaves the
+  // previous live results on screen — no error state to render.
+  React.useEffect(() => {
+    const query = paletteQuery.trim();
+    if (query.length < LIVE_SEARCH_MIN_LENGTH) {
+      setLiveAgents([]);
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+        signal: controller.signal,
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: { agents?: unknown } | null) => {
+          if (!data || !Array.isArray(data.agents)) return;
+          setLiveAgents(data.agents as AgentSearchHit[]);
+        })
+        .catch(() => {
+          // Silent by design — keep whatever results are already showing.
+        });
+    }, LIVE_SEARCH_DEBOUNCE_MS);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [paletteQuery]);
+
   const go = (href: string) => {
     setOpen(false);
     router.push(href);
@@ -145,9 +239,19 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
       )}
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search agents, pages, categories…" />
+        <CommandInput
+          placeholder="Search agents, pages, categories…"
+          value={paletteQuery}
+          onValueChange={setPaletteQuery}
+        />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
+          {/* Live results are force-mounted (server already did the matching),
+              so they're invisible to cmdk's own filtered-count tally — suppress
+              the empty state while we're showing them, or it'd render
+              alongside real results instead of only when there truly are none. */}
+          {!(isLiveSearch && liveAgents.length > 0) && (
+            <CommandEmpty>No results found.</CommandEmpty>
+          )}
           <CommandGroup heading="Actions">
             <CommandItem value="action new task create" onSelect={() => go("/tasks/new")}>
               <Plus className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -197,31 +301,42 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
               <CommandSeparator />
             </>
           )}
-          {agents.length > 0 && (
-            <>
-              <CommandGroup heading="Agents">
-                {agents.map((agent) => (
-                  <CommandItem
-                    key={agent.id}
-                    value={`agent ${agent.name} ${agent.category} ${agent.capabilities.join(" ")}`}
-                    onSelect={() => go(`/agents/${agent.slug}`)}
-                  >
-                    <Bot className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>{agent.name}</span>
-                    {agent.verified && (
-                      <ShieldCheck className="ml-1.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                    )}
-                    {agent.category && (
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        {agent.category}
-                      </span>
-                    )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-              <CommandSeparator />
-            </>
-          )}
+          {isLiveSearch
+            ? liveAgents.length > 0 && (
+                <>
+                  {/* forceMount: these are already matched server-side (name,
+                      description, category, capabilities), so cmdk's own
+                      client-side fuzzy filter — which only ever sees `value`
+                      below — must not re-hide or re-score them. */}
+                  <CommandGroup heading="Agents" forceMount>
+                    {liveAgents.map((agent) => (
+                      <AgentResultItem
+                        key={agent.id}
+                        agent={agent}
+                        value={agent.id}
+                        forceMount
+                        onSelect={() => go(`/agents/${agent.slug}`)}
+                      />
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )
+            : agents.length > 0 && (
+                <>
+                  <CommandGroup heading="Agents">
+                    {agents.map((agent) => (
+                      <AgentResultItem
+                        key={agent.id}
+                        agent={agent}
+                        value={`agent ${agent.name} ${agent.category} ${agent.capabilities.join(" ")}`}
+                        onSelect={() => go(`/agents/${agent.slug}`)}
+                      />
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
           <CommandGroup heading="Pages">
             {navItems.map((item) => {
               const Icon = item.icon;
