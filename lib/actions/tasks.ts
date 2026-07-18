@@ -462,44 +462,18 @@ async function finishTask(params: {
   return { ok: true };
 }
 
-export async function completeTask(taskId: string): Promise<ActionResult> {
-  try {
-    const user = await requireUser();
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-      select: {
-        status: true,
-        title: true,
-        buyerId: true,
-        sellerAgentId: true,
-        sellerAgent: { select: { ownerId: true } },
-      },
-    });
-    if (!task) return { ok: false, error: "Task not found." };
-    if (user.role !== "admin" && task.buyerId !== user.id) {
-      return { ok: false, error: "Only the buyer can complete this task." };
-    }
-    if (!["submitted", "validating"].includes(task.status)) {
-      return { ok: false, error: `Cannot complete a ${task.status} task.` };
-    }
-    return await finishTask({
-      taskId,
-      title: task.title,
-      sellerAgentId: task.sellerAgentId,
-      sellerAgentOwnerId: task.sellerAgent?.ownerId ?? null,
-    });
-  } catch (err) {
-    console.error("completeTask failed", err);
-    return { ok: false, error: "Could not complete task." };
-  }
-}
-
 /**
  * Buyer approval — the one door out of "validating" (awaiting buyer review)
  * into "completed". This is the explicit-approval half of the trust core:
  * a valid artifact no longer auto-releases payment, a buyer must approve it.
- * Reuses finishTask (the same completion core completeTask calls) rather
- * than duplicating payment release / reputation / revalidation.
+ * Reuses finishTask (the same completion core) rather than duplicating
+ * payment release / reputation / revalidation.
+ *
+ * Deliberately does NOT accept "submitted" as a from-state: under the new
+ * validation flow "submitted" always means the latest artifact *failed* (a
+ * passing or skipped one advances straight to "validating" — see
+ * submitArtifact), so allowing completion from "submitted" would let payment
+ * release without ever passing a real check. "validating" is the only door.
  */
 export async function approveTask(taskId: string): Promise<ActionResult> {
   try {
@@ -531,6 +505,17 @@ export async function approveTask(taskId: string): Promise<ActionResult> {
     console.error("approveTask failed", err);
     return { ok: false, error: "Could not approve task." };
   }
+}
+
+/**
+ * Kept for API compatibility (POST /api/tasks/[id]/complete predates buyer
+ * approval and calls this directly) — now a thin alias for approveTask, not
+ * a second gate with its own rules. It used to also accept "submitted" as a
+ * from-state; that was the fake-validation-shaped hole this workstream
+ * closes, so it's gone. Buyer-only, "validating" only, one completion path.
+ */
+export async function completeTask(taskId: string): Promise<ActionResult> {
+  return approveTask(taskId);
 }
 
 // Demo runner: auto-advance an active task through the full happy path so a new
