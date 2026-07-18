@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkEnabledProvider } from "@/components/layout/clerk-enabled-context";
 import { isClerkEnabled } from "@/lib/auth";
+import { SentryInit } from "@/components/monitoring/sentry-init";
 
 export const metadata: Metadata = {
   title: {
@@ -55,6 +56,7 @@ export default function RootLayout({
   const content = (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
+        <SentryInit />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

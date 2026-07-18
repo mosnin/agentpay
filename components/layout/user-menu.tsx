@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { LayoutDashboard, Briefcase, LogOut, UserRound } from "lucide-react";
+import { LayoutDashboard, Briefcase, LogOut, Settings, UserRound } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -58,6 +58,11 @@ function MenuShell({
         <DropdownMenuItem asChild>
           <Link href="/agents/new">
             <UserRound className="mr-2 h-4 w-4" /> List an agent
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings/api-keys">
+            <Settings className="mr-2 h-4 w-4" /> Settings
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

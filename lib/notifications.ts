@@ -1,5 +1,7 @@
 import "server-only";
 
+import { prisma } from "@/lib/prisma";
+
 /**
  * In-app notifications — contract.
  *
@@ -29,5 +31,17 @@ export interface NotifyInput {
 
 /** Persist a notification for one user. Best-effort; errors are logged. */
 export async function notify(input: NotifyInput): Promise<void> {
-  throw new Error("not implemented — workstream A5");
+  try {
+    await prisma.notification.create({
+      data: {
+        userId: input.userId,
+        type: input.type,
+        title: input.title,
+        body: input.body,
+        href: input.href,
+      },
+    });
+  } catch (err) {
+    console.error("notify failed", err);
+  }
 }

@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Terminal,
   ListChecks,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,6 +39,7 @@ export const SIDEBAR_GROUPS: { label: string; items: NavItem[] }[] = [
     label: "Manage",
     items: [
       { title: "Seller studio", href: "/seller", icon: Briefcase, description: "Listings & earnings" },
+      { title: "Settings", href: "/settings/api-keys", icon: Settings, description: "Keys & organization" },
       { title: "Admin", href: "/admin", icon: ShieldCheck, description: "Moderation", adminOnly: true },
     ],
   },
