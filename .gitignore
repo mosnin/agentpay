@@ -38,3 +38,7 @@ prisma/*.db
 .idea
 .vscode/*
 !.vscode/extensions.json
+
+# Playwright
+test-results/
+playwright-report/

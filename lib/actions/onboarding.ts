@@ -41,10 +41,16 @@ export async function completeOnboarding(
       });
       organizationId = org.id;
     } else if (input.organizationMode === "select") {
-      if (!input.organizationId) {
-        return { ok: false, error: "Select an organization." };
-      }
-      organizationId = input.organizationId;
+      // Removed: this used to trust a client-supplied organizationId with no
+      // membership check, letting anyone attach to any organization. Joining
+      // an existing org now requires a matching-email pending invite — see
+      // acceptInvite() in lib/actions/organizations.ts. The wizard no longer
+      // offers this mode; reject rather than silently downgrading, in case a
+      // stale client (or a direct call) still sends it.
+      return {
+        ok: false,
+        error: "Joining an organization directly isn't available — use an invite link instead.",
+      };
     } else {
       organizationId = null;
     }
