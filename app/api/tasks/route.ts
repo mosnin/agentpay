@@ -14,7 +14,7 @@ function titleFromObjective(objective: string): string {
 
 // GET /api/tasks — list the operator's tasks (as buyer, or owner of the selling
 // agent). Optional ?status= filter: active | completed | disputed | cancelled,
-// or a raw lifecycle status. Auth is mocked for the MVP (the demo operator).
+// or a raw lifecycle status. Auth required: session or `Authorization: Bearer <api key>`.
 export async function GET(request: NextRequest) {
   try {
     const user = await resolveApiUser(request);

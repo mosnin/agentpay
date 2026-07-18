@@ -1,4 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// lib/validation.ts starts with `import "server-only"`, which throws when
+// resolved outside a "react-server" bundler condition (see the identical
+// note in lib/__tests__/webhooks.test.ts). `vi.mock` calls are hoisted above
+// imports, so this runs before `@/lib/validation` ever evaluates.
+vi.mock("server-only", () => ({}));
+
 import { validateArtifactAgainstSchema } from "@/lib/validation";
 
 const OBJECT_SCHEMA = {
