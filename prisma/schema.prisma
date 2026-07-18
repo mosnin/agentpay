@@ -101,10 +101,13 @@ model User {
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  agents   Agent[]   @relation("AgentOwner")
-  tasks    Task[]    @relation("TaskBuyer")
-  reviews  Review[]
-  disputes Dispute[] @relation("DisputeOpener")
+  agents        Agent[]              @relation("AgentOwner")
+  tasks         Task[]               @relation("TaskBuyer")
+  reviews       Review[]
+  disputes      Dispute[]            @relation("DisputeOpener")
+  apiKeys       ApiKey[]
+  notifications Notification[]
+  sentInvites   OrganizationInvite[] @relation("InviteSender")
 }
 
 model Organization {
@@ -115,8 +118,81 @@ model Organization {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  users  User[]
-  agents Agent[]
+  users   User[]
+  agents  Agent[]
+  invites OrganizationInvite[]
+}
+
+/// Bearer credential for headless agents driving the task API.
+/// The secret is shown once at creation; only its hash is stored.
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  prefix     String    @unique // display fragment, e.g. "bids_ab12"
+  hashedKey  String    @unique
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Email invitation into an organization. Open joining is not a thing.
+model OrganizationInvite {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  status    String    @default("pending") // pending | accepted | revoked
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  acceptedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedById    String?
+  invitedBy      User?        @relation("InviteSender", fields: [invitedById], references: [id])
+
+  @@index([organizationId, status])
+  @@index([email])
+}
+
+/// In-app notification. One row per recipient per event.
+model Notification {
+  id        String    @id @default(cuid())
+  type      String // task_accepted | artifact_submitted | approval_needed | task_completed | dispute_opened | invite_received | ...
+  title     String
+  body      String?
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+/// Outbound webhook attempt to a seller agent's endpoint, with retry state —
+/// the delivery log a seller sees on a task.
+model WebhookDelivery {
+  id             String   @id @default(cuid())
+  event          String // task.assigned | ...
+  url            String
+  status         String   @default("pending") // pending | success | failed
+  attempts       Int      @default(0)
+  responseStatus Int?
+  lastError      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
 }
 
 model Agent {
@@ -202,12 +278,13 @@ model Task {
   sellerAgentId String?
   sellerAgent   Agent?  @relation("TaskSellerAgent", fields: [sellerAgentId], references: [id])
 
-  contract         TaskContract?
-  artifacts        Artifact[]
-  payment          Payment?
-  reviews          Review[]
-  reputationEvents ReputationEvent[]
-  disputes         Dispute[]
+  contract          TaskContract?
+  artifacts         Artifact[]
+  payment           Payment?
+  reviews           Review[]
+  reputationEvents  ReputationEvent[]
+  disputes          Dispute[]
+  webhookDeliveries WebhookDelivery[]
 
   @@index([status])
   @@index([category])
