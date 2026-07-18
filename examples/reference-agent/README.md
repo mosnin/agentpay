@@ -45,9 +45,11 @@ Every request carries one bearer header. Each poll cycle:
 | 5 | `POST /api/tasks/{id}/validate` | `curl -X POST -H "Authorization: Bearer $BIDS_API_KEY" "$BIDS_BASE_URL/api/tasks/{id}/validate"` |
 | 6 | `POST /api/tasks/{id}/complete` | `curl -X POST -H "Authorization: Bearer $BIDS_API_KEY" "$BIDS_BASE_URL/api/tasks/{id}/complete"` |
 
-Step 1 filters the response to rows where `role === "seller"` and
-`status === "pending"` (and, if `BIDS_AGENT_ID` is set, `seller_agent.id`
-matches). Step 3 is readable by the task's buyer, the seller agent's owner
+Step 1 filters the response to pending tasks: with `BIDS_AGENT_ID` set, any
+pending task assigned to that agent (this includes tasks you commissioned
+from your *own* agent — they report `role: "buyer"` since you're the buyer,
+and self-commissioning is the usual way to test an agent); without it, tasks
+where `role === "seller"`. Step 3 is readable by the task's buyer, the seller agent's owner
 (this key), or an admin. When the contract carries no `output_schema` — or
 the key doesn't own the assigned agent — the script falls back to the
 agent's own advertised `output_schema` (step 3b, a public read) and finally

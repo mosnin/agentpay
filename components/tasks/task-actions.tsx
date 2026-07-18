@@ -40,6 +40,12 @@ interface TaskActionsProps {
     hasReviewed: boolean;
     /** Buyer (or admin) — the only viewers approveTask will actually allow. */
     canApprove: boolean;
+    /** Seller agent's owner (or admin) — may accept, start, and submit. */
+    canWork: boolean;
+    /** Buyer (or admin) — may cancel while the task is still early. */
+    canCancel: boolean;
+    /** Holds both sides (or admin) — the demo runner needs full rights. */
+    canSimulate: boolean;
   };
 }
 
@@ -51,17 +57,36 @@ const ACTIVE_STATUSES = new Set([
   "validating",
 ]);
 
-// Plain-language "what happens next" for each actionable state, so the
-// operator never has to guess the next move. "validating" is role-aware
-// (buyer vs. everyone else) and computed below, not looked up here.
-const STATUS_GUIDE: Record<string, string> = {
-  pending: "Waiting for the agent to accept. You can cancel while it's still pending.",
-  accepted: "The agent accepted. Start the task to kick off execution.",
-  running: "The agent is working. Submit the artifact when the deliverable is ready.",
-  submitted:
-    "This submission didn't pass the contract's output schema — see the errors below, then submit a corrected artifact.",
-  completed: "All done. Leave a review to update this agent's reputation.",
-};
+// Plain-language "what happens next", spoken to the viewer's own role — a
+// buyer is never told to submit an artifact they have no button for, and an
+// agent owner is never told to wait on themselves.
+function guideFor(
+  status: string,
+  task: { canWork: boolean },
+): string | undefined {
+  switch (status) {
+    case "pending":
+      return task.canWork
+        ? "A new commission for your agent. Accept it to get started."
+        : "Waiting for the agent to accept. You can cancel while it's still pending.";
+    case "accepted":
+      return task.canWork
+        ? "The agent accepted. Start the task to kick off execution."
+        : "The agent accepted and is about to start.";
+    case "running":
+      return task.canWork
+        ? "The agent is working. Submit the artifact when the deliverable is ready."
+        : "The agent is working. You'll be notified when a deliverable arrives.";
+    case "submitted":
+      return task.canWork
+        ? "This submission didn't pass the contract's output schema — see the errors below, then submit a corrected artifact."
+        : "The latest submission didn't pass the contract's output schema. The agent has been asked for a corrected artifact.";
+    case "completed":
+      return "All done. Leave a review to update this agent's reputation.";
+    default:
+      return undefined;
+  }
+}
 
 // While an action runs, the floating status island narrates it — one quiet
 // channel instead of stacked toasts. Success settles for a beat, then clears.
@@ -120,19 +145,24 @@ export function TaskActions({ task }: TaskActionsProps) {
 
   const isBusy = (key: string) => pending && busyKey === key;
 
-  const showAccept = optimisticStatus === "pending";
-  const showStart = optimisticStatus === "accepted";
-  const showSubmit = ["accepted", "running", "submitted"].includes(optimisticStatus);
+  // Every button mirrors its server action's authorization — a viewer only
+  // sees the moves that are actually theirs to make.
+  const showAccept = optimisticStatus === "pending" && task.canWork;
+  const showStart = optimisticStatus === "accepted" && task.canWork;
+  const showSubmit =
+    ["accepted", "running", "submitted"].includes(optimisticStatus) && task.canWork;
   // "validating" now means "awaiting buyer approval" — a real pass already
   // happened automatically on submission, so only the buyer (or an admin)
   // gets the button that actually releases payment.
   const showApprove = optimisticStatus === "validating" && task.canApprove;
   const showReview = optimisticStatus === "completed";
   const showDispute = ACTIVE_STATUSES.has(optimisticStatus);
-  const showCancel = ["draft", "pending", "accepted", "running"].includes(optimisticStatus);
-  // The demo walks all the way through approval, which only the buyer (or an
-  // admin) can actually complete — gate it the same way so it can't dead-end.
-  const showDemo = ACTIVE_STATUSES.has(optimisticStatus) && task.canApprove;
+  const showCancel =
+    ["draft", "pending", "accepted", "running"].includes(optimisticStatus) &&
+    task.canCancel;
+  // The demo walks the whole lifecycle — accept and deliver as the seller,
+  // approve as the buyer — so it needs a viewer holding both sides.
+  const showDemo = ACTIVE_STATUSES.has(optimisticStatus) && task.canSimulate;
 
   const isTerminal = optimisticStatus === "completed" || optimisticStatus === "cancelled";
 
@@ -144,7 +174,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       ? task.canApprove
         ? "This artifact passed validation. Approve to release payment, or open a dispute if something's wrong."
         : "Submitted and validated — waiting on the buyer to approve and release payment."
-      : STATUS_GUIDE[optimisticStatus];
+      : guideFor(optimisticStatus, task);
 
   return (
     <div className="space-y-4">

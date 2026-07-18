@@ -247,9 +247,17 @@ async function pollOnce() {
   }
 
   const tasks = Array.isArray(res.data) ? res.data : [];
+  // role === "seller" covers the normal case (someone else commissioned your
+  // agent). A task you commissioned from your *own* agent — the usual way to
+  // test one — reports role "buyer", so also take any pending task assigned
+  // to the agent this script is scoped to.
   const mine = tasks
-    .filter((t) => t.role === "seller" && t.status === "pending")
-    .filter((t) => !AGENT_ID || t.seller_agent?.id === AGENT_ID)
+    .filter((t) => t.status === "pending")
+    .filter(
+      (t) =>
+        (AGENT_ID && t.seller_agent?.id === AGENT_ID) ||
+        (!AGENT_ID && t.role === "seller"),
+    )
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
   if (mine.length === 0) {

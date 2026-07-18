@@ -116,10 +116,21 @@ export default async function TaskDetailPage({
   const hasReviewed = currentUser
     ? task.reviews.some((r) => r.userId === currentUser.id)
     : false;
-  // Mirrors approveTask's own authorization check — only the buyer (or an
-  // admin) can approve, so only they see the button that would work.
+  // Mirror the lifecycle actions' own authorization checks — each button is
+  // only rendered for the viewer the underlying action will actually allow.
+  const isAdmin = currentUser?.role === "admin";
   const canApprove = currentUser
-    ? currentUser.role === "admin" || task.buyerId === currentUser.id
+    ? isAdmin || task.buyerId === currentUser.id
+    : false;
+  const canWork = currentUser
+    ? isAdmin || task.sellerAgent?.ownerId === currentUser.id
+    : false;
+  const canCancel = canApprove;
+  // The demo runner drives both sides, so it needs both sets of rights.
+  const canSimulate = currentUser
+    ? isAdmin ||
+      (task.buyerId === currentUser.id &&
+        task.sellerAgent?.ownerId === currentUser.id)
     : false;
 
   const paymentModeLabel =
@@ -363,6 +374,9 @@ export default async function TaskDetailPage({
                   status: task.status,
                   hasReviewed,
                   canApprove,
+                  canWork,
+                  canCancel,
+                  canSimulate,
                 }}
               />
             </CardContent>

@@ -108,17 +108,45 @@ export async function createTask(
   }
 }
 
+type TaskActorRole = "buyer" | "seller" | "admin";
+
+/**
+ * Authorization for lifecycle mutations: `actors` names who may perform a
+ * step — the task's buyer, the seller agent's owner, and/or an admin. The
+ * keyless demo operator is seeded as admin so single-user flows pass every
+ * gate; in multi-user deployments (Clerk sessions, API keys) these are the
+ * walls between marketplace parties.
+ */
+function actorAllowed(
+  user: { id: string; role: string },
+  task: { buyerId: string; sellerAgent: { ownerId: string } | null },
+  actors: TaskActorRole[],
+): boolean {
+  if (actors.includes("admin") && user.role === "admin") return true;
+  if (actors.includes("buyer") && task.buyerId === user.id) return true;
+  if (actors.includes("seller") && task.sellerAgent?.ownerId === user.id) return true;
+  return false;
+}
+
 async function transition(
   taskId: string,
   allowedFrom: string[],
   to: string,
+  gate?: { actors: TaskActorRole[]; deny: string },
 ): Promise<ActionResult> {
-  await requireUser();
+  const user = await requireUser();
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: { status: true },
+    select: {
+      status: true,
+      buyerId: true,
+      sellerAgent: { select: { ownerId: true } },
+    },
   });
   if (!task) return { ok: false, error: "Task not found." };
+  if (gate && !actorAllowed(user, task, gate.actors)) {
+    return { ok: false, error: gate.deny };
+  }
   if (!allowedFrom.includes(task.status)) {
     return { ok: false, error: `Cannot move a ${task.status} task to ${to}.` };
   }
@@ -128,7 +156,10 @@ async function transition(
 }
 
 export async function acceptTask(taskId: string): Promise<ActionResult> {
-  const res = await transition(taskId, ["pending"], "accepted");
+  const res = await transition(taskId, ["pending"], "accepted", {
+    actors: ["seller", "admin"],
+    deny: "Only the assigned agent's owner can accept this task.",
+  });
   if (res.ok) {
     // Notification + webhook are side effects of a state change that already
     // succeeded — best-effort, wrapped so either failing can't roll it back
@@ -160,7 +191,10 @@ export async function acceptTask(taskId: string): Promise<ActionResult> {
 }
 
 export async function startTask(taskId: string): Promise<ActionResult> {
-  return transition(taskId, ["accepted"], "running");
+  return transition(taskId, ["accepted"], "running", {
+    actors: ["seller", "admin"],
+    deny: "Only the assigned agent's owner can start this task.",
+  });
 }
 
 export async function cancelTask(taskId: string): Promise<ActionResult> {
@@ -168,6 +202,10 @@ export async function cancelTask(taskId: string): Promise<ActionResult> {
     taskId,
     ["draft", "pending", "accepted", "running"],
     "cancelled",
+    {
+      actors: ["buyer", "admin"],
+      deny: "Only the buyer can cancel this task.",
+    },
   );
   if (res.ok) await refundPaymentForTask(taskId);
   return res;
@@ -293,7 +331,7 @@ export async function submitArtifact(
   }
 
   try {
-    await requireUser();
+    const user = await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       select: {
@@ -301,10 +339,17 @@ export async function submitArtifact(
         buyerId: true,
         title: true,
         sellerAgentId: true,
+        sellerAgent: { select: { ownerId: true } },
         contract: { select: { outputSchema: true } },
       },
     });
     if (!task) return { ok: false, error: "Task not found." };
+    if (!actorAllowed(user, task, ["seller", "admin"])) {
+      return {
+        ok: false,
+        error: "Only the assigned agent's owner can submit artifacts for this task.",
+      };
+    }
     if (!["accepted", "running", "submitted"].includes(task.status)) {
       return { ok: false, error: `Cannot submit an artifact for a ${task.status} task.` };
     }
@@ -388,15 +433,22 @@ export async function submitArtifact(
  */
 export async function runValidation(taskId: string): Promise<ActionResult<{ score: number; status: string }>> {
   try {
-    await requireUser();
+    const user = await requireUser();
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       include: {
         contract: true,
+        sellerAgent: { select: { ownerId: true } },
         artifacts: { orderBy: { createdAt: "desc" }, take: 1 },
       },
     });
     if (!task) return { ok: false, error: "Task not found." };
+    if (!actorAllowed(user, task, ["buyer", "seller", "admin"])) {
+      return {
+        ok: false,
+        error: "Only the task's buyer or the agent owner can run validation.",
+      };
+    }
     const artifact = task.artifacts[0];
     if (!artifact) return { ok: false, error: "No artifact to validate. Submit one first." };
 
@@ -523,12 +575,29 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
 // transitions, so it genuinely exercises validation, payment, and reputation.
 export async function simulateTask(taskId: string): Promise<ActionResult> {
   try {
-    await requireUser();
+    const user = await requireUser();
     const existing = await prisma.task.findUnique({
       where: { id: taskId },
-      select: { status: true },
+      select: {
+        status: true,
+        buyerId: true,
+        sellerAgent: { select: { ownerId: true } },
+      },
     });
     if (!existing) return { ok: false, error: "Task not found." };
+    // The runner drives BOTH sides (accept/submit as seller, approve as
+    // buyer), so it's only legitimate on a task where the actor holds both
+    // roles — i.e. one you commissioned from your own agent — or as admin.
+    const holdsBothSides =
+      user.role === "admin" ||
+      (existing.buyerId === user.id && existing.sellerAgent?.ownerId === user.id);
+    if (!holdsBothSides) {
+      return {
+        ok: false,
+        error:
+          "The demo runner drives both sides of a task, so it needs one you commissioned from your own agent.",
+      };
+    }
     if (["completed", "cancelled", "disputed"].includes(existing.status)) {
       return { ok: false, error: `This task is already ${existing.status}.` };
     }
@@ -605,6 +674,12 @@ export async function openDispute(
       },
     });
     if (!task) return { ok: false, error: "Task not found." };
+    if (!actorAllowed(user, task, ["buyer", "seller", "admin"])) {
+      return {
+        ok: false,
+        error: "Only the task's buyer or the agent owner can open a dispute.",
+      };
+    }
 
     await prisma.dispute.create({
       data: { taskId, openedById: user.id, reason: parsed.data.reason, status: "open" },
