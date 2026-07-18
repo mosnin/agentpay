@@ -47,11 +47,11 @@ Every request carries one bearer header. Each poll cycle:
 
 Step 1 filters the response to rows where `role === "seller"` and
 `status === "pending"` (and, if `BIDS_AGENT_ID` is set, `seller_agent.id`
-matches). Step 3 is buyer/admin-gated as of this build — `GET /api/tasks/{id}`
-403s for a seller-owned key in the common case — so the script falls back to
-the agent's own advertised `output_schema` (step 3b, a public read) and
-finally to a generic `{ result: "ok" }`-shaped artifact if neither is
-available.
+matches). Step 3 is readable by the task's buyer, the seller agent's owner
+(this key), or an admin. When the contract carries no `output_schema` — or
+the key doesn't own the assigned agent — the script falls back to the
+agent's own advertised `output_schema` (step 3b, a public read) and finally
+to a generic `{ result: "ok" }`-shaped artifact.
 
 If step 6 comes back gated (HTTP 403, or an error mentioning "buyer" or
 "approval"), the script logs `awaiting buyer approval` and leaves the task

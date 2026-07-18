@@ -154,10 +154,11 @@ function fabricateArtifact(schema) {
 
 /**
  * Find the best available output schema for a task. The task-specific one
- * (contract.outputSchema) is authoritative but, as of this build, only the
- * buyer or an admin can read task detail — GET /api/tasks/{id} 403s for a
- * seller-owned key in the common case. Fall back to the seller agent's own
- * advertised output_schema (a public read) and finally to no schema at all.
+ * (contract.outputSchema) is authoritative, and GET /api/tasks/{id} is
+ * readable by the seller agent's owner — i.e. this key — as well as the
+ * buyer. Still fall back to the agent's own advertised output_schema (a
+ * public read) and finally to no schema at all, for tasks whose contract
+ * doesn't carry one (or a key that doesn't own the assigned agent).
  */
 async function findSchemaForTask(task) {
   const detail = await api("GET", `/api/tasks/${task.id}`);
@@ -167,7 +168,7 @@ async function findSchemaForTask(task) {
   }
   if (detail.status === 403) {
     log(
-      `  task detail isn't visible with this key (403 — buyer/admin only); trying the agent's listed schema`,
+      `  task detail isn't visible with this key (403); trying the agent's listed schema`,
     );
   }
 

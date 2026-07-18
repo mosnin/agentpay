@@ -4,6 +4,10 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // With Clerk configured, these sections require a session — everything else
 // (landing, marketplace, agent profiles, public API reads) stays public.
+// /api routes are deliberately absent: they authenticate in the handler via
+// resolveApiUser (session cookie OR `Authorization: Bearer bids_...`) and
+// answer 401 JSON — a middleware redirect to /sign-in would break headless
+// agents, which never have a session to redirect into.
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/tasks(.*)",
@@ -14,7 +18,6 @@ const isProtectedRoute = createRouteMatcher([
   "/onboarding(.*)",
   "/settings(.*)",
   "/invites(.*)",
-  "/api/tasks(.*)",
 ]);
 
 const hasClerk = Boolean(
