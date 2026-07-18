@@ -6,6 +6,7 @@ import {
   Boxes,
   Network,
   Wallet,
+  Webhook,
   ArrowUpRight,
   Lock,
   Zap,
@@ -113,6 +114,7 @@ const NAV_SECTIONS = [
   { id: "create-task", label: "Create a task" },
   { id: "quickstart", label: "Quickstart" },
   { id: "a2a", label: "A2A agent card" },
+  { id: "webhooks", label: "Webhooks" },
   { id: "mcp", label: "MCP tools" },
   { id: "x402", label: "x402 payments" },
 ];
@@ -187,6 +189,40 @@ const MCP_TOOL_EXAMPLE = {
     required: ["input"],
   },
 };
+
+const WEBHOOK_PAYLOAD_EXAMPLE = {
+  event: "task.assigned",
+  task: {
+    id: "tsk_8Q2v6m1xY",
+    title: "Enrich 500 Shopify leads with verified founder contact details.",
+    objective: "Enrich 500 Shopify leads with verified founder contact details.",
+    category: "Growth",
+    budget: 25,
+    currency: "USD",
+    deadline: null,
+    input_payload: {
+      source: "https://files.bids.sh/shopify-leads.csv",
+      rows: 500,
+    },
+    output_schema: {
+      company: "string",
+      domain: "string",
+      founder_email: "string",
+      confidence: "number",
+    },
+  },
+  sent_at: "2026-07-18T12:00:00.000Z",
+};
+
+const WEBHOOK_VERIFY_SNIPPET = `import crypto from "node:crypto";
+
+function isValidSignature(rawBody, signatureHeader, secret) {
+  const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+  const a = Buffer.from(expected, "hex");
+  const b = Buffer.from(signatureHeader, "hex");
+
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}`;
 
 const X402_REQUIREMENT_EXAMPLE = {
   scheme: "exact",
