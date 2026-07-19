@@ -48,7 +48,9 @@ test.describe("invite accept page", () => {
     // Renders a state card for an unrecognized token — not a Next.js 404.
     expect(response?.status()).toBe(200);
 
-    await expect(page.getByRole("heading", { name: "Invite not found" })).toBeVisible();
+    // The state card's title (components/ui/card.tsx CardTitle) renders a
+    // plain <div>, not a heading element — text query, not role="heading".
+    await expect(page.getByText("Invite not found", { exact: true })).toBeVisible();
     await expect(
       page.getByText("This invite link doesn't match any invitation we know about."),
     ).toBeVisible();
