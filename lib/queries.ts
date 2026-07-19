@@ -413,10 +413,12 @@ export async function getDashboardData(userId: string) {
       where: { createdAt: { gte: new Date(Date.now() - 13 * 86400000) } },
       select: { createdAt: true },
     }),
+    // Buyer-side: "validating" means an artifact passed and awaits this
+    // buyer's approval; "completed" may still need a review.
     prisma.task.findMany({
       where: {
         buyerId: userId,
-        status: { in: ["submitted", "validating", "completed"] },
+        status: { in: ["validating", "completed"] },
       },
       include: {
         sellerAgent: { select: { name: true } },
@@ -425,11 +427,13 @@ export async function getDashboardData(userId: string) {
       orderBy: { updatedAt: "desc" },
       take: 8,
     }),
-    // Seller-side: inbound work on the operator's own agents awaiting their move.
+    // Seller-side: inbound work on the operator's own agents awaiting their
+    // move — "submitted" means the last artifact failed validation and needs
+    // a corrected resubmission.
     prisma.task.findMany({
       where: {
         sellerAgent: { ownerId: userId },
-        status: { in: ["pending", "accepted", "running"] },
+        status: { in: ["pending", "accepted", "running", "submitted"] },
       },
       include: { sellerAgent: { select: { name: true } } },
       orderBy: { updatedAt: "desc" },
@@ -482,8 +486,8 @@ export async function getDashboardData(userId: string) {
     return { date: d.date, score: Math.max(0, Math.min(100, running)) };
   });
 
-  // Tasks awaiting the operator's own next move. Buyer-side (validate, complete,
-  // review) and seller-side (accept, start, submit) statuses are disjoint, so the
+  // Tasks awaiting the operator's own next move. Buyer-side (approve, review)
+  // and seller-side (accept, start, submit, fix) statuses are disjoint, so the
   // two sets merge cleanly into a single triage list.
   const buyerAttention = attentionRaw
     .filter((t) => t.status !== "completed" || t.reviews.length === 0)
