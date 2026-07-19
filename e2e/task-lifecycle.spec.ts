@@ -79,9 +79,9 @@ test.describe("task lifecycle", () => {
     await expect(page.getByText("Payment")).toBeVisible();
     await expect(statusBadge("Released")).toBeVisible();
 
-    // Terminal state: no further lifecycle actions offered.
-    await expect(
-      page.getByText("This task is completed. No further actions are available."),
-    ).toBeVisible();
+    // A completed task swaps the lifecycle actions for a review prompt
+    // (task-actions.tsx's showReview branch) rather than a terminal
+    // "no further actions" message — that message is cancelled-only.
+    await expect(page.getByRole("button", { name: "Leave a review" })).toBeVisible();
   });
 });
