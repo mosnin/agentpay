@@ -28,6 +28,7 @@ import {
   cancelTask,
   simulateTask,
 } from "@/lib/actions/tasks";
+import { trackFirstTaskCompleted } from "@/components/analytics/track";
 import { SubmitArtifactDialog } from "./submit-artifact-dialog";
 import { ReviewForm } from "./review-form";
 import { DisputeDialog } from "./dispute-dialog";
@@ -135,6 +136,9 @@ export function TaskActions({ task }: TaskActionsProps) {
       const res = await action();
       if (res.ok) {
         settleIsland({ label: successMessage, tone: "success" });
+        // Funnel: a buyer approval is the genuine "first task completed" moment
+        // (the demo runner simulates a completion, so it deliberately doesn't count).
+        if (key === "approve") trackFirstTaskCompleted({ taskId: id });
       } else {
         setActionError(res.error ?? "Action failed. Please try again.");
         settleIsland({ label: res.error ?? "Action failed", tone: "error" }, 2600);

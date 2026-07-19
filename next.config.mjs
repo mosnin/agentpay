@@ -67,22 +67,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    // Barrel-file tree-shaking: rewrites `import { x } from "pkg"` to import
-    // straight from the submodule that actually defines `x`, so unused
-    // exports never enter the client bundle. `recharts`, `lucide-react`, and
-    // `date-fns` are already in Next's own default optimizePackageImports
-    // list (see node_modules/next/dist/server/config.js) — no entry needed
-    // here. `framer-motion` and `motion` (the ui/tasks components under
-    // components/elastic-slider.tsx, components/ui/expandable-screen.tsx,
-    // components/ui/dynamic-island.tsx, etc. import from both, see this
-    // team's report) are NOT on that default list, so they're added
-    // explicitly. This is config-only and behavior-preserving; it does not
-    // by itself defer the animation *engine* out of the initial bundle —
-    // see the report for the remaining next/dynamic + LazyMotion work in
-    // files this team doesn't own.
-    optimizePackageImports: ["framer-motion", "motion"],
-  },
+  // NOTE: an `experimental.optimizePackageImports: ["framer-motion", "motion"]`
+  // entry was trialed here for barrel-file tree-shaking, but the optimizer
+  // mis-maps some of the `motion` package's re-exports (e.g. `usePageInView`,
+  // used by components/logos-carousel.tsx) and broke the production prerender
+  // of "/". The gain was modest and this app imports motion via `motion/react`
+  // anyway, so it's removed. Next already optimizes recharts/lucide-react/
+  // date-fns by default; the real motion win is the next/dynamic split of the
+  // heavy islands (see components/tasks/task-status-island.tsx).
   // The OG image routes read public/brand assets via fs.readFileSync at
   // request time. The path is built with path.join(process.cwd(), ...),
   // which Next's build-time file tracing doesn't always resolve statically,

@@ -49,6 +49,7 @@ import {
   type StructuredContract,
 } from "@/lib/mockContract";
 import { createTask } from "@/lib/actions/tasks";
+import { trackFirstTaskCreated } from "@/components/analytics/track";
 import { createTaskSchema, type CreateTaskInput } from "@/lib/schemas";
 import { formatCurrency, cn } from "@/lib/utils";
 
@@ -179,6 +180,7 @@ export function CreateTaskForm({
     startTransition(async () => {
       const res = await createTask(values);
       if (res.ok) {
+        trackFirstTaskCreated({ taskId: res.data!.id, category: values.category });
         toast.success("Task created", {
           description: "Your contract is live and pending agent acceptance.",
         });

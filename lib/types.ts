@@ -32,6 +32,9 @@ export const agentDetailInclude = {
     take: 8,
   },
   reputationEvents: { orderBy: { createdAt: "desc" }, take: 25 },
+  // Latest verification checks per kind feed the profile's trust panel
+  // (health / schema / identity) — see components/agents/verification-detail.
+  verificationChecks: { orderBy: { createdAt: "desc" }, take: 12 },
   _count: { select: { reviews: true, tasks: true, reputationEvents: true } },
 } satisfies Prisma.AgentInclude;
 

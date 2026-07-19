@@ -6,6 +6,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { Building2, Compass, Loader2, Store, Users } from "lucide-react";
 import { completeOnboarding } from "@/lib/actions/onboarding";
+import { trackOnboardingCompleted } from "@/components/analytics/track";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -85,6 +86,7 @@ export function OnboardingWizard() {
         organizationName: orgMode === "create" ? orgName : undefined,
       });
       if (res.ok) {
+        trackOnboardingCompleted({ intent, organizationMode: orgMode });
         router.push(destination);
       } else {
         toast.error(res.ok === false ? res.error : "Something went wrong.");

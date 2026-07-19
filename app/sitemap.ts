@@ -32,6 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     { url: `${BASE}/developers`, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE}/founding`, changeFrequency: "weekly", priority: 0.6 },
   ];
 
   // One SEO landing page per category (app/marketplace/[category]).
