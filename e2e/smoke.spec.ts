@@ -24,10 +24,21 @@ test.describe("smoke", () => {
   });
 
   test("footer Terms and Privacy links navigate to 200 pages", async ({ page }) => {
-    await page.goto("/");
     const footer = page.getByRole("contentinfo");
 
-    const termsLink = footer.getByRole("link", { name: "Terms", exact: true });
+    // The landing footer is a scroll-reveal: page content (z-10, opaque) sits
+    // over a footer pinned behind it (sticky, z-0), uncovered only once you
+    // reach the very bottom. Scroll to the end first — exactly what a visitor
+    // does to reach these links — so they're actually on top and clickable.
+    const revealFooter = async (linkName: string) => {
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      const link = footer.getByRole("link", { name: linkName, exact: true });
+      await expect(link).toBeVisible();
+      return link;
+    };
+
+    await page.goto("/");
+    const termsLink = await revealFooter("Terms");
     await expect(termsLink).toHaveAttribute("href", "/terms");
     await termsLink.click();
     await expect(page).toHaveURL(/\/terms$/);
@@ -37,7 +48,7 @@ test.describe("smoke", () => {
     expect((await page.request.get("/terms")).status()).toBe(200);
 
     await page.goto("/");
-    const privacyLink = footer.getByRole("link", { name: "Privacy", exact: true });
+    const privacyLink = await revealFooter("Privacy");
     await expect(privacyLink).toHaveAttribute("href", "/privacy");
     await privacyLink.click();
     await expect(page).toHaveURL(/\/privacy$/);
