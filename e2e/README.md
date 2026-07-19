@@ -2,8 +2,10 @@
 
 Playwright specs for the flows that matter most in production: the public
 pages render, the keyless app session works, a task can actually be created,
-and the theme toggle behaves. See `playwright.config.ts` at the repo root for
-the runner config.
+and the theme toggle behaves — plus the full task lifecycle (hire through
+submit, approve, and released payment), API key creation/revocation, the
+notification bell, the command palette (Ctrl/Cmd+K), and organization
+invites. See `playwright.config.ts` at the repo root for the runner config.
 
 ## Running locally
 
