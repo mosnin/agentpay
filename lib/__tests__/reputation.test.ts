@@ -352,7 +352,9 @@ describe("recalcAgentDerivedStats", () => {
       }),
     );
     const data = prismaMock.agent.update.mock.calls[0][0].data;
-    expect(data.schemaComplianceScore).toBeCloseTo((2 / 3) * 100, 5);
+    // Source rounds to 1 decimal place (toFixed(1)) before storing, so the
+    // expected value is the rounded 66.7, not the raw repeating 66.66...
+    expect(data.schemaComplianceScore).toBeCloseTo(66.7, 5);
   });
 
   it("reports schemaComplianceScore 0 (not NaN) with no validation events yet", async () => {
