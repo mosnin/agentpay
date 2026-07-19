@@ -259,7 +259,7 @@ function logFallbackOnce(err: unknown): void {
   warnedFallback = true;
   console.error(
     "[search] Postgres full-text/trigram search unavailable — falling back to ILIKE matching " +
-      "for this and future queries this process.",
+      "for this and future queries in this process.",
     err,
   );
 }

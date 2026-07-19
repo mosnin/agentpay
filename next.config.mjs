@@ -67,6 +67,22 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    // Barrel-file tree-shaking: rewrites `import { x } from "pkg"` to import
+    // straight from the submodule that actually defines `x`, so unused
+    // exports never enter the client bundle. `recharts`, `lucide-react`, and
+    // `date-fns` are already in Next's own default optimizePackageImports
+    // list (see node_modules/next/dist/server/config.js) — no entry needed
+    // here. `framer-motion` and `motion` (the ui/tasks components under
+    // components/elastic-slider.tsx, components/ui/expandable-screen.tsx,
+    // components/ui/dynamic-island.tsx, etc. import from both, see this
+    // team's report) are NOT on that default list, so they're added
+    // explicitly. This is config-only and behavior-preserving; it does not
+    // by itself defer the animation *engine* out of the initial bundle —
+    // see the report for the remaining next/dynamic + LazyMotion work in
+    // files this team doesn't own.
+    optimizePackageImports: ["framer-motion", "motion"],
+  },
   // The OG image routes read public/brand assets via fs.readFileSync at
   // request time. The path is built with path.join(process.cwd(), ...),
   // which Next's build-time file tracing doesn't always resolve statically,
