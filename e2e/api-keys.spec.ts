@@ -40,11 +40,13 @@ test.describe("API keys", () => {
     await expect(revealDialog).not.toBeVisible();
 
     // The new key is listed by name, but the full secret never appears
-    // again anywhere on the page — only a redacted prefix does.
-    await expect(page.getByText(keyName)).toBeVisible();
+    // again anywhere on the page — only a redacted prefix does. (The manager
+    // renders the name in both a desktop table row and a mobile card, so scope
+    // to the first match rather than asserting a single element.)
+    await expect(page.getByText(keyName).first()).toBeVisible();
     await expect(page.getByText(secret)).toHaveCount(0);
 
-    // Revoke it.
+    // Revoke it (act on the desktop table row).
     const row = page.getByRole("row", { name: new RegExp(keyName) });
     await row.getByRole("button", { name: "Revoke" }).click();
 

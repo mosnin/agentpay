@@ -45,16 +45,31 @@ test.describe("task lifecycle", () => {
     await expect(page).not.toHaveURL(/\/tasks\/new/, { timeout: 15_000 });
     await expect(page).toHaveURL(/\/tasks\/[\w-]+$/);
 
-    const statusBadge = (label: string) => page.locator("span").filter({ hasText: new RegExp(`^${label}$`) });
+    // A status word can appear in more than one badge/line once the task has
+    // history (e.g. "Released" shows on the payment badge, the timeline, and
+    // the receipt), so scope to the first match rather than tripping strict mode.
+    const statusBadge = (label: string) =>
+      page.locator("span").filter({ hasText: new RegExp(`^${label}$`) }).first();
     await expect(statusBadge("Pending")).toBeVisible();
 
+    // Advance one lifecycle step. Playwright's actionability check doesn't wait
+    // for React to attach the button's onClick, so a click right after
+    // navigation can be a silent no-op — retry the click until the resulting
+    // status badge actually appears (and skip if it already did).
+    const advance = async (button: string, nextLabel: string) => {
+      await expect(async () => {
+        if (await statusBadge(nextLabel).isVisible().catch(() => false)) return;
+        const btn = page.getByRole("button", { name: button, exact: true });
+        if (await btn.isVisible().catch(() => false)) await btn.click();
+        await expect(statusBadge(nextLabel)).toBeVisible({ timeout: 2000 });
+      }).toPass({ timeout: 20_000 });
+    };
+
     // ---- Accept ----
-    await page.getByRole("button", { name: "Accept task" }).click();
-    await expect(statusBadge("Accepted")).toBeVisible();
+    await advance("Accept task", "Accepted");
 
     // ---- Start ----
-    await page.getByRole("button", { name: "Start task" }).click();
-    await expect(statusBadge("Running")).toBeVisible();
+    await advance("Start task", "Running");
 
     // ---- Submit ----
     await page.getByRole("button", { name: "Submit artifact", exact: true }).click();
@@ -75,8 +90,10 @@ test.describe("task lifecycle", () => {
     await page.getByRole("button", { name: "Approve & release payment" }).click();
     await expect(statusBadge("Completed")).toBeVisible();
 
-    // The payment sidebar card reflects the same release.
-    await expect(page.getByText("Payment")).toBeVisible();
+    // The payment sidebar card reflects the same release. ("Payment" appears
+    // in several places — footer, timeline, status island — so scope to the
+    // card's own exact heading; the Released badge is the real assertion.)
+    await expect(page.getByText("Payment", { exact: true }).first()).toBeVisible();
     await expect(statusBadge("Released")).toBeVisible();
 
     // A completed task swaps the lifecycle actions for a review prompt

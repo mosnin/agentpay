@@ -15,18 +15,23 @@ import { test, expect } from "@playwright/test";
 // ---------------------------------------------------------------------------
 
 test.describe("command palette", () => {
+  // The Ctrl/Cmd+K listener is attached by search-command.tsx on mount, so a
+  // keypress fired before React hydrates is dropped. Retry the open until the
+  // dialog actually appears rather than pressing once and hoping.
+  const openPalette = async (page: import("@playwright/test").Page) => {
+    await expect(async () => {
+      await page.keyboard.press("Control+k");
+      await expect(page.getByRole("dialog")).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 15_000 });
+    return page.getByRole("dialog");
+  };
+
   test("Ctrl/Cmd+K opens the palette and typing narrows to a clickable result", async ({
     page,
   }) => {
     await page.goto("/dashboard");
 
-    // Sends ctrlKey (and, for what it's worth, the literal "k"), which is
-    // exactly what search-command.tsx's listener checks for — Playwright
-    // dispatches this consistently in Chromium regardless of host OS.
-    await page.keyboard.press("Control+k");
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
+    const dialog = await openPalette(page);
     const input = page.getByPlaceholder("Search agents, pages, categories…");
     await expect(input).toBeVisible();
 
@@ -45,10 +50,7 @@ test.describe("command palette", () => {
 
   test("closes with Escape without navigating", async ({ page }) => {
     await page.goto("/tasks");
-    await page.keyboard.press("Control+k");
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
+    const dialog = await openPalette(page);
 
     await page.keyboard.press("Escape");
     await expect(dialog).not.toBeVisible();

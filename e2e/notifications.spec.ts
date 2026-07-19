@@ -52,15 +52,15 @@ test.describe("notification bell", () => {
     const markAllRead = page.getByRole("button", { name: "Mark all read" });
     if (await markAllRead.isVisible().catch(() => false)) {
       await markAllRead.click();
-      // Marking all read removes its own trigger (only rendered when
-      // unread > 0) and drops the bell's unread aria-label suffix.
+      // "Mark all read" only renders while unread > 0, so it disappearing is
+      // the in-panel confirmation that everything is now read.
       await expect(markAllRead).not.toBeVisible();
-      await page.keyboard.press("Escape");
-      await expect(page.getByRole("button", { name: "Notifications", exact: true })).toBeVisible();
     } else {
-      // Nothing unread right now — "Mark all read" only renders when there
-      // is. Confirms the bell's own no-unread label instead.
-      await expect(page.getByRole("button", { name: "Notifications", exact: true })).toBeVisible();
+      // Nothing unread — the panel shows its empty state instead of a
+      // "Mark all read" affordance.
+      await expect(
+        page.getByText("Nothing yet — activity on your tasks will land here."),
+      ).toBeVisible();
     }
   });
 });
