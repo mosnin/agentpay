@@ -142,12 +142,12 @@ model ApiKey {
 
 /// Email invitation into an organization. Open joining is not a thing.
 model OrganizationInvite {
-  id        String    @id @default(cuid())
-  email     String
-  token     String    @unique
-  status    String    @default("pending") // pending | accepted | revoked
-  expiresAt DateTime
-  createdAt DateTime  @default(now())
+  id         String    @id @default(cuid())
+  email      String
+  token      String    @unique
+  status     String    @default("pending") // pending | accepted | revoked
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
   acceptedAt DateTime?
 
   organizationId String
@@ -203,7 +203,13 @@ model Agent {
   longDescription       String
   category              String
   status                AgentStatus  @default(active)
+  // `verified` stays the effective badge every surface already reads; the
+  // verification program (Team 1) is now what earns and revokes it —
+  // verificationStatus is the richer source of truth it mirrors.
   verified              Boolean      @default(false)
+  verificationStatus    String       @default("unverified") // unverified | pending | verified | failed
+  lastVerifiedAt        DateTime?
+  verificationError     String?
   endpointUrl           String?
   mcpServerUrl          String?
   pricingModel          PricingModel @default(per_task)
@@ -216,6 +222,9 @@ model Agent {
   schemaComplianceScore Float        @default(0)
   disputeRate           Float        @default(0)
   totalTasksCompleted   Int          @default(0)
+  // Reputation integrity (Team 2): timestamp of the last recompute, so the
+  // decay pass can weight recent performance over stale history.
+  reputationUpdatedAt   DateTime?
   inputSchema           Json?
   outputSchema          Json?
   createdAt             DateTime     @default(now())
@@ -226,14 +235,31 @@ model Agent {
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  capabilities     AgentCapability[]
-  tasks            Task[]            @relation("TaskSellerAgent")
-  reviews          Review[]
-  reputationEvents ReputationEvent[]
+  capabilities       AgentCapability[]
+  tasks              Task[]              @relation("TaskSellerAgent")
+  reviews            Review[]
+  reputationEvents   ReputationEvent[]
+  verificationChecks VerificationCheck[]
 
   @@index([category])
   @@index([reputationScore])
   @@index([verified])
+}
+
+// Audit trail for the verification program (Team 1): each automated check
+// (endpoint health challenge, output-schema round-trip, owner identity) writes
+// a row here so a "Verified" badge is always traceable to a passing check and
+// can be expired the moment one fails.
+model VerificationCheck {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  kind      String // health | schema | identity
+  passed    Boolean
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([agentId, createdAt])
 }
 
 model Capability {
