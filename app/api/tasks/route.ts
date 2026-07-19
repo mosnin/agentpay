@@ -2,9 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { apiCreateTaskSchema } from "@/lib/schemas";
 import { createTask } from "@/lib/actions/tasks";
 import { getTaskById, getUserTasks } from "@/lib/queries";
-import { getCurrentUser } from "@/lib/auth";
 import { statusesForFilter } from "@/lib/constants";
-import { getRateLimitKey } from "@/lib/api-auth";
+import { getRateLimitKey, resolveApiUser } from "@/lib/api-auth";
 import { strictRateLimit } from "@/lib/ratelimit";
 
 /** Derive a concise title from the first ~8 words of the objective. */
@@ -15,10 +14,10 @@ function titleFromObjective(objective: string): string {
 
 // GET /api/tasks — list the operator's tasks (as buyer, or owner of the selling
 // agent). Optional ?status= filter: active | completed | disputed | cancelled,
-// or a raw lifecycle status. Auth is mocked for the MVP (the demo operator).
+// or a raw lifecycle status. Auth required: session or `Authorization: Bearer <api key>`.
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const user = await resolveApiUser(request);
     if (!user) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
@@ -49,9 +48,14 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/tasks — create a task programmatically (A2A-style contract body).
-// Auth is mocked for the MVP: the task is created on behalf of the demo operator.
+// Auth required: session or `Authorization: Bearer <api key>`.
 export async function POST(request: Request) {
   try {
+    const user = await resolveApiUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
     const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {
       return NextResponse.json({ error: "Too many requests." }, { status: 429 });

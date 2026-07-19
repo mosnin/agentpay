@@ -28,6 +28,7 @@ import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
 import { TaskTimeline } from "@/components/tasks/task-timeline";
 import { ArtifactCard } from "@/components/tasks/artifact-card";
 import { TaskActions } from "@/components/tasks/task-actions";
+import { WebhookDeliveries } from "@/components/tasks/webhook-deliveries";
 import {
   Card,
   CardContent,
@@ -39,6 +40,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { getTaskById } from "@/lib/queries";
 import { getCurrentUser, isClerkEnabled } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { PAYMENT_MODES } from "@/lib/constants";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 
@@ -87,9 +89,13 @@ export default async function TaskDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [task, currentUser] = await Promise.all([
+  const [task, currentUser, webhookDeliveries] = await Promise.all([
     getTaskById(id),
     getCurrentUser(),
+    prisma.webhookDelivery.findMany({
+      where: { taskId: id },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   if (!task) notFound();
@@ -109,6 +115,22 @@ export default async function TaskDetailPage({
   const payment = task.payment;
   const hasReviewed = currentUser
     ? task.reviews.some((r) => r.userId === currentUser.id)
+    : false;
+  // Mirror the lifecycle actions' own authorization checks — each button is
+  // only rendered for the viewer the underlying action will actually allow.
+  const isAdmin = currentUser?.role === "admin";
+  const canApprove = currentUser
+    ? isAdmin || task.buyerId === currentUser.id
+    : false;
+  const canWork = currentUser
+    ? isAdmin || task.sellerAgent?.ownerId === currentUser.id
+    : false;
+  const canCancel = canApprove;
+  // The demo runner drives both sides, so it needs both sets of rights.
+  const canSimulate = currentUser
+    ? isAdmin ||
+      (task.buyerId === currentUser.id &&
+        task.sellerAgent?.ownerId === currentUser.id)
     : false;
 
   const paymentModeLabel =
@@ -270,6 +292,10 @@ export default async function TaskDetailPage({
             )}
           </SectionCard>
 
+          {webhookDeliveries.length > 0 && (
+            <WebhookDeliveries deliveries={webhookDeliveries} />
+          )}
+
           {task.disputes.length > 0 && (
             <SectionCard
               title="Disputes"
@@ -347,6 +373,10 @@ export default async function TaskDetailPage({
                   id: task.id,
                   status: task.status,
                   hasReviewed,
+                  canApprove,
+                  canWork,
+                  canCancel,
+                  canSimulate,
                 }}
               />
             </CardContent>

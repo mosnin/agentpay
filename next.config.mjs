@@ -67,6 +67,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // NOTE: an `experimental.optimizePackageImports: ["framer-motion", "motion"]`
+  // entry was trialed here for barrel-file tree-shaking, but the optimizer
+  // mis-maps some of the `motion` package's re-exports (e.g. `usePageInView`,
+  // used by components/logos-carousel.tsx) and broke the production prerender
+  // of "/". The gain was modest and this app imports motion via `motion/react`
+  // anyway, so it's removed. Next already optimizes recharts/lucide-react/
+  // date-fns by default; the real motion win is the next/dynamic split of the
+  // heavy islands (see components/tasks/task-status-island.tsx).
   // The OG image routes read public/brand assets via fs.readFileSync at
   // request time. The path is built with path.join(process.cwd(), ...),
   // which Next's build-time file tracing doesn't always resolve statically,

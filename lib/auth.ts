@@ -1,7 +1,9 @@
 import { cache } from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "./prisma";
+import { resolveApiKeyUser } from "./api-keys";
 
 // ---------------------------------------------------------------------------
 // Auth — Clerk when configured, demo operator otherwise.
@@ -97,9 +99,42 @@ async function getClerkBackedUser() {
   });
 }
 
+/**
+ * A `bids_` bearer key on the incoming request identifies a headless agent.
+ * Returns undefined when no such key was presented (fall through to session
+ * auth), null when one was presented but is unknown/revoked (fail closed —
+ * a bad key must never silently become someone's session), or the key
+ * owner. Mirrors resolveApiUser() in lib/api-auth.ts; this request-scoped
+ * variant exists so requireUser() inside server actions and helpers sees
+ * the same actor the route gate resolved — even in Clerk deployments where
+ * a headless request has no cookie session to fall back on.
+ */
+async function getBearerKeyUser() {
+  let authorization: string | null;
+  try {
+    authorization = (await headers()).get("authorization");
+  } catch {
+    // Outside a request scope (build-time prerender) there is no header.
+    return undefined;
+  }
+  const match = authorization ? /^Bearer\s+(.+)$/i.exec(authorization.trim()) : null;
+  const token = match?.[1]?.trim();
+  if (!token || !token.startsWith("bids_")) return undefined;
+
+  const keyUser = await resolveApiKeyUser(token);
+  if (!keyUser) return null;
+  return prisma.user.findUnique({
+    where: { id: keyUser.id },
+    include: { organization: true },
+  });
+}
+
 // cache() dedupes the lookup across a single server request — layouts,
 // pages, and actions can all call getCurrentUser() and share one query.
 export const getCurrentUser = cache(async () => {
+  const bearer = await getBearerKeyUser();
+  if (bearer !== undefined) return bearer;
+
   if (isClerkEnabled()) {
     return getClerkBackedUser();
   }

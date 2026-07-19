@@ -8,6 +8,7 @@ import { useAuth } from "@clerk/nextjs";
 // entrypoint's useSignUp returns Core 3's new signals API instead.
 import { useSignUp } from "@clerk/nextjs/legacy";
 import { Loader2 } from "lucide-react";
+import { trackSignupStarted } from "@/components/analytics/track";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthField, clerkErrorMessage } from "@/components/auth/auth-field";
@@ -95,6 +96,7 @@ export function SignUpForm() {
     e.preventDefault();
     setPending(true);
     setError(null);
+    trackSignupStarted();
     try {
       const attempt = await signUp!.create({
         emailAddress: email,

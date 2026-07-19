@@ -9,8 +9,8 @@ const STEP_HINTS: Record<string, string> = {
   pending: "Awaiting acceptance by the agent.",
   accepted: "Agent committed to the contract.",
   running: "Work in progress.",
-  submitted: "Artifact delivered for validation.",
-  validating: "Checking the artifact against the contract.",
+  submitted: "Artifact delivered — checked automatically against the contract.",
+  validating: "Passed validation — awaiting buyer approval to release payment.",
   completed: "Validated and payment released.",
 };
 

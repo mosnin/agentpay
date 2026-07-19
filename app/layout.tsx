@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkEnabledProvider } from "@/components/layout/clerk-enabled-context";
 import { isClerkEnabled } from "@/lib/auth";
+import { SentryInit } from "@/components/monitoring/sentry-init";
+import { Analytics } from "@/components/analytics/analytics";
 
 export const metadata: Metadata = {
   title: {
@@ -21,7 +23,11 @@ export const metadata: Metadata = {
       { url: "/brand/favicon-32-black.png", sizes: "32x32", type: "image/png" },
     ],
     shortcut: "/brand/favicon-32-black.png",
-    apple: "/brand/apple-icon.png",
+    // Explicit size/type — Apple's guidance is a full-bleed square PNG
+    // (no transparency, own safe-zone padding), which is also what makes
+    // this same asset safe to reuse as the manifest's maskable icon; see
+    // app/manifest.ts and this team's report for the measured padding.
+    apple: [{ url: "/brand/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     type: "website",
@@ -55,6 +61,8 @@ export default function RootLayout({
   const content = (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
+        <SentryInit />
+        <Analytics />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

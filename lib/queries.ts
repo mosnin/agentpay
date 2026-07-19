@@ -1,5 +1,5 @@
 import "server-only";
-import type { TaskStatus } from "@prisma/client";
+import type { Prisma, TaskStatus } from "@prisma/client";
 import { prisma } from "./prisma";
 import {
   agentCardInclude,
@@ -41,23 +41,62 @@ function sortToOrderBy(sort: MarketplaceSort | undefined) {
   }
 }
 
-function buildAgentWhere(
-  filter: AgentFilter,
-): import("@prisma/client").Prisma.AgentWhereInput {
-  const where: import("@prisma/client").Prisma.AgentWhereInput = {
-    status: "active",
-  };
-  if (filter.q) {
-    where.OR = [
-      { name: { contains: filter.q, mode: "insensitive" } },
-      { shortDescription: { contains: filter.q, mode: "insensitive" } },
-      { longDescription: { contains: filter.q, mode: "insensitive" } },
+// --- Free-text agent search -------------------------------------------------
+// Shared by every agent search entry point (marketplace URL search, the A2A
+// JSON listing API, and the ⌘K palette's quick search) so a multi-word query
+// can surface an agent whose name alone wouldn't match — e.g. "csv cleanup"
+// finding the Data Cleaning Agent via its capability list — as long as each
+// word appears somewhere relevant: description, category, or a capability.
+// Matching is plain case-insensitive substring (no stemming/fuzzy matching —
+// see the ownership notes on trigram/tsvector), so near-miss spellings that
+// aren't literal substrings of the stored text (e.g. "dedupe" vs. a stored
+// "deduplication") won't match; that's an accepted limit of `contains`.
+
+const MAX_SEARCH_TOKENS = 6;
+const MIN_SEARCH_TOKEN_LENGTH = 2;
+
+/**
+ * Split a free-text query into whitespace-delimited tokens. Empty and
+ * single-character tokens are dropped as noise — too short to be a useful
+ * signal, and cheap to abuse into a slow query — and the token list is
+ * capped so a pathological query can't blow up the generated AND-of-ORs.
+ */
+function tokenizeSearchQuery(query: string): string[] {
+  return query
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token.length >= MIN_SEARCH_TOKEN_LENGTH)
+    .slice(0, MAX_SEARCH_TOKENS);
+}
+
+/** A single token must match at least one of these fields (case-insensitive substring). */
+function agentTokenMatch(token: string): Prisma.AgentWhereInput {
+  return {
+    OR: [
+      { name: { contains: token, mode: "insensitive" } },
+      { shortDescription: { contains: token, mode: "insensitive" } },
+      { longDescription: { contains: token, mode: "insensitive" } },
+      { category: { contains: token, mode: "insensitive" } },
       {
         capabilities: {
-          some: { capability: { name: { contains: filter.q, mode: "insensitive" } } },
+          some: { capability: { name: { contains: token, mode: "insensitive" } } },
         },
       },
-    ];
+    ],
+  };
+}
+
+function buildAgentWhere(filter: AgentFilter): Prisma.AgentWhereInput {
+  const where: Prisma.AgentWhereInput = {
+    status: "active",
+  };
+  // Every token must match somewhere (AND across tokens); a given token can
+  // match any of the fields above (OR within a token). A query with no
+  // tokens left after filtering (empty, or too short) applies no search
+  // constraint at all, same as omitting `q`.
+  const tokens = filter.q ? tokenizeSearchQuery(filter.q) : [];
+  if (tokens.length > 0) {
+    where.AND = tokens.map(agentTokenMatch);
   }
   if (filter.category) where.category = filter.category;
   if (filter.pricingModel) where.pricingModel = filter.pricingModel as never;
@@ -92,6 +131,46 @@ export async function getAgentsPaginated(
     prisma.agent.count({ where }),
   ]);
   return { agents, total };
+}
+
+export interface AgentQuickResult {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  verified: boolean;
+  reputationScore: number;
+}
+
+/**
+ * Minimal-field agent search for the ⌘K command palette: the same tokenized
+ * AND-of-ORs matching as the marketplace search (see `buildAgentWhere`), but
+ * trimmed to a lean projection and a small result cap so it stays cheap
+ * enough to call on every debounced keystroke.
+ */
+export async function searchAgentsQuick(
+  query: string,
+  limit = 6,
+): Promise<AgentQuickResult[]> {
+  const tokens = tokenizeSearchQuery(query);
+  if (tokens.length === 0) return [];
+
+  return prisma.agent.findMany({
+    where: {
+      status: "active",
+      AND: tokens.map(agentTokenMatch),
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      category: true,
+      verified: true,
+      reputationScore: true,
+    },
+    orderBy: [{ verified: "desc" }, { reputationScore: "desc" }],
+    take: limit,
+  });
 }
 
 export async function getFeaturedAgents(limit = 6): Promise<AgentCard[]> {
@@ -334,10 +413,12 @@ export async function getDashboardData(userId: string) {
       where: { createdAt: { gte: new Date(Date.now() - 13 * 86400000) } },
       select: { createdAt: true },
     }),
+    // Buyer-side: "validating" means an artifact passed and awaits this
+    // buyer's approval; "completed" may still need a review.
     prisma.task.findMany({
       where: {
         buyerId: userId,
-        status: { in: ["submitted", "validating", "completed"] },
+        status: { in: ["validating", "completed"] },
       },
       include: {
         sellerAgent: { select: { name: true } },
@@ -346,11 +427,13 @@ export async function getDashboardData(userId: string) {
       orderBy: { updatedAt: "desc" },
       take: 8,
     }),
-    // Seller-side: inbound work on the operator's own agents awaiting their move.
+    // Seller-side: inbound work on the operator's own agents awaiting their
+    // move — "submitted" means the last artifact failed validation and needs
+    // a corrected resubmission.
     prisma.task.findMany({
       where: {
         sellerAgent: { ownerId: userId },
-        status: { in: ["pending", "accepted", "running"] },
+        status: { in: ["pending", "accepted", "running", "submitted"] },
       },
       include: { sellerAgent: { select: { name: true } } },
       orderBy: { updatedAt: "desc" },
@@ -403,8 +486,8 @@ export async function getDashboardData(userId: string) {
     return { date: d.date, score: Math.max(0, Math.min(100, running)) };
   });
 
-  // Tasks awaiting the operator's own next move. Buyer-side (validate, complete,
-  // review) and seller-side (accept, start, submit) statuses are disjoint, so the
+  // Tasks awaiting the operator's own next move. Buyer-side (approve, review)
+  // and seller-side (accept, start, submit, fix) statuses are disjoint, so the
   // two sets merge cleanly into a single triage list.
   const buyerAttention = attentionRaw
     .filter((t) => t.status !== "completed" || t.reviews.length === 0)

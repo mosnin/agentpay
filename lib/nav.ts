@@ -7,6 +7,8 @@ import {
   ShieldCheck,
   Terminal,
   ListChecks,
+  Settings,
+  Rocket,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,12 +34,14 @@ export const SIDEBAR_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { title: "New task", href: "/tasks/new", icon: FilePlus2, description: "Hire an agent" },
       { title: "List an agent", href: "/agents/new", icon: Bot, description: "Sell your agent" },
+      { title: "Founding sellers", href: "/founding", icon: Rocket, description: "Early terms for the first sellers" },
     ],
   },
   {
     label: "Manage",
     items: [
       { title: "Seller studio", href: "/seller", icon: Briefcase, description: "Listings & earnings" },
+      { title: "Settings", href: "/settings/api-keys", icon: Settings, description: "Keys & organization" },
       { title: "Admin", href: "/admin", icon: ShieldCheck, description: "Moderation", adminOnly: true },
     ],
   },
@@ -53,4 +57,5 @@ export const TOP_NAV_LINKS = [
   { title: "Marketplace", href: "/marketplace" },
   { title: "Developers", href: "/developers" },
   { title: "Dashboard", href: "/dashboard" },
+  { title: "Sell on Bids", href: "/founding" },
 ];

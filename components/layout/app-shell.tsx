@@ -5,6 +5,7 @@ import { Menu } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { SearchCommand } from "./search-command";
 import { ThemeToggle } from "./theme-toggle";
+import { NotificationBell } from "./notification-bell";
 import { UserMenu } from "./user-menu";
 import { Brand } from "./brand";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -71,6 +72,7 @@ export function AppShell({
                   <SearchCommand iconOnly />
                 </div>
                 <ThemeToggle />
+                <NotificationBell />
                 <UserMenu />
               </div>
             </div>
