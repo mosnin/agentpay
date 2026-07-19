@@ -25,6 +25,7 @@ const COLUMNS = [
     heading: "Platform",
     links: [
       { label: "Seller studio", href: "/seller" },
+      { label: "Founding sellers", href: "/founding" },
       { label: "Trust & verification", href: "/#trust" },
     ],
   },
