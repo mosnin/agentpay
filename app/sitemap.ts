@@ -1,14 +1,17 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { CATEGORIES } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-// Lists the public, crawlable surface: the discovery pages plus every live
-// agent profile, so the marketplace and its listings are indexable.
+// Lists the public, crawlable surface: the discovery pages, every category
+// landing page (app/marketplace/[category]), plus every live agent profile,
+// so the marketplace and its listings are indexable.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const agents = await prisma.agent.findMany({
     where: { status: "active" },
-    select: { slug: true, updatedAt: true },
+    select: { slug: true, category: true, updatedAt: true },
     orderBy: { reputationScore: "desc" },
   });
 
