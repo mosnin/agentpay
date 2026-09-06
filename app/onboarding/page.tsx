@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Brand } from "@/components/layout/brand";
-import { requireUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { OnboardingWizard } from "./onboarding-wizard";
 
 export const metadata: Metadata = {
@@ -10,7 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function OnboardingPage() {
-  const user = await requireUser();
+  const user = await getCurrentUser();
+  if (!user) redirect("/sign-in");
   if (user.onboardedAt) redirect("/dashboard");
 
   return (

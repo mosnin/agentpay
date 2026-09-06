@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { completeTask } from "@/lib/actions/tasks";
 import { resolveApiUser, getRateLimitKey } from "@/lib/api-auth";
@@ -27,7 +28,8 @@ export async function POST(
       return NextResponse.json({ error: res.error }, { status });
     }
 
-    return NextResponse.json({ ok: true, status: "completed", payment: { mode: "simulation", real_funds_moved: false } });
+    const payment = await prisma.payment.findUnique({ where: { taskId: id } });
+    return NextResponse.json({ ok: true, status: "completed", payment: { provider: payment?.provider, status: payment?.status, real_funds_moved: payment?.livemode ?? false, transfer_id: payment?.stripeTransferId } });
   } catch (err) {
     console.error("POST /api/tasks/[id]/complete failed", err);
     return NextResponse.json(

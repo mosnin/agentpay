@@ -1,6 +1,10 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { paymentMode, usdMinorUnits } from "@/lib/payment-mode";
+import { sellerReady, stripeClient } from "@/lib/payments/stripe";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { mockHash, safeJsonParse } from "@/lib/utils";
@@ -9,7 +13,7 @@ import {
   submitArtifactSchema,
   disputeSchema,
 } from "@/lib/schemas";
-import { createPaymentForTask, releasePaymentForTask, refundPaymentForTask } from "@/lib/payments";
+import { createPaymentForTask, releasePaymentForTask, refundPaymentForTask, ensureTaskFunded } from "@/lib/payments";
 import {
   onTaskCompleted,
   onDisputeOpened,
@@ -51,14 +55,31 @@ export async function createTask(
 
   try {
     const user = await requireUser();
+    const creationKey = input.idempotencyKey ? `${user.id}:${input.idempotencyKey}` : null;
+    const creationDigest = createHash("sha256").update(JSON.stringify(input)).digest("hex");
+    if (creationKey) {
+      const prior = await prisma.task.findUnique({ where: { creationKey }, include: { payment: true } });
+      if (prior) {
+        if (prior.creationDigest !== creationDigest) return { ok: false, error: "Idempotency key was used for a different agreement." };
+        if (!prior.payment) await createPaymentForTask({ taskId: prior.id, amount: prior.budget, mode: input.paymentMode });
+        return { ok: true, data: { id: prior.id } };
+      }
+    }
     const agent = await prisma.agent.findUnique({
       where: { id: input.sellerAgentId },
-      select: { id: true },
+      select: { id: true, status: true, owner: { select: { stripeAccountId: true } } },
     });
-    if (!agent) return { ok: false, error: "Selected agent does not exist." };
+    if (!agent || agent.status !== "active") return { ok: false, error: "This agent is not accepting work." };
+    if (paymentMode() === "disabled") return { ok: false, error: "Payments are not configured. Connect a payment provider before commissioning work." };
+    if (paymentMode() === "stripe") {
+      if (input.paymentMode !== "pay_per_task") return { ok: false, error: "Stripe supports pay-per-task agreements here. Select pay per task before continuing." };
+      stripeClient(); usdMinorUnits(input.budget);
+      if (!agent.owner.stripeAccountId || !await sellerReady(agent.owner.stripeAccountId)) return { ok: false, error: "This seller must finish payout onboarding before accepting paid work." };
+    }
 
     const task = await prisma.task.create({
       data: {
+        creationKey, creationDigest,
         title: input.title,
         objective: input.objective,
         category: input.category,
@@ -150,7 +171,11 @@ async function transition(
   if (!allowedFrom.includes(task.status)) {
     return { ok: false, error: `Cannot move a ${task.status} task to ${to}.` };
   }
-  await prisma.task.update({ where: { id: taskId }, data: { status: to as never } });
+  if (["accepted", "running"].includes(to)) {
+    try { await ensureTaskFunded(taskId); } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "Funding is not confirmed." }; }
+  }
+  const changed = await prisma.task.updateMany({ where: { id: taskId, status: task.status }, data: { status: to as never } });
+  if (!changed.count) return { ok: false, error: "The task changed. Refresh before acting again." };
   revalidateTask(taskId);
   return { ok: true };
 }
@@ -198,17 +223,16 @@ export async function startTask(taskId: string): Promise<ActionResult> {
 }
 
 export async function cancelTask(taskId: string): Promise<ActionResult> {
-  const res = await transition(
-    taskId,
-    ["draft", "pending", "accepted", "running"],
-    "cancelled",
-    {
-      actors: ["buyer", "admin"],
-      deny: "Only the buyer can cancel this task.",
-    },
-  );
-  if (res.ok) await refundPaymentForTask(taskId);
-  return res;
+  try {
+    const user = await requireUser();
+    const task = await prisma.task.findUnique({ where: { id: taskId } });
+    if (!task || (user.role !== "admin" && task.buyerId !== user.id)) return { ok: false, error: "Only the buyer can cancel this task." };
+    if (!["draft", "pending", "accepted", "running"].includes(task.status)) return { ok: false, error: "This task cannot be cancelled. Review the delivery or open a dispute." };
+    await refundPaymentForTask(taskId);
+    await prisma.task.update({ where: { id: taskId }, data: { status: "cancelled" } });
+    revalidateTask(taskId);
+    return { ok: true };
+  } catch (err) { return { ok: false, error: err instanceof Error ? err.message : "Cancellation could not finish." }; }
 }
 
 /**
@@ -312,7 +336,7 @@ export async function submitArtifact(
   values: unknown,
 ): Promise<
   ActionResult<{
-    status: "submitted" | "validating";
+    status: string;
     valid: boolean;
     skipped: boolean;
     errors: string[];
@@ -337,6 +361,8 @@ export async function submitArtifact(
       where: { id: taskId },
       select: {
         status: true,
+        workerLeaseToken: true,
+        workerLeaseUntil: true,
         buyerId: true,
         title: true,
         sellerAgentId: true,
@@ -351,35 +377,32 @@ export async function submitArtifact(
         error: "Only the assigned agent's owner can submit artifacts for this task.",
       };
     }
+    const requestHeaders = await headers();
+    const rawKey = requestHeaders.get("idempotency-key");
+    const submissionKey = rawKey && /^[A-Za-z0-9_-]{8,128}$/.test(rawKey) ? `${taskId}:${rawKey}` : null;
+    if (rawKey && !submissionKey) return { ok: false, error: "Invalid Idempotency-Key." };
+    if (submissionKey) {
+      const prior = await prisma.artifact.findUnique({ where: { submissionKey } });
+      if (prior) {
+        if (prior.content !== (input.content || null) || prior.title !== input.title || prior.type !== input.type || prior.url !== (input.url || null)) return { ok: false, error: "Idempotency key was already used for a different artifact." };
+        return { ok: true, data: { status: task.status, valid: prior.validationStatus === "passed", skipped: prior.validationNotes.some(n => n.includes("checks skipped")), errors: prior.validationStatus === "failed" ? prior.validationNotes : [] } };
+      }
+    }
+    const leaseToken = requestHeaders.get("x-bids-lease-token");
+    if (leaseToken && (task.workerLeaseToken !== leaseToken || !task.workerLeaseUntil || task.workerLeaseUntil < new Date())) return { ok: false, error: "Worker lease expired or changed. Claim the task again." };
+    if (task.workerLeaseUntil && task.workerLeaseUntil > new Date() && task.workerLeaseToken !== leaseToken) return { ok: false, error: "A worker currently holds this task. Wait for its lease to expire." };
     if (!["accepted", "running", "submitted"].includes(task.status)) {
       return { ok: false, error: `Cannot submit an artifact for a ${task.status} task.` };
     }
 
-    const artifact = await prisma.artifact.create({
-      data: {
-        taskId,
-        title: input.title,
-        type: input.type,
-        url: input.url || null,
-        content: input.content || null,
-        validationStatus: "pending",
-      },
-    });
-
-    // Real validation runs immediately — no separate "run validation" step.
-    const outcome = await persistArtifactValidation({
-      artifactId: artifact.id,
-      outputSchema: task.contract?.outputSchema ?? null,
-      content: artifact.content,
-    });
-
-    // A valid (or skipped — no schema declared) artifact clears straight to
-    // buyer review ("validating" doubles as "awaiting buyer approval"). An
-    // invalid artifact must NOT advance: the task stays "submitted" so the
-    // agent can correct and resubmit — submitArtifact already accepts
-    // "submitted" as a resubmission state, so this is not a dead end.
+    await ensureTaskFunded(taskId);
+    const outcome = validateArtifactAgainstSchema(task.contract?.outputSchema ?? null, parseArtifactContentForValidation(input.content));
     const nextStatus: "submitted" | "validating" = outcome.valid ? "validating" : "submitted";
-    await prisma.task.update({ where: { id: taskId }, data: { status: nextStatus } });
+    await prisma.$transaction(async tx => {
+      const changed = await tx.task.updateMany({ where: { id: taskId, status: task.status, workerLeaseToken: task.workerLeaseToken }, data: { status: nextStatus, workerLeaseToken: null, workerLeaseUntil: null } });
+      if (!changed.count) throw new Error("Task changed during submission; refresh and retry.");
+      await tx.artifact.create({ data: { taskId, submissionKey, title: input.title, type: input.type, url: input.url || null, content: input.content || null, validationStatus: outcome.valid ? "passed" : "failed", validationScore: null, validationNotes: buildValidationNotes(outcome) } });
+    });
 
     // Feed the real pass/fail into the existing schema-compliance reputation
     // signal (previously driven by the mock's random score). Skipped checks
@@ -493,8 +516,9 @@ async function finishTask(params: {
   sellerAgentId: string | null;
   sellerAgentOwnerId: string | null;
 }): Promise<ActionResult> {
-  await prisma.task.update({ where: { id: params.taskId }, data: { status: "completed" } });
   await releasePaymentForTask(params.taskId);
+  const changed = await prisma.task.updateMany({ where: { id: params.taskId, status: "validating" }, data: { status: "completed" } });
+  if (!changed.count) return { ok: true };
 
   if (params.sellerAgentId) {
     await onTaskCompleted(params.sellerAgentId, params.taskId);
@@ -505,8 +529,8 @@ async function finishTask(params: {
       await notify({
         userId: params.sellerAgentOwnerId,
         type: "task_completed",
-        title: "Delivery approved — simulated settlement",
-        body: `"${params.title}" was approved. A simulated settlement was recorded; no real funds moved.`,
+        title: "Delivery approved — payment settled",
+        body: `"${params.title}" was approved. Check the task receipt for the provider settlement and payout status.`,
         href: `/tasks/${params.taskId}`,
       });
     } catch (err) {
@@ -577,7 +601,7 @@ export async function approveTask(taskId: string): Promise<ActionResult> {
     });
   } catch (err) {
     console.error("approveTask failed", err);
-    return { ok: false, error: "Could not approve task." };
+    return { ok: false, error: "Approval could not settle payment. Refresh the payment status and retry; the same provider operation will be reconciled." };
   }
 }
 
@@ -596,6 +620,7 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
 // user can watch the core loop resolve in seconds. It reuses the real
 // transitions, so it genuinely exercises validation, payment, and reputation.
 export async function simulateTask(taskId: string): Promise<ActionResult> {
+  if (paymentMode() !== "demo") return { ok: false, error: "Demo execution is disabled in the working marketplace." };
   try {
     const user = await requireUser();
     const existing = await prisma.task.findUnique({
@@ -624,7 +649,7 @@ export async function simulateTask(taskId: string): Promise<ActionResult> {
       return { ok: false, error: `This task is already ${existing.status}.` };
     }
 
-    let status = existing.status;
+    let status: string = existing.status;
 
     if (status === "pending") {
       const r = await acceptTask(taskId);

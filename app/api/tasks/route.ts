@@ -89,6 +89,7 @@ export async function POST(request: Request) {
     }
 
     const values = {
+      idempotencyKey: request.headers.get("idempotency-key") ?? undefined,
       title: body.title ?? titleFromObjective(body.objective),
       objective: body.objective,
       category: body.category,
@@ -130,7 +131,8 @@ export async function POST(request: Request) {
         status: task.status,
         payment: {
           mode: task.payment?.mode ?? body.payment_mode,
-          settlement: "simulation",
+          settlement: task.payment?.provider === "stripe" ? "stripe" : "simulation",
+          funding_url: task.payment?.provider === "stripe" ? "/api/payments/checkout" : null,
           real_funds_moved: false,
           status: task.payment?.status ?? "pending",
           amount: task.payment?.amount ?? task.budget,

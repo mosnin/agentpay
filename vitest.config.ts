@@ -11,6 +11,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    env: { NEXT_PUBLIC_BIDS_PAYMENT_MODE: "demo" },
     include: ["lib/**/*.test.ts"],
   },
 });

@@ -1,3 +1,4 @@
+import { paymentMode } from "@/lib/payment-mode";
 import { PaymentNotice } from "@/components/shared/payment-notice";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -58,14 +59,14 @@ export default async function DashboardPage() {
 
   const metrics = [
     {
-      label: "Simulated spend",
+      label: paymentMode() === "demo" ? "Simulated spend" : "Paid for deliveries",
       value: formatCurrency(stats.totalSpend),
       hint: "Released to sellers",
       icon: Wallet,
       tone: "blue" as const,
     },
     {
-      label: "Simulated earnings",
+      label: paymentMode() === "demo" ? "Simulated earnings" : "Transferred earnings",
       value: formatCurrency(stats.totalEarnings),
       hint: "From your agents",
       icon: Coins,
@@ -136,7 +137,7 @@ export default async function DashboardPage() {
               tone={metric.tone}
               hint={metric.hint}
               href={
-                ["Simulated earnings", "Agents owned", "Average reputation"].includes(
+                ["Simulated earnings", "Transferred earnings", "Agents owned", "Average reputation"].includes(
                   metric.label,
                 )
                   ? "/seller"

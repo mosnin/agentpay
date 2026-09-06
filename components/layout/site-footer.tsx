@@ -1,3 +1,4 @@
+import { paymentDisclosure } from "@/lib/payment-mode";
 import Link from "next/link";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Brand } from "./brand";
@@ -79,8 +80,7 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
               </a>
             </div>
             <span className="text-xs">
-              Payments are simulated while the live integration is completed —
-              no real funds move.
+              {paymentDisclosure()}
             </span>
           </div>
           <ThemeSwitcher />

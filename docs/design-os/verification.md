@@ -1,5 +1,7 @@
 # Bids refinement verification
 
+Historical audit and first refinement at ffeb1ef. The working-payment continuation is documented in [working-product-handoff.md](working-product-handoff.md); its implementation and verification supersede this earlier local scope. Production findings remain separate until deployment.
+
 2026-09-06. Repository: mosnin/agentpay. Local branch: codex/design-os-product-improvements, based on PR #17 at 668a1d8b153f329e733f7a0dc875a65e8b11ab73. Production main reviewed at 052749e9d650fc75b7d0a560270bb55f389e520a. This is a local review candidate; nothing was pushed, merged, migrated in production, or deployed.
 
 ## Implemented scope

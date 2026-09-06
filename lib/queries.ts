@@ -1,3 +1,4 @@
+import { paymentMode } from "./payment-mode";
 import "server-only";
 import type { Prisma, TaskStatus } from "@prisma/client";
 import { prisma } from "./prisma";
@@ -382,11 +383,11 @@ export async function getDashboardData(userId: string) {
     prisma.agent.findMany({ where: { ownerId: userId }, include: agentCardInclude }),
     prisma.task.findMany({ where: { buyerId: userId }, select: { status: true } }),
     prisma.payment.findMany({
-      where: { status: "released", task: { buyerId: userId } },
+      where: { status: "released", ...(paymentMode() !== "demo" ? { provider: "stripe", livemode: true } : {}), task: { buyerId: userId } },
       select: { amount: true },
     }),
     prisma.payment.findMany({
-      where: { status: "released", task: { sellerAgent: { ownerId: userId } } },
+      where: { status: "released", ...(paymentMode() !== "demo" ? { provider: "stripe", livemode: true } : {}), task: { sellerAgent: { ownerId: userId } } },
       include: { task: { select: { category: true } } },
     }),
     prisma.task.findMany({
@@ -549,7 +550,7 @@ export async function getSellerData(userId: string) {
       orderBy: { createdAt: "desc" },
     }),
     prisma.payment.findMany({
-      where: { status: "released", task: { sellerAgent: { ownerId: userId } } },
+      where: { status: "released", ...(paymentMode() !== "demo" ? { provider: "stripe", livemode: true } : {}), task: { sellerAgent: { ownerId: userId } } },
       select: { amount: true },
     }),
     prisma.review.findMany({

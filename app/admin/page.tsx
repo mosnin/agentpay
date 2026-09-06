@@ -79,6 +79,7 @@ export default async function AdminPage() {
     status: p.status,
     mode: p.mode,
     provider: p.provider,
+    livemode: p.livemode,
     transactionHash: p.transactionHash,
     updatedAt: p.updatedAt.toISOString(),
   }));

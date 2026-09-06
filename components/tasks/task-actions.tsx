@@ -47,6 +47,8 @@ interface TaskActionsProps {
     canCancel: boolean;
     /** Holds both sides (or admin) — the demo runner needs full rights. */
     canSimulate: boolean;
+    paymentProvider?: string;
+    funded?: boolean;
   };
 }
 
@@ -63,10 +65,11 @@ const ACTIVE_STATUSES = new Set([
 // agent owner is never told to wait on themselves.
 function guideFor(
   status: string,
-  task: { canWork: boolean },
+  task: { canWork: boolean; funded?: boolean },
 ): string | undefined {
   switch (status) {
     case "pending":
+      if (task.funded === false) return "The buyer must fund this agreement before the seller can accept or start work.";
       return task.canWork
         ? "A new commission for your agent. Accept it to get started."
         : "Waiting for the agent to accept. You can cancel while it's still pending.";
@@ -151,9 +154,9 @@ export function TaskActions({ task }: TaskActionsProps) {
 
   // Every button mirrors its server action's authorization — a viewer only
   // sees the moves that are actually theirs to make.
-  const showAccept = optimisticStatus === "pending" && task.canWork;
-  const showStart = optimisticStatus === "accepted" && task.canWork;
-  const showSubmit =
+  const showAccept = task.funded !== false && optimisticStatus === "pending" && task.canWork;
+  const showStart = task.funded !== false && optimisticStatus === "accepted" && task.canWork;
+  const showSubmit = task.funded !== false &&
     ["accepted", "running", "submitted"].includes(optimisticStatus) && task.canWork;
   // "validating" now means "awaiting buyer approval" — a real pass already
   // happened automatically on submission, so only the buyer (or an admin)
@@ -176,8 +179,8 @@ export function TaskActions({ task }: TaskActionsProps) {
   const guideText =
     optimisticStatus === "validating"
       ? task.canApprove
-        ? "Review the latest deliverable against your brief. Approval rechecks its structure and records a simulated settlement."
-        : "Delivery submitted — waiting for buyer review and approval. Settlement is simulated."
+        ? "Review the latest deliverable against your brief. Approval rechecks its structure and settles the agreed payment with the seller."
+        : "Delivery submitted — waiting for buyer review and approval. The buyer decides whether the work meets the agreement."
       : guideFor(optimisticStatus, task);
 
   return (
@@ -249,7 +252,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 run(
                   "approve",
                   () => approveTask(id),
-                  "Delivery approved · no real funds moved",
+                  "Delivery approved · payment settled",
                   "completed",
                 )
               }
@@ -260,7 +263,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 : "Approve & release payment"}
             </Button>
             <p className="px-1 text-xs text-muted-foreground">
-              Closes the task and records a simulated settlement. No real money moves. Review the deliverable before approving.
+              Closes the task and settles the agreed payment with the seller. Review the deliverable before approving.
             </p>
           </div>
         )}
@@ -321,7 +324,7 @@ export function TaskActions({ task }: TaskActionsProps) {
               className="w-full justify-start text-muted-foreground hover:text-destructive"
               disabled={pending}
               onClick={() =>
-                run("cancel", () => cancelTask(id), "Task cancelled · simulated refund recorded", "cancelled")
+                run("cancel", () => cancelTask(id), "Task cancelled · payment status updated", "cancelled")
               }
             >
               {isBusy("cancel") ? <Loader2 className="animate-spin" /> : <Ban />}

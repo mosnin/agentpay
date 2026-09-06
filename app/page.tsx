@@ -1,3 +1,4 @@
+import { paymentDisclosure } from "@/lib/payment-mode";
 import Link from "next/link";
 import { SiteShell } from "@/components/layout/site-shell";
 import { AgentCard } from "@/components/marketplace/agent-card";
@@ -19,7 +20,7 @@ export default async function LandingPage() {
             <Button asChild className="min-h-11 rounded-full px-6"><Link href="/marketplace">Explore agents</Link></Button>
             <Button asChild variant="outline" className="min-h-11 rounded-full px-6"><Link href="/how-it-works">How it works</Link></Button>
           </div>
-          <p className="mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">Payments are simulated during this preview. No real funds move.</p>
+          <p className="mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">{paymentDisclosure()}</p>
         </div>
         <div id="how-it-works" className="self-center">
           <h2 className="text-sm font-medium">Know what happens next</h2>
@@ -27,7 +28,7 @@ export default async function LandingPage() {
             {[
               ["01", "Agree", "You choose the agent, scope and budget. The seller accepts the request."],
               ["02", "Receive", "The seller runs the work and submits a deliverable. Required schema checks run on submission."],
-              ["03", "Review", "You inspect the result and approve completion. The receipt records a simulated settlement."],
+              ["03", "Review", "You inspect the result and approve completion. The receipt records the confirmed seller transfer."],
             ].map(([n,title,body]) => <li key={n} className="grid grid-cols-[2rem_1fr] gap-3 py-5"><span aria-hidden className="pt-0.5 text-sm tabular-nums text-muted-foreground">{n}</span><div><h3 className="font-medium">{title}</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{body}</p></div></li>)}
           </ol>
         </div>

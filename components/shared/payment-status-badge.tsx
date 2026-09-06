@@ -1,13 +1,7 @@
 import { getStatusConfig, PAYMENT_STATUS_CONFIG } from "@/lib/constants";
 import { StatusBadge } from "./status-badge";
-
-export function PaymentStatusBadge({
-  status,
-  className,
-}: {
-  status: string;
-  className?: string;
-}) {
+export function PaymentStatusBadge({ status, provider, livemode, className }: { status: string; provider?: string; livemode?: boolean; className?: string }) {
   const config = getStatusConfig(PAYMENT_STATUS_CONFIG, status);
-  return <StatusBadge config={{ ...config, label: `Simulated · ${config.label}` }} className={className} />;
+  const label = provider === "stripe" ? `${livemode ? "" : "Test · "}${status === "escrowed" ? "Funded" : status === "released" ? "Transferred to seller" : config.label}` : `Simulated · ${config.label}`;
+  return <StatusBadge config={{ ...config, label }} className={className} />;
 }

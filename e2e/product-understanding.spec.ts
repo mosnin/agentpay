@@ -15,7 +15,7 @@ test("people and agents can find responsibilities and truthful payment terms", a
   const capabilities = await response.json();
   expect(capabilities.payment.charges_real_money).toBe(false);
   expect(capabilities.execution.automatic_dispatch).toBe(false);
-  expect(capabilities.retry_policy.idempotency_keys_supported).toBe(false);
+  expect(capabilities.retry_policy.idempotency_keys_supported).toContain("POST /api/tasks");
 });
 
 test("hiring discloses the actual charge before submission", async ({ page }) => {

@@ -48,6 +48,7 @@ export async function resolveApiUser(request: Request): Promise<User | null> {
   const match = header ? /^Bearer\s+(.+)$/i.exec(header.trim()) : null;
   const token = match?.[1]?.trim();
 
+  if (header && (!token || !token.startsWith("bids_"))) return null;
   if (token && token.startsWith("bids_")) {
     return resolveApiKeyUser(token);
   }

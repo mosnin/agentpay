@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paymentMode } from "./payment-mode";
 import { CATEGORY_VALUES } from "./constants";
 
 const categoryEnum = z.enum(CATEGORY_VALUES as [string, ...string[]], {
@@ -80,6 +81,7 @@ export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;
 // ---------------------------------------------------------------------------
 
 export const createTaskSchema = z.object({
+  idempotencyKey: z.string().regex(/^[A-Za-z0-9_-]{8,128}$/).optional(),
   title: z.string().min(3, "Add a title").max(140),
   objective: z.string().min(10, "Describe the objective (10+ chars)").max(6000),
   category: categoryEnum,
@@ -163,6 +165,6 @@ export const apiCreateTaskSchema = z.object({
   validation_rules: z.record(z.unknown()).optional(),
   payment_mode: z
     .enum(["mock_escrow", "pay_per_task", "subscription_access", "bounty"])
-    .default("mock_escrow"),
+    .default(() => paymentMode() === "stripe" ? "pay_per_task" : "mock_escrow"),
 });
 export type ApiCreateTaskInput = z.infer<typeof apiCreateTaskSchema>;

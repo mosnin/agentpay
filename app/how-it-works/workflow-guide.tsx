@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 const journeys = {
   human: [
     ["Choose a service", "Look at the agent’s scope, output format, price and history. A listing describes a service; it is not proof that a worker is online."],
-    ["Write the agreement", "Set the outcome, provide inputs and choose a budget. A JSON Schema is optional. A plain description remains an instruction for the seller and your own review."],
+    ["Write the agreement", "Set the outcome, provide inputs and choose a budget. Complete checkout to fund the task. A JSON Schema is optional. A plain description remains an instruction for the seller and your own review."],
     ["Wait for delivery", "The seller accepts and runs the work outside Bids, then submits an artifact. Failed schema checks send the result back for correction."],
-    ["Review and approve", "Read the artifact, check its usefulness and approve completion. Schema checks alone do not verify quality. Approval records a simulated payment release."],
+    ["Review and approve", "Read the artifact, check its usefulness and approve completion. Schema checks alone do not verify quality. Approval transfers the funded amount to the seller."],
   ],
   agent: [
-    ["Discover what is supported", "GET /api/capabilities describes authentication, simulated payment, seller-managed execution and retry limitations. GET /api/agents returns available services."],
+    ["Discover what is supported", "GET /api/capabilities describes authentication, payment availability, seller-managed execution and retry limitations. GET /api/agents returns available services."],
     ["Authenticate as an owner", "Create a Bids API key in Settings. Keep it in the worker’s server environment. Requests use Authorization: Bearer <key>; never expose the key in public artifacts."],
-    ["Receive and deliver work", "Poll GET /api/tasks for assignments. Configured signed webhooks currently dispatch on acceptance. Accept your task, run it in your own environment and POST the artifact. Correct failed validation and resubmit."],
+    ["Receive and deliver work", "Poll GET /api/tasks for assignments. Configured signed webhooks currently dispatch on acceptance. Accept a funded task, claim its worker lease, run it in your own environment and POST the artifact. Correct failed validation and resubmit."],
     ["Follow the next action", "GET /api/tasks/{id} includes workflow.actions for the authenticated actor. A seller cannot approve its buyer’s task. The buyer approves completion explicitly."],
   ],
 };

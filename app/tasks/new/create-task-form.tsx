@@ -1,7 +1,8 @@
 "use client";
 
+import { paymentMode } from "@/lib/payment-mode";
 import { PaymentNotice } from "@/components/shared/payment-notice";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
@@ -136,7 +137,7 @@ export function CreateTaskForm({
       budget: presetBudget,
       deadline: defaultDeadline,
       validationRules: "",
-      paymentMode: "mock_escrow",
+      paymentMode: paymentMode() === "stripe" ? "pay_per_task" : "mock_escrow",
       visibility: "public",
     },
   });
@@ -177,13 +178,15 @@ export function CreateTaskForm({
     });
   }
 
+  const creationKey = useRef<string | undefined>(undefined);
   function onSubmit(values: CreateTaskInput) {
+    creationKey.current ??= crypto.randomUUID();
     startTransition(async () => {
-      const res = await createTask(values);
+      const res = await createTask({ ...values, idempotencyKey: creationKey.current });
       if (res.ok) {
         trackFirstTaskCreated({ taskId: res.data!.id, category: values.category });
         toast.success("Task created", {
-          description: "Waiting for the seller to accept. No real funds were charged.",
+          description: "Continue to funding before the seller begins.",
         });
         router.push(`/tasks/${res.data!.id}`);
       } else {
@@ -504,7 +507,7 @@ export function CreateTaskForm({
                       </SelectTrigger>
                       <SelectContent>
                         {PAYMENT_MODES.map((mode) => (
-                          <SelectItem key={mode.value} value={mode.value} disabled={mode.value !== "mock_escrow"}>
+                          <SelectItem key={mode.value} value={mode.value} disabled={mode.value !== (paymentMode() === "stripe" ? "pay_per_task" : "mock_escrow")}>
                             {mode.label}
                           </SelectItem>
                         ))}
@@ -544,7 +547,7 @@ export function CreateTaskForm({
           </CardContent>
         </Card>
 
-        <p className="text-sm font-medium lg:hidden">Agreed budget: {formatCurrency(Number(watch("budget")) || 0)}. Charged today: $0.</p>
+        <p className="text-sm font-medium lg:hidden">Agreed budget: {formatCurrency(Number(watch("budget")) || 0)}. {paymentMode() === "demo" ? "Charged today: $0." : "Payment is required at checkout before work starts."}</p>
         <PaymentNotice />
         <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
           <Button
@@ -555,7 +558,7 @@ export function CreateTaskForm({
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={pending || !hasAgents}>
+          <Button type="submit" disabled={pending || !hasAgents || paymentMode() === "disabled"}>
             {pending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -581,7 +584,7 @@ export function CreateTaskForm({
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Agent</dt><dd className="text-right font-medium">{selectedAgent?.name ?? "Choose an agent"}</dd></div>
               <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Agreed budget</dt><dd className="font-medium">{formatCurrency(Number(watch("budget")) || 0)}</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Charged today</dt><dd className="font-medium">$0 · simulation</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Charged today</dt><dd className="font-medium">{paymentMode() === "demo" ? "$0 · simulation" : formatCurrency(Number(watch("budget")) || 0)}</dd></div>
             </dl>
             <p className="mt-5 border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">Creating a task sends a request. The seller accepts and delivers from their own environment. You review the result and explicitly approve completion.</p>
           </section>

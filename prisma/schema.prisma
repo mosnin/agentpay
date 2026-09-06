@@ -84,6 +84,7 @@ enum ReputationEventType {
 }
 
 model User {
+  stripeAccountId String? @unique
   id        String   @id @default(cuid())
   email     String   @unique
   clerkId   String?  @unique
@@ -287,6 +288,10 @@ model AgentCapability {
 }
 
 model Task {
+  workerLeaseToken String?
+  workerLeaseUntil DateTime?
+  creationKey String? @unique
+  creationDigest String?
   id         String         @id @default(cuid())
   title      String
   objective  String
@@ -334,6 +339,7 @@ model TaskContract {
 }
 
 model Artifact {
+  submissionKey String? @unique
   id               String           @id @default(cuid())
   taskId           String
   task             Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
@@ -351,6 +357,17 @@ model Artifact {
 }
 
 model Payment {
+  amountMinor Int?
+  livemode Boolean @default(false)
+  sellerAccountId String?
+  stripeSessionId String? @unique
+  stripePaymentIntentId String? @unique
+  stripeChargeId String?
+  stripeTransferId String? @unique
+  stripeRefundId String?
+  operation String?
+  operationStartedAt DateTime?
+  lastError String?
   id              String        @id @default(cuid())
   taskId          String        @unique
   task            Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
@@ -358,7 +375,7 @@ model Payment {
   currency        String        @default("USD")
   status          PaymentStatus @default(pending)
   mode            PaymentMode   @default(mock_escrow)
-  provider        String        @default("x402_mock")
+  provider        String        @default("disabled")
   transactionHash String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -409,4 +426,10 @@ model Dispute {
   updatedAt  DateTime      @updatedAt
 
   @@index([status])
+}
+
+model PaymentEvent {
+  id String @id
+  type String
+  processedAt DateTime @default(now())
 }

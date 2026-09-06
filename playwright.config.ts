@@ -4,6 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
 // Bids E2E config — keyless mode only (no Clerk env vars), against the
 // seeded demo operator. See e2e/README.md for how to run this locally.
 // ---------------------------------------------------------------------------
+process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE ??= "demo";
 const port = Number(process.env.E2E_PORT ?? 3000);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("Invalid E2E_PORT");
 const baseURL = `http://localhost:${port}`;

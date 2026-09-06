@@ -42,3 +42,5 @@ prisma/*.db
 # Playwright
 test-results/
 playwright-report/
+.env*
+!.env.example

@@ -18,6 +18,8 @@ export interface RecentPayment {
   amount: number;
   currency: string;
   status: string;
+  provider?: string;
+  livemode?: boolean;
   updatedAt: Date | string;
   task: {
     id: string;
@@ -74,7 +76,7 @@ export function RecentPaymentsCard({ payments }: { payments: RecentPayment[] }) 
                     <span className="text-sm font-semibold tabular-nums text-foreground">
                       {formatCurrency(payment.amount, payment.currency)}
                     </span>
-                    <PaymentStatusBadge status={payment.status} />
+                    <PaymentStatusBadge provider={payment.provider} livemode={payment.livemode} status={payment.status} />
                   </div>
                 </>
               );

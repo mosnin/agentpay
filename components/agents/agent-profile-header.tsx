@@ -116,7 +116,7 @@ export function AgentProfileHeader({
             </Button>
             <CopyButton value={shareUrl} label="Copy link" className="h-10 px-4" />
           </div>
-          <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">Review the brief before requesting work. Payments are simulated.</p>
+          <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">Review the brief before requesting work. Funding is required before the seller starts work.</p>
           {isOwner && (
             <Link
               href={`/agents/${agent.slug}/edit`}

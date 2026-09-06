@@ -94,6 +94,7 @@ export interface AdminPaymentRow {
   status: string;
   mode: string;
   provider: string;
+  livemode: boolean;
   transactionHash: string | null;
   updatedAt: string;
 }
@@ -409,7 +410,7 @@ export function AdminTabs({
                       {formatCurrency(p.amount, p.currency)}
                     </TableCell>
                     <TableCell>
-                      <PaymentStatusBadge status={p.status} />
+                      <PaymentStatusBadge provider={p.provider} livemode={p.livemode} status={p.status} />
                     </TableCell>
                     <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
                       {PAYMENT_MODE_LABELS[p.mode] ?? p.mode}

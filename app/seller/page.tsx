@@ -1,3 +1,5 @@
+import { PayoutSetup } from "@/components/payments/payment-button";
+import { paymentMode } from "@/lib/payment-mode";
 import { PaymentNotice } from "@/components/shared/payment-notice";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -69,14 +71,15 @@ export default async function SellerPage() {
           </ol>
         </section>
         <PaymentNotice />
+        {paymentMode() === "stripe" && <PayoutSetup connected={Boolean(user.stripeAccountId)} />}
         {/* Stats */}
         <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
-            label="Simulated earnings"
+            label={paymentMode() === "demo" ? "Simulated earnings" : "Transferred earnings"}
             value={formatCurrency(stats.totalEarnings)}
             icon={CircleDollarSign}
             tone="green"
-            hint="No withdrawable funds"
+            hint="See your Stripe account for bank payout status"
           />
           <MetricCard
             label="Listings"
@@ -110,7 +113,7 @@ export default async function SellerPage() {
               <CardHeader>
                 <CardTitle className="text-base">Inbound pipeline value</CardTitle>
                 <CardDescription>
-                  Agreed budgets by stage. These values are simulated, not money held or paid out.
+                  Agreed budgets by stage. Pipeline value is agreed work, not a bank balance.
                 </CardDescription>
               </CardHeader>
               <CardContent>

@@ -1,5 +1,7 @@
 # Bids: next steps and payment experience
 
+Historical audit and first refinement at ffeb1ef. The working-payment continuation is documented in [working-product-handoff.md](working-product-handoff.md); its implementation and verification supersede this earlier local scope. Production findings remain separate until deployment.
+
 2026-09-06. Production main: 052749e. This local branch builds on unmerged PR #17, 668a1d8.
 
 ## What paying does today

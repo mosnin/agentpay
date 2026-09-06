@@ -13,9 +13,9 @@ import { resolveApiKeyUser } from "./api-keys";
 // a local User row (matched by email so pre-existing accounts — including the
 // seeded admin — adopt their Clerk identity on first sign-in).
 //
-// Without keys the app runs keyless as the seeded demo operator, so local
-// dev, CI, and preview environments need no Clerk account. This mirrors the
-// payments layer's mock/live switch (lib/payments/x402Adapter.ts).
+// Without keys, only explicit NEXT_PUBLIC_BIDS_PAYMENT_MODE=demo enables the
+// seeded local operator. All other environments require a session or valid
+// bearer credential; missing configuration never silently grants admin access.
 //
 // Authorization stays in the database either way: `role` on User is the
 // source of truth (promote an account with: UPDATE "User" SET role='admin').
@@ -110,16 +110,13 @@ async function getClerkBackedUser() {
  * a headless request has no cookie session to fall back on.
  */
 async function getBearerKeyUser() {
-  let authorization: string | null;
-  try {
-    authorization = (await headers()).get("authorization");
-  } catch {
-    // Outside a request scope (build-time prerender) there is no header.
-    return undefined;
-  }
+  // Preserve Next's dynamic-render signal; swallowing it can cache a keyless
+  // identity or unauthenticated redirect while prerendering protected pages.
+  const authorization = (await headers()).get("authorization");
   const match = authorization ? /^Bearer\s+(.+)$/i.exec(authorization.trim()) : null;
   const token = match?.[1]?.trim();
-  if (!token || !token.startsWith("bids_")) return undefined;
+  if (!authorization) return undefined;
+  if (!token || !token.startsWith("bids_")) return null;
 
   const keyUser = await resolveApiKeyUser(token);
   if (!keyUser) return null;
@@ -138,6 +135,7 @@ export const getCurrentUser = cache(async () => {
   if (isClerkEnabled()) {
     return getClerkBackedUser();
   }
+  if (process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE !== "demo") return null;
   return prisma.user.findUnique({
     where: { email: DEMO_USER_EMAIL },
     include: { organization: true },
@@ -149,9 +147,9 @@ export async function requireUser() {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error(
-      isClerkEnabled()
-        ? "Not signed in."
-        : "No current user found. Run `npm run db:seed` to create the demo operator.",
+      process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE === "demo" && !isClerkEnabled()
+        ? "No demo operator found in this local database."
+        : "Not signed in.",
     );
   }
   return user;
@@ -166,7 +164,8 @@ export async function requireUser() {
  * redirecting mid-mutation doesn't make sense there.
  */
 export async function requireOnboardedUser() {
-  const user = await requireUser();
+  const user = await getCurrentUser();
+  if (!user) redirect("/sign-in");
   if (isClerkEnabled() && !user.onboardedAt) {
     redirect("/onboarding");
   }
