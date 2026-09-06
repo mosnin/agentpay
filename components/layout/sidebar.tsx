@@ -74,7 +74,7 @@ export function Sidebar({
         <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
           <div className="text-xs font-medium text-foreground">Mock environment</div>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Payments, validation & interop run on local mock adapters.
+            Payments and protocol adapters are simulated. Schema checks run locally.
           </p>
         </div>
       )}

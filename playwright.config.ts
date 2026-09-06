@@ -4,6 +4,10 @@ import { defineConfig, devices } from "@playwright/test";
 // Bids E2E config — keyless mode only (no Clerk env vars), against the
 // seeded demo operator. See e2e/README.md for how to run this locally.
 // ---------------------------------------------------------------------------
+const port = Number(process.env.E2E_PORT ?? 3000);
+if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("Invalid E2E_PORT");
+const baseURL = `http://localhost:${port}`;
+
 export default defineConfig({
   testDir: "e2e",
 
@@ -24,7 +28,7 @@ export default defineConfig({
   reporter: process.env.CI ? [["list"], ["github"]] : "list",
 
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
   },
 
@@ -48,8 +52,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: process.env.CI ? "npm run start" : "npm run dev",
-    url: "http://localhost:3000",
+    command: `${process.env.CI ? "npm run start" : "npm run dev"} -- --port ${port}`,
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

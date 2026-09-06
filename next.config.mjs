@@ -5,14 +5,19 @@ const isDev = process.env.NODE_ENV === "development";
 // When Clerk is configured, the CSP must admit its frontend API, avatar CDN,
 // telemetry, and the Cloudflare Turnstile bot-protection frame it embeds.
 // Development instances live on *.clerk.accounts.dev; production instances
-// use a Frontend API host on your own domain (clerk.<your-domain>) — covered
-// by 'self' plus the wildcard below. Directives stay strict when keyless.
+// use a Frontend API host on your own domain (clerk.<your-domain>). A
+// subdomain is not covered by 'self'; admit the exact publishable-key host. Directives stay strict when keyless.
 const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+const clerkHost = (() => {
+  const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
+  const host = Buffer.from(key.replace(/^pk_(test|live)_/, ""), "base64").toString("utf8").replace(/\$$/, "");
+  return /^[a-zA-Z0-9.-]+$/.test(host) && host.includes(".") ? ` https://${host}` : "";
+})();
 const clerkScript = hasClerk
-  ? " https://*.clerk.accounts.dev https://challenges.cloudflare.com"
+  ? `${clerkHost} https://*.clerk.accounts.dev https://challenges.cloudflare.com https://*.protect.clerk.com`
   : "";
 const clerkConnect = hasClerk
-  ? " https://*.clerk.accounts.dev https://clerk-telemetry.com"
+  ? `${clerkHost} https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.protect.clerk.com:*`
   : "";
 const clerkImg = hasClerk ? " https://img.clerk.com" : "";
 const clerkFrame = hasClerk ? "frame-src https://challenges.cloudflare.com" : "";

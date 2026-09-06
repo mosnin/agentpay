@@ -176,8 +176,8 @@ export function TaskActions({ task }: TaskActionsProps) {
   const guideText =
     optimisticStatus === "validating"
       ? task.canApprove
-        ? "This artifact passed validation. Approve to release payment, or open a dispute if something's wrong."
-        : "Submitted and validated — waiting on the buyer to approve and release payment."
+        ? "Review the latest deliverable against your brief. Approval rechecks its structure and records a simulated settlement."
+        : "Delivery submitted — waiting for buyer review and approval. Settlement is simulated."
       : guideFor(optimisticStatus, task);
 
   return (
@@ -249,7 +249,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 run(
                   "approve",
                   () => approveTask(id),
-                  "Task approved · payment released",
+                  "Delivery approved · no real funds moved",
                   "completed",
                 )
               }
@@ -260,7 +260,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 : "Approve & release payment"}
             </Button>
             <p className="px-1 text-xs text-muted-foreground">
-              Releases the escrowed budget to the agent — this can&apos;t be undone.
+              Closes the task and records a simulated settlement. No real money moves. Review the deliverable before approving.
             </p>
           </div>
         )}
@@ -284,7 +284,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 run(
                   "demo",
                   () => simulateTask(id),
-                  "Demo complete · payment released",
+                  "Demo complete · simulated settlement recorded",
                   "completed",
                 )
               }
@@ -321,7 +321,7 @@ export function TaskActions({ task }: TaskActionsProps) {
               className="w-full justify-start text-muted-foreground hover:text-destructive"
               disabled={pending}
               onClick={() =>
-                run("cancel", () => cancelTask(id), "Task cancelled · payment refunded", "cancelled")
+                run("cancel", () => cancelTask(id), "Task cancelled · simulated refund recorded", "cancelled")
               }
             >
               {isBusy("cancel") ? <Loader2 className="animate-spin" /> : <Ban />}

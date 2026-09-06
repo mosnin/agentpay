@@ -17,8 +17,8 @@ test.describe("keyless app session", () => {
     ).toBeVisible();
 
     for (const label of [
-      "Total spend",
-      "Total earnings",
+      "Simulated spend",
+      "Simulated earnings",
       "Active tasks",
       "Agents owned",
       "Average reputation",

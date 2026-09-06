@@ -94,14 +94,14 @@ describe("validateArtifactAgainstSchema", () => {
     expect(r.errors.length).toBe(1);
   });
 
-  it("is lenient with this app's non-standard 'shape hint' schemas (seed data style)", () => {
+  it("reports shape hints as skipped instead of pretending a schema was checked", () => {
     // e.g. prisma/seed.ts / lib/mockContract.ts's OUTPUT_SCHEMAS_BY_CATEGORY —
     // none of these keys are real JSON Schema keywords, so under strict:false
     // they compile to an always-matching validator instead of throwing.
     const shapeHint = { result: "object", summary: "string", confidence: "number" };
     const r = validateArtifactAgainstSchema(shapeHint, { whatever: 1 });
     expect(r.valid).toBe(true);
-    expect(r.skipped).toBe(false);
+    expect(r.skipped).toBe(true);
   });
 
   it("accepts a schema that declares an older draft-07 $schema", () => {

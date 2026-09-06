@@ -38,7 +38,7 @@ export async function POST(
       return NextResponse.json({ error: res.error }, { status });
     }
 
-    return NextResponse.json({ ok: true, status: "submitted" });
+    return NextResponse.json({ ok: true, ...res.data });
   } catch (err) {
     console.error("POST /api/tasks/[id]/artifacts failed", err);
     return NextResponse.json(

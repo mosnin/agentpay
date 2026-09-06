@@ -41,9 +41,9 @@ export interface PaymentReceipt {
 const MOCK_NETWORK = "mock-base-sepolia";
 const MOCK_PAY_TO = "0xBIDS0000000000000000000000000000000ESCROW";
 
-/** True when real x402 credentials are configured. */
+/** This implementation never settles real funds, even when credentials exist. */
 export function isLive(): boolean {
-  return Boolean(process.env.X402_API_KEY && process.env.X402_FACILITATOR_URL);
+  return false;
 }
 
 export function createPaymentRequirement(params: {
@@ -71,8 +71,8 @@ export async function verifyPayment(params: {
 }): Promise<VerificationResult> {
   // Mock: any non-negative amount verifies. Real impl would validate the
   // payment payload against the facilitator.
-  if (params.amount < 0) {
-    return { valid: false, reason: "Negative amount" };
+  if (!Number.isFinite(params.amount) || params.amount < 0) {
+    return { valid: false, reason: "Amount must be finite and non-negative" };
   }
   return { valid: true };
 }

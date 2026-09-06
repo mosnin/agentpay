@@ -60,7 +60,7 @@ export function ArtifactCard({ artifact }: { artifact: ArtifactLike }) {
             </div>
           </div>
         </div>
-        <ValidationStatusBadge status={artifact.validationStatus} />
+        {notes.some(note => /checks skipped|validation skipped/i.test(note)) ? <Badge variant="outline">Checks skipped</Badge> : <ValidationStatusBadge status={artifact.validationStatus} />}
       </div>
 
       {score !== null && (

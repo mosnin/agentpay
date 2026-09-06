@@ -1,5 +1,6 @@
 "use client";
 
+import { PaymentNotice } from "@/components/shared/payment-notice";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -127,7 +128,7 @@ export function CreateTaskForm({
     defaultValues: {
       title: presetTitle,
       objective: "",
-      category: presetCategory || undefined,
+      category: presetCategory || presetAgentObj?.category || undefined,
       sellerAgentId: presetAgent,
       inputInstructions: "",
       inputDataUrl: "",
@@ -182,7 +183,7 @@ export function CreateTaskForm({
       if (res.ok) {
         trackFirstTaskCreated({ taskId: res.data!.id, category: values.category });
         toast.success("Task created", {
-          description: "Your contract is live and pending agent acceptance.",
+          description: "Waiting for the seller to accept. No real funds were charged.",
         });
         router.push(`/tasks/${res.data!.id}`);
       } else {
@@ -423,10 +424,11 @@ export function CreateTaskForm({
                 id="expectedOutputFormat"
                 rows={4}
                 className="font-mono text-xs"
-                placeholder='A JSON schema or a plain description, e.g. {"records": [{"company": "string", "email": "string"}]}'
+                placeholder='Describe the deliverable, or use JSON Schema: {"type":"object","required":["answer"],"properties":{"answer":{"type":"string"}}}'
                 aria-invalid={Boolean(errors.expectedOutputFormat)}
                 {...register("expectedOutputFormat")}
               />
+              <p className="text-xs leading-relaxed text-muted-foreground">JSON Schema checks structure. Plain descriptions and validation rules are instructions for human review; they do not verify accuracy automatically.</p>
               <FieldError message={errors.expectedOutputFormat?.message} />
             </div>
 
@@ -502,7 +504,7 @@ export function CreateTaskForm({
                       </SelectTrigger>
                       <SelectContent>
                         {PAYMENT_MODES.map((mode) => (
-                          <SelectItem key={mode.value} value={mode.value}>
+                          <SelectItem key={mode.value} value={mode.value} disabled={mode.value !== "mock_escrow"}>
                             {mode.label}
                           </SelectItem>
                         ))}
@@ -542,6 +544,8 @@ export function CreateTaskForm({
           </CardContent>
         </Card>
 
+        <p className="text-sm font-medium lg:hidden">Agreed budget: {formatCurrency(Number(watch("budget")) || 0)}. Charged today: $0.</p>
+        <PaymentNotice />
         <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
           <Button
             type="button"
@@ -571,13 +575,23 @@ export function CreateTaskForm({
       {/* Right column — sticky contract preview                           */}
       {/* ---------------------------------------------------------------- */}
       <div className="min-w-0">
-        <div className="lg:sticky lg:top-24">
-          <Card className="glass overflow-hidden">
+        <div className="space-y-5 lg:sticky lg:top-24">
+          <section aria-label="Your agreement" className="rounded-xl border border-border bg-card p-5">
+            <h2 className="text-lg font-semibold tracking-tight">Your agreement</h2>
+            <dl className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Agent</dt><dd className="text-right font-medium">{selectedAgent?.name ?? "Choose an agent"}</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Agreed budget</dt><dd className="font-medium">{formatCurrency(Number(watch("budget")) || 0)}</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Charged today</dt><dd className="font-medium">$0 · simulation</dd></div>
+            </dl>
+            <p className="mt-5 border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">Creating a task sends a request. The seller accepts and delivers from their own environment. You review the result and explicitly approve completion.</p>
+          </section>
+          <PaymentNotice />
+          <Card className="overflow-hidden">
             <CardHeader className="gap-3">
               <div>
                 <CardTitle className="text-base">Contract preview</CardTitle>
                 <CardDescription>
-                  A machine-readable work contract.
+                  Optional helper: a template, not an AI review of your brief.
                 </CardDescription>
               </div>
               <Button

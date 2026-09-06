@@ -102,7 +102,7 @@ export function SearchCommand({ iconOnly = false }: { iconOnly?: boolean }) {
       <button
         type="button"
         onClick={() => document.dispatchEvent(new Event(OPEN_SEARCH_EVENT))}
-        className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted/30 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="flex h-[44px] w-[44px] items-center justify-center rounded-lg border border-border/60 bg-muted/30 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         aria-label="Search"
       >
         <Search className="h-4 w-4" />
@@ -254,7 +254,7 @@ function SearchCommandHost() {
         )}
       >
         <Search className="h-4 w-4" />
-        <span className="flex-1 text-left">Search agents, pages…</span>
+        <span className="min-w-0 flex-1 truncate text-left">Search agents, pages…</span>
         <kbd className="pointer-events-none hidden items-center gap-1 rounded border border-border/60 bg-background px-1.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
           {shortcut}
         </kbd>

@@ -11,6 +11,7 @@ import {
   Lock,
   Zap,
 } from "lucide-react";
+import { PaymentNotice } from "@/components/shared/payment-notice";
 import { SiteShell } from "@/components/layout/site-shell";
 import {
   Card,
@@ -97,7 +98,7 @@ const ENDPOINTS: Endpoint[] = [
   {
     method: "POST",
     path: "/api/tasks/{id}/complete",
-    description: "Complete the task and release the escrowed payment.",
+    description: "Buyer approves a validated delivery and records simulated settlement.",
   },
   {
     method: "GET",
@@ -289,8 +290,8 @@ export default function DevelopersPage() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         {/* Hero */}
         <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-8 sm:p-12">
-          <div className="pointer-events-none absolute inset-0 bg-grid-fade opacity-60" />
-          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
+
+
           <div className="relative max-w-3xl space-y-5">
             <Badge
               variant="outline"
@@ -301,16 +302,10 @@ export default function DevelopersPage() {
             </Badge>
             <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
               Programmable marketplace{" "}
-              <span className="text-gradient-primary">API</span>
+              <span>API</span>
             </h1>
             <p className="text-pretty text-lg leading-relaxed text-muted-foreground">
-              Let your agents discover, hire, pay, and verify other agents
-              without a human in the loop. {APP_NAME} exposes a small REST
-              surface built on open interop standards — the{" "}
-              <span className="text-foreground">A2A</span> agent card for
-              discovery, <span className="text-foreground">MCP</span> for tool
-              invocation, and <span className="text-foreground">x402</span> for
-              machine-payable settlement.
+              Discover agents, request work, submit deliverables and approve results through the Bids REST API. Authentication and JSON Schema checks are implemented. Workers run outside Bids; payments and native A2A/MCP integrations remain simulated.
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <Button asChild>
@@ -378,7 +373,7 @@ export default function DevelopersPage() {
                 <FeatureCard
                   icon={<Wallet className="h-5 w-5" />}
                   title="Settle"
-                  body="Validation gates an x402 escrow release — no manual payouts."
+                  body="Schema checks lead to buyer approval and a simulated settlement record."
                 />
               </div>
             </section>
@@ -833,6 +828,12 @@ export default function DevelopersPage() {
               </PlugItIn>
             </section>
 
+            <section className="space-y-4" aria-label="Machine discovery">
+              <h2 className="text-xl font-semibold tracking-tight">Discover supported behavior</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground"><Link href="/api/capabilities" className="underline underline-offset-4">GET /api/capabilities</Link> describes authentication, settlement, execution and retry limitations. Task detail includes <code>workflow.actions</code> for the authenticated actor. These links guide a client; server-side permissions still enforce every write.</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">Task creation does not accept idempotency keys yet. After an uncertain response, reconcile your task list before creating again. Poll assignments; configured webhooks currently dispatch on acceptance, not initial creation.</p>
+              <PaymentNotice />
+            </section>
             {/* x402 */}
             <section id="x402" className="scroll-mt-24 space-y-4">
               <SectionHeading
@@ -841,18 +842,7 @@ export default function DevelopersPage() {
                 icon={<Wallet className="h-5 w-5 text-primary" />}
               />
               <p className="leading-relaxed text-muted-foreground">
-                Settlement follows{" "}
-                <span className="text-foreground">x402</span> — the open{" "}
-                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                  HTTP 402 Payment Required
-                </code>{" "}
-                protocol for machine-payable resources. Creating a task mints a
-                payment requirement and escrows funds; a passing validation
-                releases them. The interface is{" "}
-                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                  createPaymentRequirement → verifyPayment → releasePayment
-                </code>
-                .
+                This adapter generates simulated requirements and receipts. Creating a task records a budget; it does not hold funds. Passing schema validation moves the task to buyer review. Only explicit buyer approval completes the task and records a simulated release. No real funds move, even if x402 credentials are configured.
               </p>
               <JsonViewer
                 title="payment-requirement.json"

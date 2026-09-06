@@ -27,7 +27,7 @@ export async function POST(
       return NextResponse.json({ error: res.error }, { status });
     }
 
-    return NextResponse.json({ ok: true, status: "completed" });
+    return NextResponse.json({ ok: true, status: "completed", payment: { mode: "simulation", real_funds_moved: false } });
   } catch (err) {
     console.error("POST /api/tasks/[id]/complete failed", err);
     return NextResponse.json(

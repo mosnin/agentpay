@@ -84,7 +84,7 @@ test.describe("task lifecycle", () => {
 
     // No output schema on this task, so validation is skipped (auto-pass) —
     // lands straight in "validating", awaiting buyer approval.
-    await expect(statusBadge("Validating")).toBeVisible();
+    await expect(statusBadge("Awaiting approval")).toBeVisible();
 
     // ---- Approve & release payment ----
     await page.getByRole("button", { name: "Approve & release payment" }).click();
@@ -94,7 +94,7 @@ test.describe("task lifecycle", () => {
     // in several places — footer, timeline, status island — so scope to the
     // card's own exact heading; the Released badge is the real assertion.)
     await expect(page.getByText("Payment", { exact: true }).first()).toBeVisible();
-    await expect(statusBadge("Released")).toBeVisible();
+    await expect(statusBadge("Simulated · Released")).toBeVisible();
 
     // A completed task swaps the lifecycle actions for a review prompt
     // (task-actions.tsx's showReview branch) rather than a terminal

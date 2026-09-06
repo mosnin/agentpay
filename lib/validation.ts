@@ -68,7 +68,9 @@ export function validateArtifactAgainstSchema(
   outputSchema: unknown,
   artifactContent: unknown,
 ): ArtifactValidationResult {
-  if (isEmptySchema(outputSchema)) {
+  const constraints = new Set(["type", "properties", "required", "items", "prefixItems", "additionalProperties", "unevaluatedProperties", "enum", "const", "allOf", "anyOf", "oneOf", "not", "if", "then", "else", "$ref", "$dynamicRef", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "pattern", "format", "minItems", "maxItems", "uniqueItems", "contains", "minContains", "maxContains", "minProperties", "maxProperties", "propertyNames", "patternProperties", "dependentRequired", "dependentSchemas"]);
+  const instructionOnly = typeof outputSchema === "object" && outputSchema !== null && !Array.isArray(outputSchema) && !Object.keys(outputSchema).some(key => constraints.has(key));
+  if (isEmptySchema(outputSchema) || instructionOnly) {
     return { valid: true, errors: [], skipped: true };
   }
 

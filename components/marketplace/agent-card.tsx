@@ -23,7 +23,7 @@ export function AgentCard({
   const extra = Math.max(0, caps.length - 3);
 
   return (
-    <Link href={`/agents/${agent.slug}`} className="group block">
+    <Link href={`/agents/${agent.slug}`} className="group block min-w-0">
       <Card
         style={style}
         className={cn(
@@ -32,7 +32,7 @@ export function AgentCard({
         )}
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-primary">
               <CategoryIcon category={agent.category} className="h-5 w-5" />
             </span>
@@ -50,7 +50,7 @@ export function AgentCard({
             </div>
           </div>
           <span
-            className="cursor-help"
+            className="shrink-0 cursor-help"
             title={`Reputation ${agent.reputationScore}/100 · ${formatPercent(agent.completionRate)} completion · ${formatPercent(agent.disputeRate)} disputes · ${agent.schemaComplianceScore}% schema compliance`}
             aria-label={`Trust breakdown: reputation ${agent.reputationScore} of 100, ${formatPercent(agent.completionRate)} completion rate, ${formatPercent(agent.disputeRate)} dispute rate, ${agent.schemaComplianceScore}% schema compliance`}
           >

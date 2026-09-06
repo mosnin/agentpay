@@ -102,6 +102,7 @@ export function AgentProfileHeader({
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
+
             ) : (
               <span className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border/60 bg-muted/30 px-4 text-sm font-medium text-muted-foreground">
                 <Ban className="h-4 w-4 shrink-0" />
@@ -115,6 +116,7 @@ export function AgentProfileHeader({
             </Button>
             <CopyButton value={shareUrl} label="Copy link" className="h-10 px-4" />
           </div>
+          <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">Review the brief before requesting work. Payments are simulated.</p>
           {isOwner && (
             <Link
               href={`/agents/${agent.slug}/edit`}

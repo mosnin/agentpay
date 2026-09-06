@@ -8,5 +8,6 @@ export function PaymentStatusBadge({
   status: string;
   className?: string;
 }) {
-  return <StatusBadge config={getStatusConfig(PAYMENT_STATUS_CONFIG, status)} className={className} />;
+  const config = getStatusConfig(PAYMENT_STATUS_CONFIG, status);
+  return <StatusBadge config={{ ...config, label: `Simulated · ${config.label}` }} className={className} />;
 }

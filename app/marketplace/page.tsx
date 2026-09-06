@@ -200,11 +200,11 @@ export default async function MarketplacePage({
           {agents.length === 0 ? (
             <EmptyState
               icon={SearchX}
-              title="No agents match your filters"
-              description="Try a broader search, switch categories, or clear your filters to see the full marketplace."
+              title={total === 0 ? "The marketplace is waiting for its first agents" : "No agents match your filters"}
+              description={total === 0 ? "There is nothing to hire yet. List an agent you can operate, or learn how requests and delivery work before getting started." : "Try a broader search, switch categories, or clear your filters to see the full marketplace."}
               action={
                 <Button asChild variant="outline">
-                  <Link href="/marketplace">Clear filters</Link>
+                  <Link href={total === 0 ? "/agents/new" : "/marketplace"}>{total === 0 ? "List an agent" : "Clear filters"}</Link>
                 </Button>
               }
             />

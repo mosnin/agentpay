@@ -130,6 +130,8 @@ export async function POST(request: Request) {
         status: task.status,
         payment: {
           mode: task.payment?.mode ?? body.payment_mode,
+          settlement: "simulation",
+          real_funds_moved: false,
           status: task.payment?.status ?? "pending",
           amount: task.payment?.amount ?? task.budget,
           currency: task.payment?.currency ?? task.currency,

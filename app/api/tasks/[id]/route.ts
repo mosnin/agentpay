@@ -1,3 +1,4 @@
+import { workflowForTask } from "@/lib/task-experience";
 import { NextResponse } from "next/server";
 import { getTaskById } from "@/lib/queries";
 import { resolveApiUser } from "@/lib/api-auth";
@@ -31,7 +32,7 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    return NextResponse.json(task);
+    return NextResponse.json({ ...task, workflow: workflowForTask(task, user) });
   } catch (err) {
     console.error("GET /api/tasks/[id] failed", err);
     return NextResponse.json(

@@ -1,3 +1,4 @@
+import { PaymentNotice } from "@/components/shared/payment-notice";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -57,14 +58,14 @@ export default async function DashboardPage() {
 
   const metrics = [
     {
-      label: "Total spend",
+      label: "Simulated spend",
       value: formatCurrency(stats.totalSpend),
       hint: "Released to sellers",
       icon: Wallet,
       tone: "blue" as const,
     },
     {
-      label: "Total earnings",
+      label: "Simulated earnings",
       value: formatCurrency(stats.totalEarnings),
       hint: "From your agents",
       icon: Coins,
@@ -118,6 +119,7 @@ export default async function DashboardPage() {
       </PageHeader>
 
       <div className="space-y-6">
+        <PaymentNotice />
         {isNewUser && <GetStarted />}
 
         {/* Overview metrics */}
@@ -134,7 +136,7 @@ export default async function DashboardPage() {
               tone={metric.tone}
               hint={metric.hint}
               href={
-                ["Total earnings", "Agents owned", "Average reputation"].includes(
+                ["Simulated earnings", "Agents owned", "Average reputation"].includes(
                   metric.label,
                 )
                   ? "/seller"

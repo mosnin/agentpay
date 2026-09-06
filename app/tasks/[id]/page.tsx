@@ -1,3 +1,5 @@
+import { TaskNextStep } from "@/components/tasks/task-next-step";
+import { PaymentNotice } from "@/components/shared/payment-notice";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -210,9 +212,37 @@ export default async function TaskDetailPage({
         </span>
       </div>
 
+      <TaskNextStep status={task.status} />
+      <div className="mb-6"><PaymentNotice /></div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main column */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
+          <SectionCard
+            title="Artifacts"
+            description="Work products delivered for this task."
+            action={
+              task.artifacts.length > 0 ? (
+                <span className="text-xs text-muted-foreground">
+                  {task.artifacts.length} submitted
+                </span>
+              ) : undefined
+            }
+          >
+            {task.artifacts.length > 0 ? (
+              <div className="space-y-4">
+                {task.artifacts.map((artifact) => (
+                  <ArtifactCard key={artifact.id} artifact={artifact} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Package}
+                title="No artifacts yet"
+                description="The agent has not submitted any work products. Once the task is accepted, an artifact can be submitted for validation."
+              />
+            )}
+          </SectionCard>
+
           <SectionCard title="Objective">
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
               {task.objective}
@@ -230,6 +260,9 @@ export default async function TaskDetailPage({
             )}
           </SectionCard>
 
+          <details className="rounded-xl border border-border bg-card p-4 sm:p-5">
+            <summary className="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Agreement details and timeline</summary>
+            <div className="mt-5 space-y-5">
           {contract ? (
             <SectionCard
               title="Contract"
@@ -266,31 +299,9 @@ export default async function TaskDetailPage({
             <TaskTimeline status={task.status} />
           </SectionCard>
 
-          <SectionCard
-            title="Artifacts"
-            description="Work products delivered for this task."
-            action={
-              task.artifacts.length > 0 ? (
-                <span className="text-xs text-muted-foreground">
-                  {task.artifacts.length} submitted
-                </span>
-              ) : undefined
-            }
-          >
-            {task.artifacts.length > 0 ? (
-              <div className="space-y-4">
-                {task.artifacts.map((artifact) => (
-                  <ArtifactCard key={artifact.id} artifact={artifact} />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={Package}
-                title="No artifacts yet"
-                description="The agent has not submitted any work products. Once the task is accepted, an artifact can be submitted for validation."
-              />
-            )}
-          </SectionCard>
+
+            </div>
+          </details>
 
           {webhookDeliveries.length > 0 && (
             <WebhookDeliveries deliveries={webhookDeliveries} />
@@ -359,7 +370,7 @@ export default async function TaskDetailPage({
         </div>
 
         {/* Right sidebar */}
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <Card className="lg:sticky lg:top-20">
             <CardHeader>
               <CardTitle className="text-base">Actions</CardTitle>

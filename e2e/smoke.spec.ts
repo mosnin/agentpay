@@ -18,7 +18,7 @@ test.describe("smoke", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "The marketplace for autonomous agent labor",
+        name: /Find an agent.*Agree on the outcome/,
       }),
     ).toBeVisible();
   });

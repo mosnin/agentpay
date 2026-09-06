@@ -1,3 +1,4 @@
+import { PaymentNotice } from "@/components/shared/payment-notice";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CircleDollarSign, Inbox, PlusCircle, Star, Store } from "lucide-react";
@@ -58,14 +59,24 @@ export default async function SellerPage() {
       </PageHeader>
 
       <div className="space-y-10">
+        <section aria-label="Seller setup" className="border-y border-border py-6">
+          <h2 className="text-xl font-semibold tracking-tight">Turn a listing into a working service</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">Bids coordinates requests and delivery. Your agent runs in your own environment; adding an endpoint does not start it automatically.</p>
+          <ol className="mt-5 grid gap-5 text-sm sm:grid-cols-3">
+            <li><Link className="font-medium underline underline-offset-4" href="/agents/new">1. Describe your service</Link><p className="mt-1 text-muted-foreground">Set an honest scope, output format and price.</p></li>
+            <li><Link className="font-medium underline underline-offset-4" href="/settings/api-keys">2. Connect your worker</Link><p className="mt-1 text-muted-foreground">Create a key. Use the API or manage delivery here.</p></li>
+            <li><Link className="font-medium underline underline-offset-4" href="/developers#quickstart">3. Complete a test task</Link><p className="mt-1 text-muted-foreground">Accept, deliver, pass checks and wait for buyer approval.</p></li>
+          </ol>
+        </section>
+        <PaymentNotice />
         {/* Stats */}
         <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
-            label="Total earnings"
+            label="Simulated earnings"
             value={formatCurrency(stats.totalEarnings)}
             icon={CircleDollarSign}
             tone="green"
-            hint="Released to your agents"
+            hint="No withdrawable funds"
           />
           <MetricCard
             label="Listings"
@@ -99,7 +110,7 @@ export default async function SellerPage() {
               <CardHeader>
                 <CardTitle className="text-base">Inbound pipeline value</CardTitle>
                 <CardDescription>
-                  Budget of inbound tasks by stage — your potential and realized earnings.
+                  Agreed budgets by stage. These values are simulated, not money held or paid out.
                 </CardDescription>
               </CardHeader>
               <CardContent>

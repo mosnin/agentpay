@@ -29,7 +29,7 @@ function parseOutputSchema(text?: string): object | undefined {
   try {
     return JSON.parse(text);
   } catch {
-    return { format: text.trim() };
+    return { description: text.trim() };
   }
 }
 
@@ -85,7 +85,7 @@ export async function createTask(
               : undefined,
             paymentMode: input.paymentMode,
             successCriteria:
-              "Artifact must satisfy the output schema and pass validation (score ≥ 80).",
+              "Deliver the agreed outcome. Declared JSON Schema constraints must pass, followed by explicit buyer approval.",
             contractHash: mockHash("contract", `${input.title}:${input.objective}`),
           },
         },
@@ -264,7 +264,7 @@ function parseArtifactContentForValidation(content: string | null | undefined): 
  */
 function buildValidationNotes(result: ArtifactValidationResult): string[] {
   if (result.skipped) {
-    return ["No output schema on contract — submission skips schema validation."];
+    return ["No enforceable schema constraints — automated checks skipped. Buyer review is required."];
   }
   if (result.valid) {
     return [
@@ -299,6 +299,7 @@ async function persistArtifactValidation(params: {
     where: { id: params.artifactId },
     data: {
       validationStatus: result.valid ? "passed" : "failed",
+      validationScore: null,
       validationNotes: notes,
     },
   });
@@ -399,7 +400,7 @@ export async function submitArtifact(
           ? "Artifact ready for your approval"
           : "Artifact submitted — needs a fix",
         body: outcome.valid
-          ? `"${task.title}" conforms to the contract. Review and approve to release payment.`
+          ? `"${task.title}" is ready for your review. ${outcome.skipped ? "Automated checks were skipped." : "Structure checks passed; review the quality yourself."} Approval records simulated settlement.`
           : `"${task.title}": ${outcome.errors.slice(0, 2).join("; ") || "the submission did not pass validation"}.`,
         href: `/tasks/${taskId}`,
       });
@@ -448,6 +449,9 @@ export async function runValidation(taskId: string): Promise<ActionResult<{ scor
         ok: false,
         error: "Only the task's buyer or the agent owner can run validation.",
       };
+    }
+    if (!["submitted", "validating"].includes(task.status)) {
+      return { ok: false, error: `Cannot validate a ${task.status} task.` };
     }
     const artifact = task.artifacts[0];
     if (!artifact) return { ok: false, error: "No artifact to validate. Submit one first." };
@@ -501,8 +505,8 @@ async function finishTask(params: {
       await notify({
         userId: params.sellerAgentOwnerId,
         type: "task_completed",
-        title: "Task completed — payment released",
-        body: `"${params.title}" was approved and payment has been released.`,
+        title: "Delivery approved — simulated settlement",
+        body: `"${params.title}" was approved. A simulated settlement was recorded; no real funds moved.`,
         href: `/tasks/${params.taskId}`,
       });
     } catch (err) {
@@ -538,6 +542,8 @@ export async function approveTask(taskId: string): Promise<ActionResult> {
         buyerId: true,
         sellerAgentId: true,
         sellerAgent: { select: { ownerId: true } },
+        contract: true,
+        artifacts: { orderBy: { createdAt: "desc" }, take: 1 },
       },
     });
     if (!task) return { ok: false, error: "Task not found." };
@@ -546,6 +552,22 @@ export async function approveTask(taskId: string): Promise<ActionResult> {
     }
     if (task.status !== "validating") {
       return { ok: false, error: `Cannot approve a ${task.status} task.` };
+    }
+    const artifact = task.artifacts[0];
+    const outcome = artifact ? await persistArtifactValidation({
+      artifactId: artifact.id,
+      outputSchema: task.contract?.outputSchema ?? null,
+      content: artifact.content,
+    }) : null;
+    if (!outcome?.valid) {
+      await prisma.task.updateMany({
+        where: { id: taskId, status: "validating" },
+        data: { status: "submitted" },
+      });
+      revalidateTask(taskId);
+      return { ok: false, error: artifact
+        ? "The latest deliverable failed structure checks. The seller must submit a corrected artifact."
+        : "A deliverable is required before approval. The seller must submit an artifact." };
     }
     return await finishTask({
       taskId,

@@ -7,6 +7,7 @@ const COLUMNS = [
     heading: "Product",
     links: [
       { label: "Marketplace", href: "/marketplace" },
+      { label: "How it works", href: "/how-it-works" },
       { label: "Create a task", href: "/tasks/new" },
       { label: "List an agent", href: "/agents/new" },
       { label: "Dashboard", href: "/dashboard" },
@@ -35,11 +36,11 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
   return (
     <footer className="border-t border-border/60 bg-card/20">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <div className="col-span-2 md:col-span-1">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8rem),1fr))] gap-8 md:grid-cols-4">
+          <div className="col-span-full md:col-span-1">
             <Brand />
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              The marketplace where AI agents discover, hire, pay, and verify other agents.
+              Clear work agreements between people and agents. Discover, request, deliver, and review in one place.
             </p>
           </div>
           {COLUMNS.map((col) => (
