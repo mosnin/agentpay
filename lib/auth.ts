@@ -42,60 +42,83 @@ function isAllowlistedAdmin(email: string): boolean {
 /** True when Clerk is configured (server-side check — both keys present). */
 export function isClerkEnabled() {
   return Boolean(
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY,
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+      process.env.CLERK_SECRET_KEY,
   );
 }
 
-export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
+export type CurrentUser = NonNullable<
+  Awaited<ReturnType<typeof getCurrentUser>>
+>;
 
 async function getClerkBackedUser() {
   const { userId: clerkId } = await auth();
   if (!clerkId) return null;
 
-  const existing = await prisma.user.findUnique({
-    where: { clerkId },
-    include: { organization: true },
-  });
-  if (existing) {
-    if (existing.role !== "admin" && isAllowlistedAdmin(existing.email)) {
-      return prisma.user.update({
-        where: { id: existing.id },
-        data: { role: "admin" },
-        include: { organization: true },
-      });
-    }
-    return existing;
-  }
-
-  // First request for this Clerk identity — provision (or adopt) a local row.
   const cu = await currentUser();
-  if (!cu) return null;
-  const email =
-    cu.primaryEmailAddress?.emailAddress ??
-    cu.emailAddresses[0]?.emailAddress ??
-    `${clerkId}@users.bids.sh`;
+  // Never adopt an account or grant an email-based role from an unverified
+  // provider attribute. Bind the profile to the authenticated session as well.
+  const primary = cu?.primaryEmailAddress;
+  if (
+    !cu ||
+    cu.id !== clerkId ||
+    !primary ||
+    primary.verification?.status !== "verified"
+  )
+    return null;
+  const email = primary.emailAddress;
   const name =
     [cu.firstName, cu.lastName].filter(Boolean).join(" ").trim() ||
     cu.username ||
     null;
   const admin = isAllowlistedAdmin(email);
 
-  return prisma.user.upsert({
-    where: { email },
-    update: {
-      clerkId,
-      name: name ?? undefined,
-      image: cu.imageUrl,
-      ...(admin ? { role: "admin" } : {}),
-    },
-    create: {
-      email,
-      clerkId,
-      name,
-      image: cu.imageUrl,
-      ...(admin ? { role: "admin" } : {}),
-    },
-    include: { organization: true },
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.user.findUnique({ where: { clerkId } });
+    if (existing) {
+      if (existing.role !== "admin" && admin) {
+        return tx.user.update({
+          where: { id: existing.id },
+          data: { role: "admin" },
+          include: { organization: true },
+        });
+      }
+      return tx.user.findUnique({
+        where: { id: existing.id },
+        include: { organization: true },
+      });
+    }
+    const byEmail = await tx.user.findUnique({ where: { email } });
+    if (byEmail) {
+      // A verified email must never replace a different bound Clerk identity.
+      // The conditional write also prevents competing first-login requests
+      // from rebinding an account between the read and update.
+      if (byEmail.clerkId && byEmail.clerkId !== clerkId) return null;
+      const adopted = await tx.user.updateMany({
+        where: { id: byEmail.id, clerkId: null },
+        data: {
+          clerkId,
+          name: name ?? undefined,
+          image: cu.imageUrl,
+          ...(admin ? { role: "admin" } : {}),
+        },
+      });
+      if (adopted.count !== 1) return null;
+      return tx.user.findUnique({
+        where: { id: byEmail.id },
+        include: { organization: true },
+      });
+    }
+    return tx.user.create({
+      data: {
+        email,
+        clerkId,
+        name,
+        image: cu.imageUrl,
+        ...(admin ? { role: "admin" } : {}),
+      },
+      include: { organization: true },
+    });
   });
 }
 
@@ -113,7 +136,9 @@ async function getBearerKeyUser() {
   // Preserve Next's dynamic-render signal; swallowing it can cache a keyless
   // identity or unauthenticated redirect while prerendering protected pages.
   const authorization = (await headers()).get("authorization");
-  const match = authorization ? /^Bearer\s+(.+)$/i.exec(authorization.trim()) : null;
+  const match = authorization
+    ? /^Bearer\s+(.+)$/i.exec(authorization.trim())
+    : null;
   const token = match?.[1]?.trim();
   if (!authorization) return undefined;
   if (!token || !token.startsWith("bids_")) return null;

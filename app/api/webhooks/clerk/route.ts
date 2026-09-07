@@ -34,13 +34,20 @@ export async function POST(request: NextRequest) {
   try {
     if (evt.type === "user.updated") {
       const data = evt.data;
+      const primary = data.email_addresses?.find(
+        (e) => e.id === data.primary_email_address_id,
+      );
       const primaryEmail =
-        data.email_addresses?.find((e) => e.id === data.primary_email_address_id)
-          ?.email_address ?? data.email_addresses?.[0]?.email_address;
+        primary?.verification?.status === "verified"
+          ? primary.email_address
+          : undefined;
       const name =
-        [data.first_name, data.last_name].filter(Boolean).join(" ").trim() || null;
+        [data.first_name, data.last_name].filter(Boolean).join(" ").trim() ||
+        null;
 
-      const user = await prisma.user.findUnique({ where: { clerkId: data.id } });
+      const user = await prisma.user.findUnique({
+        where: { clerkId: data.id },
+      });
       if (user) {
         await prisma.user.update({
           where: { id: user.id },
@@ -64,14 +71,22 @@ export async function POST(request: NextRequest) {
         where: { clerkId: evt.data.id },
       });
       if (user) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            clerkId: null,
-            name: null,
-            image: null,
-            email: `deleted-${user.id}@users.bids.sh`,
-          },
+        await prisma.$transaction(async (tx) => {
+          await tx.apiKey.updateMany({
+            where: { userId: user.id, revokedAt: null },
+            data: { revokedAt: new Date() },
+          });
+          await tx.user.update({
+            where: { id: user.id },
+            data: {
+              clerkId: null,
+              name: null,
+              image: null,
+              role: "operator",
+              publicTrustProfile: false,
+              email: `deleted-${user.id}@users.bids.sh`,
+            },
+          });
         });
       }
     }

@@ -34,24 +34,28 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bids?schema=public
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_BIDS_PAYMENT_MODE: demo
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       # postinstall runs `prisma generate`
       - name: Install dependencies
         run: npm ci
 
-      - name: Push database schema
-        run: npm run db:push
+      - name: Apply recorded database migrations
+        run: npx prisma migrate deploy
 
       - name: Seed demo data
         run: npm run db:seed
+
+      - name: Block critical runtime dependency advisories
+        run: npm audit --omit=dev --audit-level=critical
 
       - name: Typecheck
         run: npm run typecheck
@@ -92,21 +96,22 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bids?schema=public
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_BIDS_PAYMENT_MODE: demo
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       # postinstall runs `prisma generate`
       - name: Install dependencies
         run: npm ci
 
-      - name: Push database schema
-        run: npm run db:push
+      - name: Apply recorded database migrations
+        run: npx prisma migrate deploy
 
       - name: Seed demo data
         run: npm run db:seed
@@ -119,3 +124,57 @@ jobs:
 
       - name: Run E2E suite
         run: npm run test:e2e
+
+  settlement:
+    name: Contracts and persistent settlement recovery
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: bids_design
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 56187:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d bids_design"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres@127.0.0.1:56187/bids_design?schema=public
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_BIDS_PAYMENT_MODE: demo
+      BIDS_CHAIN_INTEGRATION: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run contracts:build
+      - run: git diff --exit-code -- contracts/artifacts
+      - run: npm run test:contracts
+      - run: npm run test:testnet-state
+      - run: npx vitest run lib/__tests__/settlement-integration.test.ts
+      - name: Build stablecoin product
+        run: npm run build
+        env:
+          NEXT_PUBLIC_BIDS_PAYMENT_MODE: crypto
+          NEXT_TELEMETRY_DISABLED: "1"
+      - name: Install payment journey browser
+        run: npx playwright install --with-deps chromium
+      - name: Exercise funded buyer and seller journey
+        run: npm run test:settlement-ui
+        env:
+          NEXT_PUBLIC_BIDS_PAYMENT_MODE: crypto
+      - name: Preserve settlement evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: settlement-browser-evidence
+          path: test-results/settlement-ui
+          if-no-files-found: ignore

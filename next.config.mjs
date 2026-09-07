@@ -2,6 +2,15 @@
 
 const isDev = process.env.NODE_ENV === "development";
 
+// Demo mode grants access to a seeded operator. It must never reach the
+// production deployment, even when an environment variable is misconfigured.
+if (
+  process.env.VERCEL_ENV === "production" &&
+  process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE === "demo"
+) {
+  throw new Error("Demo operator mode is forbidden on production deployments.");
+}
+
 // When Clerk is configured, the CSP must admit its frontend API, avatar CDN,
 // telemetry, and the Cloudflare Turnstile bot-protection frame it embeds.
 // Development instances live on *.clerk.accounts.dev; production instances

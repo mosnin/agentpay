@@ -31,16 +31,20 @@ const upstashEnabled = Boolean(
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
 );
 
-function makeUpstashLimiter(opts: LimiterOptions) {
+function makeUpstashLimiter(opts: LimiterOptions, scope: string) {
   return new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.tokenBucket(opts.refillRate, "1 s", opts.capacity),
-    prefix: "bids:rl",
+    prefix: `bids:rl:${scope}`,
   });
 }
 
-const upstashDefault = upstashEnabled ? makeUpstashLimiter(DEFAULT_LIMITS) : null;
-const upstashStrict = upstashEnabled ? makeUpstashLimiter(STRICT_LIMITS) : null;
+const upstashDefault = upstashEnabled
+  ? makeUpstashLimiter(DEFAULT_LIMITS, "default")
+  : null;
+const upstashStrict = upstashEnabled
+  ? makeUpstashLimiter(STRICT_LIMITS, "strict")
+  : null;
 
 let warnedFallback = false;
 function warnFallbackOnce() {
@@ -62,7 +66,11 @@ function refill(bucket: Bucket, capacity: number, refillRate: number) {
   bucket.lastRefill = now;
 }
 
-function localRateLimit(key: string, cost: number, opts: LimiterOptions): { ok: boolean } {
+function localRateLimit(
+  key: string,
+  cost: number,
+  opts: LimiterOptions,
+): { ok: boolean } {
   let bucket = store.get(key);
   if (!bucket) {
     bucket = { tokens: opts.capacity, lastRefill: Date.now() };
@@ -114,8 +122,11 @@ export async function strictRateLimit(key: string): Promise<{ ok: boolean }> {
       const res = await upstashStrict.limit(key);
       return { ok: res.success };
     } catch (err) {
-      console.error("[ratelimit] Upstash error — failing open", err);
-      return { ok: true };
+      console.error(
+        "[ratelimit] Upstash error — rejecting sensitive mutation",
+        err,
+      );
+      return { ok: false };
     }
   }
   warnFallbackOnce();
