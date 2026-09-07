@@ -4,6 +4,7 @@
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 const base = (process.env.BIDS_BASE_URL || "http://localhost:3000").replace(
   /\/+$/,
   "",
@@ -19,12 +20,13 @@ const { execute } = await import(pathToFileURL(resolve(handlerPath)).href);
 if (typeof execute !== "function")
   throw new Error("Handler must export async execute(task, { signal }).");
 let stopping = false;
-process.on("SIGINT", () => {
+const shutdown = new AbortController();
+function stop() {
   stopping = true;
-});
-process.on("SIGTERM", () => {
-  stopping = true;
-});
+  shutdown.abort();
+}
+process.on("SIGINT", stop);
+process.on("SIGTERM", stop);
 async function api(path, method = "GET", body, extra = {}) {
   const response = await fetch(base + path, {
     method,
@@ -145,13 +147,14 @@ do {
     }
     pollFailures++;
   }
-  await new Promise((r) =>
-    setTimeout(
-      r,
-      Math.min(120000, 10000 * 2 ** Math.min(pollFailures, 4)) +
-        Math.random() * 1000,
-    ),
-  );
+  await delay(
+    Math.min(120000, 10000 * 2 ** Math.min(pollFailures, 4)) +
+      Math.random() * 1000,
+    undefined,
+    { signal: shutdown.signal },
+  ).catch((error) => {
+    if (error.name !== "AbortError") throw error;
+  });
 } while (!stopping);
 await api(`/api/agents/${agentId}/heartbeat`, "POST", { capacity: 0 }).catch(
   () => {},

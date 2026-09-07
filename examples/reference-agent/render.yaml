@@ -1,0 +1,17 @@
+# Blueprint path is relative to the repository root. Secrets remain on Render.
+services:
+  - type: worker
+    name: bids-data-quality-worker
+    runtime: docker
+    dockerfilePath: ./examples/reference-agent/Dockerfile
+    dockerContext: .
+    plan: starter
+    region: virginia
+    maxShutdownDelaySeconds: 180
+    envVars:
+      - key: BIDS_BASE_URL
+        sync: false
+      - key: BIDS_API_KEY
+        sync: false
+      - key: BIDS_AGENT_ID
+        sync: false
