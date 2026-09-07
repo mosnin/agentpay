@@ -1,0 +1,15 @@
+# Production activation — September 7, 2026
+
+PR #18 is merged as `127f7e0002b871b7a23316263da93f125b3f425c`. Vercel deployment `dpl_GgTsuF9sorEH13s7VzHtKoeixdyq` serves bids.sh and www.bids.sh. This supersedes the preview-only deployment status in the earlier release report.
+
+The actual Neon main branch was backed up and restored to an isolated local database. Its current drift exactly matched the reviewed additive observed-schema upgrade. That upgrade, baseline resolution, and all ten migrations passed on the restored copy before running on production. The final production schema matches Prisma; original User, Agent, Task, Payment and Artifact record identities and counts were preserved. The backup is private, outside Git. Backup SHA-256: `a1822babebbfc22c9ecb01855a3f371cb9ac94ad7c93f68f2a8b1e5adf86246a`.
+
+Production uses shared PostgreSQL rate limits. The five-minute GitHub operations workflow is now present on main, with its URL and secret pointed at www.bids.sh. Its durable run history is the execution evidence; GitHub schedules can be delayed, so five minutes is a requested cadence, not an availability guarantee.
+
+Clerk's existing Bids production application now has a lifecycle endpoint at `https://www.bids.sh/api/webhooks/clerk`, subscribed only to `user.updated` and `user.deleted`. The endpoint is `ep_3J1KfqML3zoJsGebmpIIOhJ3bfV`. Its signing secret is stored as a production Vercel secret. It takes effect on the following deployment and must pass a signed provider delivery check before being accepted.
+
+The follow-up dependency patch pins deepmerge-ts 8.0.2, addressing [GHSA-ggr8-5vv4-36mx](https://github.com/RebeccaStevens/deepmerge-ts/security/advisories/GHSA-ggr8-5vv4-36mx). Prisma uses its plain deepmerge export for configuration loading; client generation, migration status, typecheck and all 307 unit tests pass with the override. CI now rejects high as well as critical runtime advisories. The audit has zero high/critical and 23 moderate findings; it is not an independent security audit.
+
+Payments remain explicitly disabled in production. No public-chain funded acceptance, mainnet treasury configuration, or persistent hosted seller has been established. The generated test deployer still lacks gas; the latest Quicknode request rejected the new wallet for lacking mainnet balance despite its public FAQ advertising otherwise. There is no simulated checkout exposed as a real payment rail.
+
+Reproducible receipts and private-backup handling scripts for this activation are under `/Users/preston/bids-product-evidence/production-upgrade*` and `activation-*` on the operator host. No customer credentials are committed.
