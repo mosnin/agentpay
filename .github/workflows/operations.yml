@@ -1,7 +1,5 @@
-name: Scheduled product operations
+name: Manual product operations recovery
 on:
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
 permissions: {}
 concurrency:
