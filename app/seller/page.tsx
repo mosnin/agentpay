@@ -1,3 +1,8 @@
+import { SettledEarnings } from "@/components/dashboard/settled-earnings";
+import { SetupProgress } from "@/components/dashboard/setup-progress";
+import { getSetupProgress } from "@/lib/activation";
+import { pageNumber } from "@/lib/pagination";
+import { Pagination } from "@/components/shared/pagination";
 import { availablePaymentRails } from "@/lib/payment-rails";
 import { PayoutSetup } from "@/components/payments/payment-button";
 import { paymentMode } from "@/lib/payment-mode";
@@ -29,34 +34,23 @@ export const metadata: Metadata = {
   description: "Manage your listings, inbound work, earnings, and reviews.",
 };
 
-/** Pipeline value of inbound work, grouped by lifecycle stage, for the mini-chart. */
-function buildPipeline(
-  tasks: Awaited<ReturnType<typeof getSellerData>>["inboundTasks"],
-) {
-  const buckets: { key: string; label: string; statuses: string[] }[] = [
-    { key: "open", label: "Open", statuses: ["pending", "accepted"] },
-    {
-      key: "in_progress",
-      label: "In progress",
-      statuses: ["running", "submitted", "validating"],
-    },
-    { key: "completed", label: "Completed", statuses: ["completed"] },
-  ];
-
-  return buckets.map((bucket) => {
-    const value = tasks
-      .filter((t) => bucket.statuses.includes(t.status))
-      .reduce((sum, t) => sum + t.budget, 0);
-    return { stage: bucket.label, value };
-  });
-}
-
-export default async function SellerPage() {
+export default async function SellerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const user = await requireOnboardedUser();
-  const data = await getSellerData(user.id);
+  const page = pageNumber((await searchParams).page);
+  const [data, setup] = await Promise.all([
+    getSellerData(user.id, page),
+    getSetupProgress(user.id),
+  ]);
   const { stats } = data;
 
-  const pipeline = buildPipeline(data.inboundTasks);
+  const pipeline = data.taskGroups.map((g) => ({
+    stage: g.status,
+    value: g._sum.budget ?? 0,
+  }));
   const hasPipeline = pipeline.some((p) => p.value > 0);
 
   return (
@@ -77,54 +71,9 @@ export default async function SellerPage() {
       </PageHeader>
 
       <div className="space-y-10">
-        <section
-          aria-label="Seller setup"
-          className="border-y border-border py-6"
-        >
-          <h2 className="text-xl font-semibold tracking-tight">
-            Turn a listing into a working service
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-            Bids coordinates requests and delivery. Your agent runs in your own
-            environment; adding an endpoint does not start it automatically.
-          </p>
-          <ol className="mt-5 grid gap-5 text-sm sm:grid-cols-3">
-            <li>
-              <Link
-                className="font-medium underline underline-offset-4"
-                href="/agents/new"
-              >
-                1. Describe your service
-              </Link>
-              <p className="mt-1 text-muted-foreground">
-                Set an honest scope, output format and price.
-              </p>
-            </li>
-            <li>
-              <Link
-                className="font-medium underline underline-offset-4"
-                href="/settings/api-keys"
-              >
-                2. Connect your worker
-              </Link>
-              <p className="mt-1 text-muted-foreground">
-                Create a key. Use the API or manage delivery here.
-              </p>
-            </li>
-            <li>
-              <Link
-                className="font-medium underline underline-offset-4"
-                href="/developers#quickstart"
-              >
-                3. Complete a test task
-              </Link>
-              <p className="mt-1 text-muted-foreground">
-                Accept, deliver, pass checks and wait for buyer approval.
-              </p>
-            </li>
-          </ol>
-        </section>
+        <SetupProgress title="Launch your service" steps={setup.seller} />
         <PaymentNotice />
+        <SettledEarnings userId={user.id} />
         {availablePaymentRails().includes("stripe") && (
           <PayoutSetup connected={Boolean(user.stripeAccountId)} />
         )}
@@ -134,7 +83,7 @@ export default async function SellerPage() {
             label={
               paymentMode() === "demo"
                 ? "Simulated earnings"
-                : "Transferred earnings"
+                : "Card earnings (USD)"
             }
             value={formatCurrency(stats.totalEarnings)}
             icon={CircleDollarSign}
@@ -201,7 +150,7 @@ export default async function SellerPage() {
                 Your agents
               </h2>
               <p className="text-sm text-muted-foreground">
-                Listings you own and their live marketplace performance.
+                Your most recent 100 listings and their marketplace performance.
               </p>
             </div>
             {data.ownedAgents.length > 0 && (
@@ -228,6 +177,12 @@ export default async function SellerPage() {
             </p>
           </div>
           <InboundTasks tasks={data.inboundTasks} />
+          <Pagination
+            page={page}
+            total={data.taskCount}
+            pageSize={25}
+            pathname="/seller"
+          />
         </section>
 
         {/* Reviews */}

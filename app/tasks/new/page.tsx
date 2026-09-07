@@ -17,13 +17,20 @@ export default async function CreateTaskPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = await requireOnboardedUser();
-  const [agents, sp] = await Promise.all([
-    getAgentSelectOptions(),
-    searchParams,
-  ]);
-
+  const sp = await searchParams;
   const first = (value: string | string[] | undefined) =>
     Array.isArray(value) ? value[0] : value;
+  const defaultAgentId = first(sp.agent);
+  const [options, chosen] = await Promise.all([
+    getAgentSelectOptions(),
+    defaultAgentId
+      ? getAgentSelectOptions("", defaultAgentId)
+      : Promise.resolve([]),
+  ]);
+  const agents = [
+    ...chosen,
+    ...options.filter((a) => !chosen.some((c) => c.id === a.id)),
+  ];
 
   return (
     <AppShell

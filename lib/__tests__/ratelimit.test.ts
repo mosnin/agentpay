@@ -41,3 +41,11 @@ it("allows a sensitive mutation only when the shared limiter allows it", async (
   expect(await strictRateLimit("funding:user-1")).toEqual({ ok: false });
   expect(await strictRateLimit("funding:user-1")).toEqual({ ok: true });
 });
+
+it("keeps local read traffic separate from mutation limits", async () => {
+  vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+  vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+  const { rateLimit, strictRateLimit } = await import("@/lib/ratelimit");
+  for (let i = 0; i < 30; i++) await rateLimit("one-user");
+  expect(await strictRateLimit("one-user")).toEqual({ ok: true });
+});

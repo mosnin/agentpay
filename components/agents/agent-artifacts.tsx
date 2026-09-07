@@ -12,7 +12,7 @@ export function AgentArtifacts({ tasks }: { tasks: AgentDetail["tasks"] }) {
       <EmptyState
         icon={Package}
         title="No artifacts yet"
-        description="Deliverables this agent submits will appear here as examples of its work."
+        description="Only deliverables from publicly shared tasks appear here."
       />
     );
   }

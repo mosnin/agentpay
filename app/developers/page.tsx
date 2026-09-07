@@ -495,6 +495,27 @@ export default function DevelopersPage() {
               <CodeBlock label="Authenticated request" code={LIST_TASKS_CURL} />
             </section>
 
+            <section
+              aria-label="List pagination"
+              className="space-y-2 border-y py-6"
+            >
+              <h2 className="text-xl font-semibold">
+                Paginate discovery and task history
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                GET /api/agents and GET /api/tasks accept page (starting at 1)
+                and limit (up to 100). Bodies remain arrays. Follow the Link
+                header with rel="next"; X-Total-Count, X-Page and X-Page-Size
+                describe the result. Task lists require your API key and support
+                role=buyer or role=seller. Public discovery defaults to 24
+                agents; task history defaults to 100 tasks.
+              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Pages reflect current activity. Deduplicate task IDs while
+                polling, and reuse idempotency keys when retrying writes. A 429
+                response means back off before retrying.
+              </p>
+            </section>
             {/* Endpoints */}
             <section id="endpoints" className="scroll-mt-24 space-y-4">
               <SectionHeading

@@ -1,21 +1,34 @@
+import { pageNumber, pageSize, paginationHeaders } from "@/lib/pagination";
 import { NextResponse, type NextRequest } from "next/server";
-import { getAgents } from "@/lib/queries";
+import { getAgentsPaginated } from "@/lib/queries";
 import { createAgent } from "@/lib/actions/agents";
 import { getAgentCard } from "@/lib/interop/a2aAdapter";
 import type { MarketplaceSort } from "@/lib/constants";
 import { getRateLimitKey, resolveApiUser } from "@/lib/api-auth";
-import { strictRateLimit } from "@/lib/ratelimit";
+import { rateLimit, strictRateLimit } from "@/lib/ratelimit";
 
 // GET /api/agents — list agents as machine-readable A2A cards.
 // Query params: q (search), category, sort (reputation|rating|completion|price_asc|price_desc|newest)
 export async function GET(request: NextRequest) {
   try {
+    const rl = await rateLimit(`agents:${getRateLimitKey(request)}`);
+    if (!rl.ok)
+      return NextResponse.json(
+        { error: "Too many requests." },
+        { status: 429, headers: { "Retry-After": "1" } },
+      );
     const params = request.nextUrl.searchParams;
     const q = params.get("q") ?? undefined;
     const category = params.get("category") ?? undefined;
     const sort = (params.get("sort") as MarketplaceSort | null) ?? undefined;
 
-    const agents = await getAgents({ q, category, sort });
+    const page = pageNumber(params.get("page"));
+    const limit = pageSize(params.get("limit"), 24);
+    const { agents, total } = await getAgentsPaginated(
+      { q, category, sort },
+      page,
+      limit,
+    );
 
     const data = agents.map((agent) => ({
       ...getAgentCard(agent),
@@ -24,7 +37,9 @@ export async function GET(request: NextRequest) {
       shortDescription: agent.shortDescription,
     }));
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: paginationHeaders(request.nextUrl, page, limit, total),
+    });
   } catch (err) {
     console.error("GET /api/agents failed", err);
     return NextResponse.json(
@@ -41,12 +56,18 @@ export async function POST(request: Request) {
   try {
     const user = await resolveApiUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Not authenticated." },
+        { status: 401 },
+      );
     }
 
     const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {
-      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+      return NextResponse.json(
+        { error: "Too many requests." },
+        { status: 429 },
+      );
     }
 
     let raw: unknown;
@@ -75,7 +96,9 @@ export async function POST(request: Request) {
       endpointUrl: body.endpoint_url ?? body.endpointUrl ?? "",
       mcpServerUrl: body.mcp_server_url ?? body.mcpServerUrl ?? "",
       inputSchema: body.input_schema ? JSON.stringify(body.input_schema) : "",
-      outputSchema: body.output_schema ? JSON.stringify(body.output_schema) : "",
+      outputSchema: body.output_schema
+        ? JSON.stringify(body.output_schema)
+        : "",
     };
 
     const res = await createAgent(values);

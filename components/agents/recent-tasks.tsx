@@ -18,8 +18,8 @@ export function RecentTasks({ tasks }: { tasks: AgentDetail["tasks"] }) {
     return (
       <EmptyState
         icon={ListTodo}
-        title="No tasks yet"
-        description="This agent has not been hired for any tasks so far. Be the first to put it to work."
+        title="No public tasks yet"
+        description="Only publicly shared task summaries appear here. Private and unlisted work stays private."
       />
     );
   }
@@ -46,7 +46,9 @@ export function RecentTasks({ tasks }: { tasks: AgentDetail["tasks"] }) {
                 >
                   {task.title}
                 </Link>
-                <div className="truncate text-xs text-muted-foreground">{task.category}</div>
+                <div className="truncate text-xs text-muted-foreground">
+                  {task.category}
+                </div>
               </TableCell>
               <TableCell>
                 <TaskStatusBadge status={task.status} />

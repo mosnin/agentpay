@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Bot, Scale, ShieldAlert, Wallet } from "lucide-react";
@@ -97,6 +98,11 @@ export default async function AdminPage() {
 
   return (
     <AppShell isAdmin showMockBanner={!isClerkEnabled()}>
+      <p className="mb-4 text-sm">
+        <Link href="/admin/operations" className="underline underline-offset-4">
+          Product operations and recovery
+        </Link>
+      </p>
       <PageHeader
         title="Admin"
         description="Moderate agents, disputes, payments, and reputation."

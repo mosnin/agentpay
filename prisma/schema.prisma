@@ -114,6 +114,8 @@ model User {
   apiKeys       ApiKey[]
   notifications Notification[]
   sentInvites   OrganizationInvite[] @relation("InviteSender")
+
+  @@index([createdAt])
 }
 
 model Organization {
@@ -214,6 +216,7 @@ model Agent {
   // verificationStatus is the richer source of truth it mirrors.
   verified              Boolean      @default(false)
   verificationStatus    String       @default("unverified") // unverified | pending | verified | failed
+  lastVerificationAttemptAt DateTime?
   lastVerifiedAt        DateTime?
   verificationError     String?
   endpointUrl           String?
@@ -250,6 +253,9 @@ model Agent {
   @@index([category])
   @@index([reputationScore])
   @@index([verified])
+  @@index([status, reputationScore, id])
+  @@index([ownerId, createdAt])
+  @@index([status, lastVerificationAttemptAt, id])
 }
 
 // Audit trail for the verification program (Team 1): each automated check
@@ -333,6 +339,9 @@ model Task {
   @@index([buyerId])
   @@index([sellerAgentId])
   @@index([updatedAt])
+  @@index([buyerId, updatedAt, id])
+  @@index([sellerAgentId, createdAt, id])
+  @@index([status, deadline])
 }
 
 model TaskContract {
@@ -406,7 +415,7 @@ model Review {
   updatedAt DateTime @updatedAt
 
   @@unique([taskId, userId])
-  @@index([agentId])
+  @@index([agentId, createdAt])
   @@index([taskId])
 }
 

@@ -77,7 +77,10 @@ export function generateVerificationNonce(): string {
  * side of the handshake too) so the health-check challenge/response
  * contract has its own stable, independently-testable surface.
  */
-export function signVerificationChallenge(nonce: string, secret: string): string {
+export function signVerificationChallenge(
+  nonce: string,
+  secret: string,
+): string {
   return createHmac("sha256", secret).update(nonce).digest("hex");
 }
 
@@ -99,7 +102,8 @@ function safeEqualHex(a: string, b: string): boolean {
  * has no other reason to depend on. */
 function isClerkBackedDeployment(): boolean {
   return Boolean(
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY,
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+      process.env.CLERK_SECRET_KEY,
   );
 }
 
@@ -142,7 +146,9 @@ export interface VerificationOutcome {
  */
 export const SKIPPED_DETAIL_PREFIX = "Skipped —";
 
-export function isSkippedCheckDetail(detail: string | null | undefined): boolean {
+export function isSkippedCheckDetail(
+  detail: string | null | undefined,
+): boolean {
   return Boolean(detail && detail.startsWith(SKIPPED_DETAIL_PREFIX));
 }
 
@@ -164,13 +170,16 @@ interface HealthChallengeResponse {
  * reachable through runAgentVerification) so it's directly testable with a
  * mocked global.fetch and no database at all.
  */
-export async function runHealthCheck(endpointUrl: string | null): Promise<VerificationCheckResult> {
+export async function runHealthCheck(
+  endpointUrl: string | null,
+): Promise<VerificationCheckResult> {
   if (!endpointUrl) {
     return {
       kind: "health",
       passed: false,
       skipped: false,
-      detail: "No endpoint to verify — add an invocation endpoint to run a health check.",
+      detail:
+        "No endpoint to verify — add an invocation endpoint to run a health check.",
     };
   }
 
@@ -206,7 +215,8 @@ export async function runHealthCheck(endpointUrl: string | null): Promise<Verifi
         kind: "health",
         passed: false,
         skipped: false,
-        detail: `Endpoint responded ${res.status} ${res.statusText}`.trim() + ".",
+        detail:
+          `Endpoint responded ${res.status} ${res.statusText}`.trim() + ".",
       };
     }
 
@@ -222,7 +232,8 @@ export async function runHealthCheck(endpointUrl: string | null): Promise<Verifi
       };
     }
 
-    const echoedNonce = typeof payload.nonce === "string" ? payload.nonce : null;
+    const echoedNonce =
+      typeof payload.nonce === "string" ? payload.nonce : null;
     if (echoedNonce !== nonce) {
       return {
         kind: "health",
@@ -234,13 +245,15 @@ export async function runHealthCheck(endpointUrl: string | null): Promise<Verifi
 
     if (secret) {
       const expected = signVerificationChallenge(nonce, secret);
-      const signature = typeof payload.signature === "string" ? payload.signature : "";
+      const signature =
+        typeof payload.signature === "string" ? payload.signature : "";
       if (!safeEqualHex(signature, expected)) {
         return {
           kind: "health",
           passed: false,
           skipped: false,
-          detail: "Endpoint signature did not match — it may not hold the verification secret.",
+          detail:
+            "Endpoint signature did not match — it may not hold the verification secret.",
         };
       }
       return {
@@ -284,9 +297,15 @@ function buildSyntheticSample(schema: unknown): unknown {
   if (!schema || typeof schema !== "object" || Array.isArray(schema)) return {};
   const root = schema as Record<string, unknown>;
   const properties = root.properties;
-  if (properties && typeof properties === "object" && !Array.isArray(properties)) {
+  if (
+    properties &&
+    typeof properties === "object" &&
+    !Array.isArray(properties)
+  ) {
     const sample: Record<string, unknown> = {};
-    for (const [key, propSchema] of Object.entries(properties as Record<string, unknown>)) {
+    for (const [key, propSchema] of Object.entries(
+      properties as Record<string, unknown>,
+    )) {
       sample[key] = syntheticValueForType(propSchema);
     }
     return sample;
@@ -295,7 +314,12 @@ function buildSyntheticSample(schema: unknown): unknown {
 }
 
 function syntheticValueForType(propSchema: unknown): unknown {
-  if (!propSchema || typeof propSchema !== "object" || Array.isArray(propSchema)) return "sample";
+  if (
+    !propSchema ||
+    typeof propSchema !== "object" ||
+    Array.isArray(propSchema)
+  )
+    return "sample";
   const p = propSchema as Record<string, unknown>;
   if (Array.isArray(p.enum) && p.enum.length > 0) return p.enum[0];
   switch (p.type) {
@@ -326,7 +350,9 @@ function isSchemaCompileFailure(errors: string[]): boolean {
  * Confirms the agent's declared outputSchema actually compiles as JSON
  * Schema. Pure given its input (no DB/network), exported for direct testing.
  */
-export async function runSchemaCheck(outputSchema: unknown): Promise<VerificationCheckResult> {
+export async function runSchemaCheck(
+  outputSchema: unknown,
+): Promise<VerificationCheckResult> {
   const sample = buildSyntheticSample(outputSchema);
   const result = validateArtifactAgainstSchema(outputSchema, sample);
 
@@ -352,7 +378,8 @@ export async function runSchemaCheck(outputSchema: unknown): Promise<Verificatio
     kind: "schema",
     passed: true,
     skipped: false,
-    detail: "Declared output schema compiles and is ready to validate submissions.",
+    detail:
+      "Declared output schema compiles and is ready to validate submissions.",
   };
 }
 
@@ -371,7 +398,9 @@ export interface VerificationOwner {
  * but its own standalone check so future signals (KYC, org verification,
  * payout method on file, ...) can be added without touching the other two.
  */
-export async function runIdentityCheck(owner: VerificationOwner | null): Promise<VerificationCheckResult> {
+export async function runIdentityCheck(
+  owner: VerificationOwner | null,
+): Promise<VerificationCheckResult> {
   if (!owner || !owner.email || !owner.email.trim()) {
     return {
       kind: "identity",
@@ -428,14 +457,24 @@ export interface VerificationAggregate {
  * runAgentVerification so this decision is unit-testable on hand-built
  * VerificationCheckResult[] fixtures, with no Prisma/network involved.
  */
-export function aggregateVerificationChecks(checks: VerificationCheckResult[]): VerificationAggregate {
+export function aggregateVerificationChecks(
+  checks: VerificationCheckResult[],
+): VerificationAggregate {
   const required = checks.filter((c) => !c.skipped);
   const allPass = required.length > 0 && required.every((c) => c.passed);
 
   if (allPass) {
-    return { verified: true, verificationStatus: "verified", verificationError: null };
+    return {
+      verified: true,
+      verificationStatus: "verified",
+      verificationError: null,
+    };
   }
-  return { verified: false, verificationStatus: "failed", verificationError: summarizeFailure(checks) };
+  return {
+    verified: false,
+    verificationStatus: "failed",
+    verificationError: summarizeFailure(checks),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -478,7 +517,9 @@ async function safeCheck(
  * agent's verified/verificationStatus/lastVerifiedAt/verificationError
  * fields accordingly. Never throws (see file header).
  */
-export async function runAgentVerification(agentId: string): Promise<VerificationOutcome> {
+export async function runAgentVerification(
+  agentId: string,
+): Promise<VerificationOutcome> {
   let agent: Awaited<ReturnType<typeof fetchAgentForVerification>> = null;
   try {
     agent = await fetchAgentForVerification(agentId);
@@ -499,7 +540,13 @@ export async function runAgentVerification(agentId: string): Promise<Verificatio
     // health probe (up to HEALTH_CHECK_TIMEOUT_MS) is outstanding. Best
     // effort — failing to write "pending" must not abort the actual checks.
     try {
-      await prisma.agent.update({ where: { id: agentId }, data: { verificationStatus: "pending" } });
+      await prisma.agent.update({
+        where: { id: agentId },
+        data: {
+          verificationStatus: "pending",
+          lastVerificationAttemptAt: new Date(),
+        },
+      });
     } catch (err) {
       console.error("[runAgentVerification] failed to mark pending", err);
     }
@@ -526,7 +573,9 @@ export async function runAgentVerification(agentId: string): Promise<Verificatio
     }
 
     const aggregate = aggregateVerificationChecks(checks);
-    const lastVerifiedAt = aggregate.verified ? new Date() : verifiedAgent.lastVerifiedAt;
+    const lastVerifiedAt = aggregate.verified
+      ? new Date()
+      : verifiedAgent.lastVerifiedAt;
 
     // The aggregate write is the one thing this function does NOT swallow
     // locally: if it fails, the outer catch below reports an honest
@@ -560,7 +609,8 @@ export async function runAgentVerification(agentId: string): Promise<Verificatio
       verified: false,
       verificationStatus: "failed",
       lastVerifiedAt: agent?.lastVerifiedAt ?? null,
-      verificationError: "Verification could not complete due to an internal error.",
+      verificationError:
+        "Verification could not complete due to an internal error.",
       checks: [],
     };
   }

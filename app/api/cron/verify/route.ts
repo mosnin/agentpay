@@ -57,7 +57,9 @@ async function runBatch<T>(
     await worker(items[i]);
     return next();
   }
-  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => next()));
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, () => next()),
+  );
 }
 
 async function handleSweep(request: Request): Promise<NextResponse> {
@@ -75,7 +77,17 @@ async function handleSweep(request: Request): Promise<NextResponse> {
   try {
     const staleCutoff = new Date(Date.now() - STALE_MS);
     const candidates = await prisma.agent.findMany({
-      where: { OR: [{ lastVerifiedAt: null }, { lastVerifiedAt: { lt: staleCutoff } }] },
+      where: {
+        status: "active",
+        OR: [
+          { lastVerificationAttemptAt: null },
+          { lastVerificationAttemptAt: { lt: staleCutoff } },
+        ],
+      },
+      orderBy: [
+        { lastVerificationAttemptAt: { sort: "asc", nulls: "first" } },
+        { id: "asc" },
+      ],
       select: { id: true, verified: true },
       take: BATCH_SIZE,
     });
@@ -100,7 +112,10 @@ async function handleSweep(request: Request): Promise<NextResponse> {
         // runAgentVerification already guarantees it never throws — this is
         // belt-and-suspenders so a truly unexpected error (e.g. this
         // closure itself) still can't take down the rest of the batch.
-        errors.push({ agentId: candidate.id, error: err instanceof Error ? err.message : String(err) });
+        errors.push({
+          agentId: candidate.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     });
 
@@ -114,7 +129,10 @@ async function handleSweep(request: Request): Promise<NextResponse> {
     });
   } catch (err) {
     console.error("verification cron sweep failed", err);
-    return NextResponse.json({ error: "Verification sweep failed." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Verification sweep failed." },
+      { status: 500 },
+    );
   }
 }
 

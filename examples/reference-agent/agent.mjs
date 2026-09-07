@@ -98,8 +98,12 @@ async function processTask(row) {
     }),
   );
 }
+// Read a bounded batch and rotate through history before repeating. Filtering
+// seller work avoids burying assignments under this operator's buyer history.
+let pollPage = 1;
 do {
-  const tasks = await api("/api/tasks");
+  const tasks = await api(`/api/tasks?status=active&role=seller&limit=100&page=${pollPage}`);
+  pollPage = tasks.length === 100 && pollPage < 10000 ? pollPage + 1 : 1;
   for (const task of tasks.filter(
     (t) =>
       t.seller_agent?.id === agentId &&

@@ -58,6 +58,7 @@ function warnFallbackOnce() {
 // --- In-memory fallback ------------------------------------------------------
 
 const store = new Map<string, Bucket>();
+const MAX_LOCAL_BUCKETS = 10_000;
 
 function refill(bucket: Bucket, capacity: number, refillRate: number) {
   const now = Date.now();
@@ -73,6 +74,12 @@ function localRateLimit(
 ): { ok: boolean } {
   let bucket = store.get(key);
   if (!bucket) {
+    if (store.size >= MAX_LOCAL_BUCKETS) {
+      const cutoff = Date.now() - 60_000;
+      for (const [id, entry] of store)
+        if (entry.lastRefill < cutoff) store.delete(id);
+      if (store.size >= MAX_LOCAL_BUCKETS) return { ok: false };
+    }
     bucket = { tokens: opts.capacity, lastRefill: Date.now() };
     store.set(key, bucket);
   }
@@ -109,7 +116,7 @@ export async function rateLimit(
     }
   }
   warnFallbackOnce();
-  return localRateLimit(key, cost, opts);
+  return localRateLimit(`default:${key}`, cost, opts);
 }
 
 /**
@@ -130,5 +137,5 @@ export async function strictRateLimit(key: string): Promise<{ ok: boolean }> {
     }
   }
   warnFallbackOnce();
-  return localRateLimit(key, 1, STRICT_LIMITS);
+  return localRateLimit(`strict:${key}`, 1, STRICT_LIMITS);
 }

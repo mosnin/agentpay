@@ -1,3 +1,4 @@
+import { pageNumber } from "@/lib/pagination";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,7 +7,11 @@ import { SiteShell } from "@/components/layout/site-shell";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AgentCard } from "@/components/marketplace/agent-card";
 import { Button } from "@/components/ui/button";
-import { getAgents, getAgentsPaginated, AGENTS_PAGE_SIZE } from "@/lib/queries";
+import {
+  getCategorySummary,
+  getAgentsPaginated,
+  AGENTS_PAGE_SIZE,
+} from "@/lib/queries";
 import { formatNumber } from "@/lib/utils";
 import { CATEGORY_META, getCategoryBySlug } from "./category-meta";
 import { CategoryHero } from "./category-hero";
@@ -43,7 +48,13 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { type: "website", siteName: "Bids", url, title: shareTitle, description },
+    openGraph: {
+      type: "website",
+      siteName: "Bids",
+      url,
+      title: shareTitle,
+      description,
+    },
     twitter: { card: "summary_large_image", title: shareTitle, description },
   };
 }
@@ -55,7 +66,9 @@ function one(value: string | string[] | undefined): string | undefined {
 }
 
 function hrefWithPage(slug: string, page: number): string {
-  return page > 1 ? `/marketplace/${slug}?page=${page}` : `/marketplace/${slug}`;
+  return page > 1
+    ? `/marketplace/${slug}?page=${page}`
+    : `/marketplace/${slug}`;
 }
 
 export default async function CategoryMarketplacePage({
@@ -70,22 +83,14 @@ export default async function CategoryMarketplacePage({
   if (!meta) notFound();
 
   const pageRaw = one(sp.page);
-  const page = Math.max(1, parseInt(pageRaw ?? "1", 10) || 1);
+  const page = pageNumber(pageRaw);
 
-  // Two fetches, both reusing lib/queries.ts helpers (never edited here):
-  // the paginated slice for the grid, and the full (unpaginated) category
-  // roster for the hero's verified-count / top-reputation stats — those need
-  // to reflect the *whole* category, not just whatever page the visitor is
-  // on, and getAgentsPaginated's own `total` only covers the count, not the
-  // per-agent fields those stats are derived from.
-  const [{ agents }, categoryAgents] = await Promise.all([
+  const [{ agents, total }, summary] = await Promise.all([
     getAgentsPaginated({ category: meta.value, sort: "reputation" }, page),
-    getAgents({ category: meta.value, sort: "reputation" }),
+    getCategorySummary(meta.value),
   ]);
-
-  const total = categoryAgents.length;
-  const verifiedCount = categoryAgents.filter((a) => a.verified).length;
-  const topReputationScore = categoryAgents[0]?.reputationScore ?? null;
+  const verifiedCount = summary.verifiedCount;
+  const topReputationScore = summary.topReputationScore;
   const totalPages = Math.max(1, Math.ceil(total / AGENTS_PAGE_SIZE));
   const offset = (page - 1) * AGENTS_PAGE_SIZE;
 
@@ -93,7 +98,10 @@ export default async function CategoryMarketplacePage({
     <SiteShell>
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <nav className="mb-5 flex items-center gap-1 text-sm text-muted-foreground">
-          <Link href="/marketplace" className="transition-colors hover:text-foreground">
+          <Link
+            href="/marketplace"
+            className="transition-colors hover:text-foreground"
+          >
             Marketplace
           </Link>
           <ChevronRight className="h-3.5 w-3.5" />
@@ -116,10 +124,13 @@ export default async function CategoryMarketplacePage({
                 ) : (
                   <>
                     <span className="font-medium text-foreground">
-                      {formatNumber(offset + 1)}–{formatNumber(offset + agents.length)}
+                      {formatNumber(offset + 1)}–
+                      {formatNumber(offset + agents.length)}
                     </span>{" "}
                     of{" "}
-                    <span className="font-medium text-foreground">{formatNumber(total)}</span>
+                    <span className="font-medium text-foreground">
+                      {formatNumber(total)}
+                    </span>
                   </>
                 )}{" "}
                 {total === 1 ? "agent" : "agents"} in {meta.label}
@@ -130,7 +141,9 @@ export default async function CategoryMarketplacePage({
                 size="sm"
                 className="shrink-0 text-muted-foreground"
               >
-                <Link href={`/marketplace?category=${encodeURIComponent(meta.value)}`}>
+                <Link
+                  href={`/marketplace?category=${encodeURIComponent(meta.value)}`}
+                >
                   Sort &amp; filter
                 </Link>
               </Button>
@@ -199,7 +212,10 @@ export default async function CategoryMarketplacePage({
             )}
           </div>
 
-          <RelatedCategories categories={CATEGORY_META} currentSlug={meta.slug} />
+          <RelatedCategories
+            categories={CATEGORY_META}
+            currentSlug={meta.slug}
+          />
         </div>
       </div>
     </SiteShell>

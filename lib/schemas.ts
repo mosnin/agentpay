@@ -105,7 +105,7 @@ export const createTaskSchema = z.object({
     "subscription_access",
     "bounty",
   ]),
-  visibility: z.enum(["public", "private", "unlisted"]).default("public"),
+  visibility: z.enum(["public", "private", "unlisted"]).default("private"),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
@@ -158,6 +158,7 @@ export const completeOnboardingSchema = z.object({
 export type CompleteOnboardingInput = z.infer<typeof completeOnboardingSchema>;
 
 export const apiCreateTaskSchema = z.object({
+  visibility: z.enum(["public", "private", "unlisted"]).default("private"),
   objective: z.string().min(3),
   title: z.string().optional(),
   category: z.string().default("Growth"),

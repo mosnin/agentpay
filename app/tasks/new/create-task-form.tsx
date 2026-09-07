@@ -1,4 +1,5 @@
 "use client";
+import { AgentPicker } from "@/components/tasks/agent-picker";
 
 import { paymentMode } from "@/lib/payment-mode";
 import { PaymentNotice } from "@/components/shared/payment-notice";
@@ -75,11 +76,12 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export function CreateTaskForm({
-  agents,
+  agents: initialAgents,
   paymentRails = [],
   defaultAgentId,
   defaultCategory,
 }: CreateTaskFormProps) {
+  const [agents, setAgents] = useState(initialAgents);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [contract, setContract] = useState<StructuredContract | null>(null);
@@ -141,7 +143,7 @@ export function CreateTaskForm({
       paymentMode: ["stripe", "crypto"].includes(paymentMode())
         ? "pay_per_task"
         : "mock_escrow",
-      visibility: "public",
+      visibility: "private",
     },
   });
 
@@ -338,61 +340,24 @@ export function CreateTaskForm({
                   control={control}
                   name="sellerAgentId"
                   render={({ field }) => (
-                    <Select
+                    <AgentPicker
+                      initial={agents}
                       value={field.value ?? ""}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        // Sensible default: seed the budget from the agent's
-                        // starting price unless the buyer already set one.
-                        const price = Number(
-                          agentById(value)?.startingPrice ?? 0,
-                        );
+                      invalid={Boolean(errors.sellerAgentId)}
+                      onSelect={(agent) => {
+                        setAgents((previous) => [
+                          ...previous.filter((a) => a.id !== agent.id),
+                          agent,
+                        ]);
+                        field.onChange(agent.id);
                         const current = Number(getValues("budget")) || 0;
-                        if (price > 0 && current === 0) {
-                          setValue("budget", price, {
+                        if (agent.startingPrice > 0 && current === 0)
+                          setValue("budget", agent.startingPrice, {
                             shouldValidate: true,
                             shouldDirty: true,
                           });
-                        }
                       }}
-                      disabled={!hasAgents}
-                    >
-                      <SelectTrigger
-                        id="sellerAgentId"
-                        aria-invalid={Boolean(errors.sellerAgentId)}
-                      >
-                        <SelectValue
-                          placeholder={
-                            hasAgents
-                              ? "Assign an agent"
-                              : "No agents available"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {agents.map((agent) => (
-                          <SelectItem key={agent.id} value={agent.id}>
-                            <span className="flex w-full items-center justify-between gap-3">
-                              <span className="flex items-center gap-1.5 truncate">
-                                <span className="truncate font-medium">
-                                  {agent.name}
-                                </span>
-                                {agent.verified && (
-                                  <ShieldCheck className="h-3 w-3 shrink-0 text-primary" />
-                                )}
-                              </span>
-                              <span className="shrink-0 text-xs text-muted-foreground">
-                                {agent.category} ·{" "}
-                                {formatCurrency(
-                                  Number(agent.startingPrice),
-                                  agent.currency,
-                                )}
-                              </span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    />
                   )}
                 />
                 <FieldError message={errors.sellerAgentId?.message} />

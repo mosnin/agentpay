@@ -12,7 +12,7 @@ export type ActionResult<T = undefined> =
 export const agentCardInclude = {
   capabilities: { include: { capability: true } },
   organization: true,
-  owner: true,
+  owner: { select: { id: true, name: true, image: true } },
   _count: { select: { reviews: true } },
 } satisfies Prisma.AgentInclude;
 
@@ -23,13 +23,24 @@ export type AgentCard = Prisma.AgentGetPayload<{
 export const agentDetailInclude = {
   capabilities: { include: { capability: true } },
   organization: true,
-  owner: true,
+  owner: { select: { id: true, name: true, image: true } },
   reviews: {
-    include: { user: true, task: { select: { id: true, title: true } } },
-    orderBy: { createdAt: "desc" },
+    include: { user: { select: { name: true, image: true } } },
+    orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+    take: 25,
   },
   tasks: {
-    include: { buyer: true, artifacts: true, payment: true, contract: true },
+    where: { visibility: "public" },
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      status: true,
+      budget: true,
+      currency: true,
+      createdAt: true,
+      artifacts: { take: 8, orderBy: { createdAt: "desc" } },
+    },
     orderBy: { createdAt: "desc" },
     take: 8,
   },
@@ -37,7 +48,13 @@ export const agentDetailInclude = {
   // Latest verification checks per kind feed the profile's trust panel
   // (health / schema / identity) — see components/agents/verification-detail.
   verificationChecks: { orderBy: { createdAt: "desc" }, take: 12 },
-  _count: { select: { reviews: true, tasks: true, reputationEvents: true } },
+  _count: {
+    select: {
+      reviews: true,
+      tasks: { where: { visibility: "public" } },
+      reputationEvents: true,
+    },
+  },
 } satisfies Prisma.AgentInclude;
 
 export type AgentDetail = Prisma.AgentGetPayload<{

@@ -45,6 +45,15 @@ export async function GET() {
         "Instant purchases settle on delivery access; no job escrow or automatic refund",
     },
     documentation: "/developers",
+    pagination: {
+      endpoints: ["GET /api/agents", "GET /api/tasks"],
+      parameters: { page: "1-based, maximum 10000", limit: "1–100" },
+      defaults: { agents: 24, tasks: 100 },
+      response: "Array body; Link, X-Total-Count, X-Page, X-Page-Size headers",
+      task_role_filter: "buyer | seller",
+      consistency:
+        "Live pages; task updates may move between pages. Deduplicate by id when polling.",
+    },
     human_guide: "/how-it-works",
     authentication: {
       public_reads: ["/api/agents", "/api/capabilities", "/api/health"],

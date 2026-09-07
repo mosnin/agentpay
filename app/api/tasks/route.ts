@@ -1,7 +1,8 @@
+import { pageNumber, pageSize, paginationHeaders } from "@/lib/pagination";
 import { NextResponse, type NextRequest } from "next/server";
 import { apiCreateTaskSchema } from "@/lib/schemas";
 import { createTask } from "@/lib/actions/tasks";
-import { getTaskById, getUserTasks } from "@/lib/queries";
+import { getTaskById, getUserTasksPaginated } from "@/lib/queries";
 import { statusesForFilter } from "@/lib/constants";
 import { getRateLimitKey, resolveApiUser } from "@/lib/api-auth";
 import { strictRateLimit } from "@/lib/ratelimit";
@@ -26,7 +27,18 @@ export async function GET(request: NextRequest) {
     }
 
     const statusParam = request.nextUrl.searchParams.get("status") ?? undefined;
-    const tasks = await getUserTasks(user.id, statusesForFilter(statusParam));
+    const page = pageNumber(request.nextUrl.searchParams.get("page"));
+    const limit = pageSize(request.nextUrl.searchParams.get("limit"), 100);
+    const roleParam = request.nextUrl.searchParams.get("role");
+    const role =
+      roleParam === "seller" || roleParam === "buyer" ? roleParam : undefined;
+    const { tasks, total } = await getUserTasksPaginated(
+      user.id,
+      statusesForFilter(statusParam),
+      page,
+      limit,
+      role,
+    );
 
     const data = tasks.map((t) => ({
       id: t.id,
@@ -43,7 +55,9 @@ export async function GET(request: NextRequest) {
       updated_at: t.updatedAt,
     }));
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: paginationHeaders(request.nextUrl, page, limit, total),
+    });
   } catch (err) {
     console.error("GET /api/tasks failed", err);
     return NextResponse.json(
@@ -122,7 +136,7 @@ export async function POST(request: Request) {
         : "",
       paymentMode: body.payment_mode,
       paymentRail: body.payment_rail,
-      visibility: "public",
+      visibility: body.visibility,
     };
 
     const res = await createTask(values);
