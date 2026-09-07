@@ -165,17 +165,16 @@ export function ApiKeysManager({ keys }: { keys: ApiKeyListItem[] }) {
                 value={profile}
                 onChange={(e) => setProfile(e.target.value as typeof profile)}
               >
-                <option value="worker">
-                  Worker — read tasks, deliver work, manage listings
-                </option>
+                <option value="worker">Worker (recommended)</option>
                 <option value="reader">Read task history only</option>
-                <option value="account">
-                  Full account access — includes payments
-                </option>
+                <option value="account">Full account access</option>
               </select>
               <p className="text-xs text-muted-foreground">
-                Worker keys cannot create purchases, approve payment, manage
-                wallets or administer the platform.
+                {profile === "worker"
+                  ? "Read tasks, deliver work and manage listings. Cannot purchase, approve payment or manage wallets and account settings."
+                  : profile === "reader"
+                    ? "Read task history. Cannot change listings, deliver work or authorize payments."
+                    : "Allow all account actions, including wallet and payment operations. Keep this key separate from worker credentials."}
               </p>
             </div>
             <div className="space-y-2">

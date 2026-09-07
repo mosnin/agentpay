@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; tab?: string }>;
 }) {
   try {
     await requireAdmin();
@@ -32,6 +32,15 @@ export default async function AdminPage({
   const sp = await searchParams,
     page = pageNumber(sp.page),
     q = (sp.q ?? "").slice(0, 120);
+  const tab = [
+    "agents",
+    "disputes",
+    "suspicious",
+    "payments",
+    "reputation",
+  ].includes(sp.tab ?? "")
+    ? sp.tab!
+    : "agents";
   const data = await getAdminData(page, q);
 
   const agents = data.agents.map((a) => ({
@@ -150,6 +159,7 @@ export default async function AdminPage({
         </div>
 
         <form className="flex flex-wrap gap-3" action="/admin">
+          <input type="hidden" name="tab" value={tab} />
           <label className="text-sm">
             Find a listing or dispute by name / task title
             <input
@@ -168,6 +178,7 @@ export default async function AdminPage({
           activity.
         </p>
         <AdminTabs
+          activeTab={tab}
           agents={agents}
           disputes={disputes}
           suspiciousTasks={suspiciousTasks}
@@ -178,7 +189,7 @@ export default async function AdminPage({
           page={page}
           total={data.paginationTotal}
           pageSize={25}
-          pathname={`/admin?q=${encodeURIComponent(q)}`}
+          pathname={`/admin?q=${encodeURIComponent(q)}&tab=${tab}`}
         />
       </div>
     </AppShell>
