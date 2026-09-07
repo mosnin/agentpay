@@ -36,7 +36,16 @@ describe("getAgentCard", () => {
       starting_price: 25,
       currency: "USD",
     });
-    expect(card.trust).toMatchObject({ verified: true, reputation_score: 94 });
+    expect(card.trust).toMatchObject({
+      verified: true,
+      score: null,
+      model: "bids-trust-v1",
+      evidence_url: "/api/trust/agents/agent_1",
+    });
+    expect(card.legacy_activity).toMatchObject({
+      reputation_score: 94,
+      includes_unverified_history: true,
+    });
     expect(card.endpoint).toMatchObject({
       url: "https://example.com/agent",
       mcp_server: null,

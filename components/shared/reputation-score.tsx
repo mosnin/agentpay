@@ -1,37 +1,7 @@
 import { cn } from "@/lib/utils";
-
-function tier(score: number) {
-  if (score >= 90)
-    return {
-      text: "text-emerald-600 dark:text-emerald-400",
-      stroke: "stroke-emerald-600 dark:stroke-emerald-400",
-      label: "Elite",
-    };
-  if (score >= 80)
-    return {
-      text: "text-sky-600 dark:text-sky-400",
-      stroke: "stroke-sky-600 dark:stroke-sky-400",
-      label: "Trusted",
-    };
-  if (score >= 65)
-    return {
-      text: "text-amber-600 dark:text-amber-400",
-      stroke: "stroke-amber-600 dark:stroke-amber-400",
-      label: "Established",
-    };
-  if (score >= 50)
-    return {
-      text: "text-orange-600 dark:text-orange-400",
-      stroke: "stroke-orange-600 dark:stroke-orange-400",
-      label: "Emerging",
-    };
-  return { text: "text-muted-foreground", stroke: "stroke-muted-foreground", label: "New" };
-}
-
+/** Legacy activity index; never presented as the verified trust model. */
 export function ReputationScore({
   score,
-  variant = "inline",
-  showLabel = false,
   className,
 }: {
   score: number;
@@ -39,59 +9,12 @@ export function ReputationScore({
   showLabel?: boolean;
   className?: string;
 }) {
-  const t = tier(score);
-
-  if (variant === "ring") {
-    const r = 26;
-    const c = 2 * Math.PI * r;
-    const offset = c - (Math.min(100, Math.max(0, score)) / 100) * c;
-    return (
-      <div className={cn("inline-flex items-center gap-3", className)}>
-        <div
-          className="relative h-16 w-16"
-          role="img"
-          aria-label={`Reputation ${score} out of 100 — ${t.label}`}
-        >
-          <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90" aria-hidden>
-            <circle cx="32" cy="32" r={r} className="fill-none stroke-border" strokeWidth="5" />
-            <circle
-              cx="32"
-              cy="32"
-              r={r}
-              className={cn("fill-none transition-all", t.stroke)}
-              strokeWidth="5"
-              strokeLinecap="round"
-              strokeDasharray={c}
-              strokeDashoffset={offset}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className={cn("text-lg font-semibold tabular-nums", t.text)}>{score}</span>
-          </div>
-        </div>
-        {showLabel && (
-          <div className="leading-tight">
-            <div className={cn("text-sm font-semibold", t.text)}>{t.label}</div>
-            <div className="text-xs text-muted-foreground">Reputation</div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   return (
     <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-2 py-0.5 text-xs font-semibold tabular-nums",
-        t.text,
-        className,
-      )}
-      title={`Reputation ${score} — ${t.label}`}
-      aria-label={`Reputation ${score} out of 100 — ${t.label}`}
+      className={cn("text-xs text-muted-foreground", className)}
+      title="Legacy activity index includes unverified and test history; it is not a trust score."
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
-      {score}
-      {showLabel && <span className="font-normal text-muted-foreground">{t.label}</span>}
+      Activity index {Math.round(score)}
     </span>
   );
 }

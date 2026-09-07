@@ -1,3 +1,4 @@
+import { availablePaymentRails } from "@/lib/payment-rails";
 import { PayoutSetup } from "@/components/payments/payment-button";
 import { paymentMode } from "@/lib/payment-mode";
 import { PaymentNotice } from "@/components/shared/payment-notice";
@@ -8,7 +9,13 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { DashboardChart } from "@/components/dashboard/lazy-chart";
 import { isClerkEnabled, requireOnboardedUser } from "@/lib/auth";
 import { getSellerData } from "@/lib/queries";
@@ -23,10 +30,16 @@ export const metadata: Metadata = {
 };
 
 /** Pipeline value of inbound work, grouped by lifecycle stage, for the mini-chart. */
-function buildPipeline(tasks: Awaited<ReturnType<typeof getSellerData>>["inboundTasks"]) {
+function buildPipeline(
+  tasks: Awaited<ReturnType<typeof getSellerData>>["inboundTasks"],
+) {
   const buckets: { key: string; label: string; statuses: string[] }[] = [
     { key: "open", label: "Open", statuses: ["pending", "accepted"] },
-    { key: "in_progress", label: "In progress", statuses: ["running", "submitted", "validating"] },
+    {
+      key: "in_progress",
+      label: "In progress",
+      statuses: ["running", "submitted", "validating"],
+    },
     { key: "completed", label: "Completed", statuses: ["completed"] },
   ];
 
@@ -47,7 +60,10 @@ export default async function SellerPage() {
   const hasPipeline = pipeline.some((p) => p.value > 0);
 
   return (
-    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
+    <AppShell
+      isAdmin={user.role === "admin"}
+      showMockBanner={!isClerkEnabled()}
+    >
       <PageHeader
         title="Seller studio"
         description="Manage your listings, inbound work, earnings, and reviews."
@@ -61,21 +77,65 @@ export default async function SellerPage() {
       </PageHeader>
 
       <div className="space-y-10">
-        <section aria-label="Seller setup" className="border-y border-border py-6">
-          <h2 className="text-xl font-semibold tracking-tight">Turn a listing into a working service</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">Bids coordinates requests and delivery. Your agent runs in your own environment; adding an endpoint does not start it automatically.</p>
+        <section
+          aria-label="Seller setup"
+          className="border-y border-border py-6"
+        >
+          <h2 className="text-xl font-semibold tracking-tight">
+            Turn a listing into a working service
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            Bids coordinates requests and delivery. Your agent runs in your own
+            environment; adding an endpoint does not start it automatically.
+          </p>
           <ol className="mt-5 grid gap-5 text-sm sm:grid-cols-3">
-            <li><Link className="font-medium underline underline-offset-4" href="/agents/new">1. Describe your service</Link><p className="mt-1 text-muted-foreground">Set an honest scope, output format and price.</p></li>
-            <li><Link className="font-medium underline underline-offset-4" href="/settings/api-keys">2. Connect your worker</Link><p className="mt-1 text-muted-foreground">Create a key. Use the API or manage delivery here.</p></li>
-            <li><Link className="font-medium underline underline-offset-4" href="/developers#quickstart">3. Complete a test task</Link><p className="mt-1 text-muted-foreground">Accept, deliver, pass checks and wait for buyer approval.</p></li>
+            <li>
+              <Link
+                className="font-medium underline underline-offset-4"
+                href="/agents/new"
+              >
+                1. Describe your service
+              </Link>
+              <p className="mt-1 text-muted-foreground">
+                Set an honest scope, output format and price.
+              </p>
+            </li>
+            <li>
+              <Link
+                className="font-medium underline underline-offset-4"
+                href="/settings/api-keys"
+              >
+                2. Connect your worker
+              </Link>
+              <p className="mt-1 text-muted-foreground">
+                Create a key. Use the API or manage delivery here.
+              </p>
+            </li>
+            <li>
+              <Link
+                className="font-medium underline underline-offset-4"
+                href="/developers#quickstart"
+              >
+                3. Complete a test task
+              </Link>
+              <p className="mt-1 text-muted-foreground">
+                Accept, deliver, pass checks and wait for buyer approval.
+              </p>
+            </li>
           </ol>
         </section>
         <PaymentNotice />
-        {paymentMode() === "stripe" && <PayoutSetup connected={Boolean(user.stripeAccountId)} />}
+        {availablePaymentRails().includes("stripe") && (
+          <PayoutSetup connected={Boolean(user.stripeAccountId)} />
+        )}
         {/* Stats */}
         <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
-            label={paymentMode() === "demo" ? "Simulated earnings" : "Transferred earnings"}
+            label={
+              paymentMode() === "demo"
+                ? "Simulated earnings"
+                : "Transferred earnings"
+            }
             value={formatCurrency(stats.totalEarnings)}
             icon={CircleDollarSign}
             tone="green"
@@ -111,9 +171,12 @@ export default async function SellerPage() {
           <section>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Inbound pipeline value</CardTitle>
+                <CardTitle className="text-base">
+                  Inbound pipeline value
+                </CardTitle>
                 <CardDescription>
-                  Agreed budgets by stage. Pipeline value is agreed work, not a bank balance.
+                  Agreed budgets by stage. Pipeline value is agreed work, not a
+                  bank balance.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -160,7 +223,8 @@ export default async function SellerPage() {
               Inbound tasks
             </h2>
             <p className="text-sm text-muted-foreground">
-              Work buyers have routed to your agents. Highlighted rows need your attention.
+              Work buyers have routed to your agents. Highlighted rows need your
+              attention.
             </p>
           </div>
           <InboundTasks tasks={data.inboundTasks} />

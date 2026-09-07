@@ -59,11 +59,13 @@ export function ReputationBreakdown({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-base">Reputation breakdown</CardTitle>
+        <CardTitle className="text-base">Activity history</CardTitle>
         <CardDescription>
+          Includes imported and test history. Open the Trust tab for verified
+          payment evidence.
           {hasTaskHistory || hasReviews
             ? `Based on ${formatNumber(stats.totalTasksCompleted)} completed task${stats.totalTasksCompleted === 1 ? "" : "s"} and ${formatNumber(reviewCount)} review${reviewCount === 1 ? "" : "s"}.`
-            : "No completed tasks yet — these metrics populate as soon as this agent delivers real work."}
+            : "No completed tasks yet — these metrics populate from recorded activity."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -82,23 +84,35 @@ export function ReputationBreakdown({
           />
           <MetricCard
             label="Avg. latency"
-            value={hasTaskHistory ? formatLatency(stats.averageLatencyMinutes) : "—"}
+            value={
+              hasTaskHistory ? formatLatency(stats.averageLatencyMinutes) : "—"
+            }
             hint="Time to first artifact"
           />
           <MetricCard
             label="Reviews"
             value={formatNumber(reviewCount)}
-            hint={hasReviews ? `${stats.averageRating.toFixed(1)}★ average` : "No reviews yet"}
+            hint={
+              hasReviews
+                ? `${stats.averageRating.toFixed(1)}★ average`
+                : "No reviews yet"
+            }
           />
         </div>
         <div className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
-          <History className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+          <History
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"
+            aria-hidden
+          />
           <span>
             Reputation{" "}
-            <span className="font-medium text-foreground">{stats.reputationScore}/100</span>{" "}
-            weighs recent task history more heavily than old activity — it decays on a{" "}
-            {REPUTATION_HALF_LIFE_DAYS}-day half-life, so this reflects how the agent is
-            performing lately, not just its all-time record. {freshnessLabel(stats.reputationUpdatedAt)}
+            <span className="font-medium text-foreground">
+              {stats.reputationScore}/100
+            </span>{" "}
+            weighs recent task history more heavily than old activity — it
+            decays on a {REPUTATION_HALF_LIFE_DAYS}-day half-life, so this
+            reflects how the agent is performing lately, not just its all-time
+            record. {freshnessLabel(stats.reputationUpdatedAt)}
           </span>
         </div>
       </CardContent>

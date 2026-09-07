@@ -1,3 +1,4 @@
+import { SettlementPanel } from "@/components/payments/settlement-panel";
 import { PaymentButton } from "@/components/payments/payment-button";
 import { paymentMode } from "@/lib/payment-mode";
 import { TaskNextStep } from "@/components/tasks/task-next-step";
@@ -58,7 +59,12 @@ export async function generateMetadata({
   if (!user) return { title: "Task" };
   const task = await getTaskById(id);
   if (!task) return { title: "Task not found" };
-  if (user.role !== "admin" && task.buyerId !== user.id && task.sellerAgent?.ownerId !== user.id) return { title: "Task" };
+  if (
+    user.role !== "admin" &&
+    task.buyerId !== user.id &&
+    task.sellerAgent?.ownerId !== user.id
+  )
+    return { title: "Task" };
   return {
     title: task.title,
     description: task.objective.slice(0, 150),
@@ -160,10 +166,15 @@ export default async function TaskDetailPage({
 
   // Surface deadline urgency only while the task is still live — once it's
   // completed/cancelled/disputed the countdown is just noise.
-  const isActive = !["completed", "cancelled", "disputed"].includes(task.status);
+  const isActive = !["completed", "cancelled", "disputed"].includes(
+    task.status,
+  );
 
   return (
-    <AppShell isAdmin={currentUser?.role === "admin"} showMockBanner={!isClerkEnabled()}>
+    <AppShell
+      isAdmin={currentUser?.role === "admin"}
+      showMockBanner={!isClerkEnabled()}
+    >
       <PageHeader
         title={task.title}
         breadcrumbs={[
@@ -210,7 +221,11 @@ export default async function TaskDetailPage({
           </span>
         </span>
 
-        <PaymentStatusBadge provider={payment?.provider} livemode={payment?.livemode} status={payment?.status ?? "pending"} />
+        <PaymentStatusBadge
+          provider={payment?.provider}
+          livemode={payment?.livemode}
+          status={payment?.status ?? "pending"}
+        />
 
         <span className="ml-auto text-xs text-muted-foreground">
           Created {formatDate(task.createdAt)}
@@ -218,7 +233,12 @@ export default async function TaskDetailPage({
       </div>
 
       <TaskNextStep status={task.status} payment={payment} />
-      <div className="mb-6"><PaymentNotice provider={payment?.provider} livemode={payment?.livemode} /></div>
+      <div className="mb-6">
+        <PaymentNotice
+          provider={payment?.provider}
+          livemode={payment?.livemode}
+        />
+      </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main column */}
         <div className="min-w-0 space-y-6 lg:col-span-2">
@@ -266,45 +286,45 @@ export default async function TaskDetailPage({
           </SectionCard>
 
           <details className="rounded-xl border border-border bg-card p-4 sm:p-5">
-            <summary className="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Agreement details and timeline</summary>
+            <summary className="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              Agreement details and timeline
+            </summary>
             <div className="mt-5 space-y-5">
-          {contract ? (
-            <SectionCard
-              title="Contract"
-              description="The machine-readable agreement this task is executed against."
-            >
-              <TaskContractPreview
-                contract={{
-                  title: task.title,
-                  inputPayload: contract.inputPayload ?? undefined,
-                  outputSchema: contract.outputSchema ?? undefined,
-                  validationRules: hasValidationRules
-                    ? contract.validationRules
-                    : undefined,
-                  successCriteria: contract.successCriteria,
-                  paymentMode: contract.paymentMode,
-                  contractHash: contract.contractHash,
-                }}
-              />
-            </SectionCard>
-          ) : (
-            <SectionCard title="Contract">
-              <EmptyState
-                icon={FileWarning}
-                title="No contract attached"
-                description="This task does not have a structured contract yet."
-              />
-            </SectionCard>
-          )}
+              {contract ? (
+                <SectionCard
+                  title="Contract"
+                  description="The machine-readable agreement this task is executed against."
+                >
+                  <TaskContractPreview
+                    contract={{
+                      title: task.title,
+                      inputPayload: contract.inputPayload ?? undefined,
+                      outputSchema: contract.outputSchema ?? undefined,
+                      validationRules: hasValidationRules
+                        ? contract.validationRules
+                        : undefined,
+                      successCriteria: contract.successCriteria,
+                      paymentMode: contract.paymentMode,
+                      contractHash: contract.contractHash,
+                    }}
+                  />
+                </SectionCard>
+              ) : (
+                <SectionCard title="Contract">
+                  <EmptyState
+                    icon={FileWarning}
+                    title="No contract attached"
+                    description="This task does not have a structured contract yet."
+                  />
+                </SectionCard>
+              )}
 
-          <SectionCard
-            title="Timeline"
-            description="Lifecycle from acceptance to release."
-          >
-            <TaskTimeline status={task.status} />
-          </SectionCard>
-
-
+              <SectionCard
+                title="Timeline"
+                description="Lifecycle from acceptance to release."
+              >
+                <TaskTimeline status={task.status} />
+              </SectionCard>
             </div>
           </details>
 
@@ -375,7 +395,9 @@ export default async function TaskDetailPage({
         </div>
 
         {/* Right sidebar */}
-        <div className={`min-w-0 space-y-6 ${task.status === "pending" && payment?.provider === "stripe" ? "order-first lg:order-last" : ""}`}>
+        <div
+          className={`min-w-0 space-y-6 ${task.status === "pending" && ["stripe", "stablecoin"].includes(payment?.provider ?? "") ? "order-first lg:order-last" : ""}`}
+        >
           <Card className="lg:sticky lg:top-20">
             <CardHeader>
               <CardTitle className="text-base">Actions</CardTitle>
@@ -384,16 +406,37 @@ export default async function TaskDetailPage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {canApprove && payment?.provider === "stripe" && payment.status === "pending" && task.status === "pending" && <PaymentButton taskId={task.id} amount={formatCurrency(task.budget)} />}
-              {payment?.lastError && <p role="alert" className="text-sm text-destructive">{payment.lastError}</p>}
+              {canApprove &&
+                payment?.provider === "stripe" &&
+                payment.status === "pending" &&
+                task.status === "pending" && (
+                  <PaymentButton
+                    taskId={task.id}
+                    amount={formatCurrency(task.budget)}
+                  />
+                )}
+              {payment?.provider === "stablecoin" && (
+                <SettlementPanel
+                  taskId={task.id}
+                  buyer={task.buyerId === currentUser?.id}
+                  seller={agent?.ownerId === currentUser?.id}
+                  arbiter={isAdmin}
+                  status={task.status}
+                />
+              )}
+              {payment?.lastError && (
+                <p role="alert" className="text-sm text-destructive">
+                  {payment.lastError}
+                </p>
+              )}
               <TaskActions
                 task={{
                   id: task.id,
                   status: task.status,
                   hasReviewed,
-                  canApprove,
+                  canApprove: canApprove && payment?.provider !== "stablecoin",
                   canWork,
-                  canCancel,
+                  canCancel: canCancel && payment?.provider !== "stablecoin",
                   canSimulate: canSimulate && paymentMode() === "demo",
                   paymentProvider: payment?.provider,
                   funded: payment?.status === "escrowed" && !payment?.operation,
@@ -421,7 +464,11 @@ export default async function TaskDetailPage({
                     </Link>
                   </Button>
                 )}
-                <Button asChild variant="outline" className="w-full justify-start">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full justify-start"
+                >
                   <Link href="/marketplace">
                     <Compass className="h-4 w-4" />
                     Browse the marketplace
@@ -446,7 +493,11 @@ export default async function TaskDetailPage({
                 )}
               </Row>
               <Row label="Status">
-                <PaymentStatusBadge provider={payment?.provider} livemode={payment?.livemode} status={payment?.status ?? "pending"} />
+                <PaymentStatusBadge
+                  provider={payment?.provider}
+                  livemode={payment?.livemode}
+                  status={payment?.status ?? "pending"}
+                />
               </Row>
               <Row label="Mode">
                 <span className="text-foreground">{paymentModeLabel}</span>
@@ -503,7 +554,9 @@ export default async function TaskDetailPage({
                 <Code2 className="h-4 w-4 text-primary" />
                 API access
               </CardTitle>
-              <CardDescription>Fetch this task programmatically.</CardDescription>
+              <CardDescription>
+                Fetch this task programmatically.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5">

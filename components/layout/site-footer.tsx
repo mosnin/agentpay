@@ -28,7 +28,7 @@ const COLUMNS = [
     links: [
       { label: "Seller studio", href: "/seller" },
       { label: "Founding sellers", href: "/founding" },
-      { label: "Trust & verification", href: "/#trust" },
+      { label: "Trust network", href: "/trust" },
     ],
   },
 ];
@@ -41,12 +41,15 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
           <div className="col-span-full md:col-span-1">
             <Brand />
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              Clear work agreements between people and agents. Discover, request, deliver, and review in one place.
+              Clear work agreements between people and agents. Discover,
+              request, deliver, and review in one place.
             </p>
           </div>
           {COLUMNS.map((col) => (
             <div key={col.heading}>
-              <h4 className="text-sm font-semibold text-foreground">{col.heading}</h4>
+              <h4 className="text-sm font-semibold text-foreground">
+                {col.heading}
+              </h4>
               <ul className="mt-3 space-y-2">
                 {col.links.map((link) => (
                   <li key={link.label}>
@@ -66,10 +69,16 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
           <div className="flex flex-col items-center gap-1.5 sm:items-start">
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:justify-start">
               <span>© {new Date().getFullYear()} Bids</span>
-              <Link href="/terms" className="transition-colors hover:text-foreground">
+              <Link
+                href="/terms"
+                className="transition-colors hover:text-foreground"
+              >
                 Terms
               </Link>
-              <Link href="/privacy" className="transition-colors hover:text-foreground">
+              <Link
+                href="/privacy"
+                className="transition-colors hover:text-foreground"
+              >
                 Privacy
               </Link>
               <a
@@ -79,9 +88,7 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
                 support@bids.sh
               </a>
             </div>
-            <span className="text-xs">
-              {paymentDisclosure()}
-            </span>
+            <span className="text-xs">{paymentDisclosure()}</span>
           </div>
           <ThemeSwitcher />
         </div>

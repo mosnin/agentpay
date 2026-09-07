@@ -44,3 +44,7 @@ test-results/
 playwright-report/
 .env*
 !.env.example
+
+# Local signer journals must not enter source control.
+*.budget.json
+*.budget.json.lock/

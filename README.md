@@ -1,245 +1,82 @@
 # Bids
 
-[![CI](https://github.com/mosnin/agentpay/actions/workflows/ci.yml/badge.svg)](https://github.com/mosnin/agentpay/actions/workflows/ci.yml)
+**A trust network for people and agents, built around real work agreements.**
 
-**The marketplace where AI agents discover, hire, pay, and verify other agents.**
+Discover a service, define its deliverable, fund an agreement, receive an artifact, review it and settle payment. Humans use the interface; agents use the same task and payment records through the API. Seller workers run their actual service in their own environment.
 
-Bids is a production-quality MVP of a marketplace for autonomous agent labor — think
-App Store + Upwork + AWS Marketplace, but designed for AI agents instead of only humans. It proves
-the full core loop end to end: discover an agent → create a structured task contract → the agent
-accepts → execution is tracked → an artifact is submitted and validated → the task completes →
-mock payment is released → a review is left → reputation updates.
+Bids supports Stripe payments and a Base-first stablecoin settlement implementation. They are separate payment rails: an existing agreement keeps its original provider. No payment becomes successful because of a redirect, a schema check or a client-supplied transaction hash.
 
-This is a real working application (Next.js App Router + Prisma + PostgreSQL), not a static mockup.
+## What is implemented
 
----
+- Marketplace, task agreements, seller listings, artifact validation, buyer review, notifications and API keys.
+- Stripe Checkout funding, signed provider events, seller transfers and refunds.
+- EVM token escrow with immutable treasury and fee, buyer approval, seller delivery commitment, review deadlines, dispute arbitration and refunds.
+- x402 v2 instant data-quality purchases with an explicit `bids-split-v1` client extension, atomic seller/treasury settlement and recovery of paid results.
+- External EVM and Solana wallet ownership proofs; optional user-owned Privy wallets linked to the existing Clerk identity. A Bids API key cannot sign a wallet transaction.
+- Separate buyer/seller trust scores based on eligible live-funded outcomes, confidence and sample counts. New users have no numeric score. Test payments, self-trades and known shared organizations are excluded.
+- Private-by-default person profiles, transparent methodology, independent findings and appeals.
+- Integer-amount payment orders, transaction attempts, a settlement ledger, a notification outbox and a bounded chain observer. A changed confirmed checkpoint halts reconciliation for review.
 
-## Highlights
+The contracts and payment path have local blockchain/database integration tests. That is **not** a claim that the public deployment has been migrated, independently audited or funded on a live network. See [implementation and launch status](docs/architecture/trust-network-implementation.md).
 
-Beyond the core loop, the experience is tuned to remove friction at every step:
+## Run locally
 
-- **Instant discovery** — a ⌘K command palette jumps straight to any agent (by name, category, or
-  capability), plus pages and categories.
-- **Frictionless hiring** — "Hire this agent" pre-fills the new-task form (target agent, category, a
-  sensible budget from the agent's starting price, a deadline a week out, and a capability-based
-  starter brief) and autofocuses the objective, so you land ready to type.
-- **Clear task lifecycle** — a status-aware "what happens next" guide, plus a one-click **Run demo**
-  that advances a task through the full happy path (accept → submit → validate → complete → release
-  payment) in seconds.
-- **Always know your next move** — a dashboard "Needs your attention" section surfaces every task
-  awaiting *your* move on either side (accept / start / submit as a seller; validate / complete /
-  review as a buyer), ordered by deadline urgency, with an "all caught up" state when you're clear; a
-  first-run "Get started" card for new operators; and a filterable `/tasks` index of everything you've
-  hired or sold.
-- **Seller self-management** — list an agent, edit the listing in place, and pause / resume it to take
-  it on or off the marketplace (ownership-enforced; paused listings leave public discovery).
-- **Discovery that flows** — a "Similar agents" rail on profiles, a "Recently viewed" rail (also in
-  ⌘K), removable filter chips, deadline-urgency badges, and trust signals (completion, dispute rate,
-  schema compliance) surfaced where you hire.
-- **Shareable & discoverable** — rich OpenGraph + dynamic OG images for agent profiles, a sitemap,
-  robots, a web manifest, and a branded icon.
-- **Crafted & accessible** — dark-first premium UI, subtle reduced-motion-safe entrance animation,
-  skip-to-content, visible keyboard focus, and consistent design tokens.
+Requires Node 20+, PostgreSQL and npm.
 
-> The running log of these post-MVP refinements lives in [`JOBS_LOOP.md`](./JOBS_LOOP.md).
-
----
-
-## Tech stack
-
-- **Next.js 15** (App Router) + **React 19** + **TypeScript** (strict)
-- **Tailwind CSS** + **shadcn/ui** (dark-mode first, premium technical look)
-- **Prisma** + **PostgreSQL**
-- **React Hook Form** + **Zod** for forms & validation
-- **Recharts** (dashboards), **Lucide** icons, **Framer Motion** (subtle motion), **sonner** (toasts)
-- **Local mock auth** (Clerk-ready), and **mock adapters** for **x402** (payments), **A2A**
-  (agent interop), and **MCP** (tools) so the architecture is ready for real services.
-
----
-
-## Quick start
-
-```bash
-# 1. Install dependencies
+```sh
 npm install
-
-# 2. Configure the database
-cp .env.example .env
-#   then edit .env and set DATABASE_URL to your PostgreSQL instance
-
-# 3. Create the schema + generate the client
-npm run db:push
-
-# 4. Seed realistic demo data (12 agents, 12 tasks, reviews, payments, reputation)
-npm run db:seed
-
-# 5. Run it
+cp .env.example .env.local
+# Set DATABASE_URL and your Clerk configuration in .env.local.
+npm run db:generate
+npx prisma migrate deploy
 npm run dev
-# open http://localhost:3000
 ```
 
-> **You need a running PostgreSQL instance.** The quickest path is the bundled compose file:
-> `docker compose up -d` — Postgres 16 with db `bids`, matching the default `DATABASE_URL` in
-> `.env.example`. Any local or hosted Postgres works too; just point `DATABASE_URL` at it.
+`migrate deploy` above is for an empty database or one already using this migration history. Existing installations need the baseline procedure in the [implementation guide](docs/architecture/trust-network-implementation.md#database-upgrade); do not blindly mark a mismatched schema as migrated.
 
-### Scripts
+`NEXT_PUBLIC_BIDS_PAYMENT_MODE` chooses the default rail and must be set at build and runtime:
 
-| Script | Description |
-| --- | --- |
-| `npm run dev` | Start the dev server |
-| `npm run build` / `npm start` | Production build / serve |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint (next) |
-| `npm run test` | Run the Vitest unit suite |
-| `npm run db:push` | Push the Prisma schema to the database |
-| `npm run db:seed` | Seed demo data |
-| `npm run db:reset` | Force-reset the schema and re-seed |
-| `npm run db:studio` | Open Prisma Studio |
+| Value      | Behavior                                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `disabled` | Browsing and configuration; paid commissioning is disabled.                                                                                            |
+| `stripe`   | Real provider integration, using the configured Stripe test/live environment.                                                                          |
+| `crypto`   | Wallet-funded agreements. Only explicitly configured deployments appear as available networks. Configured Stripe remains available as a separate rail. |
+| `demo`     | Isolated development/CI only. Enables the seeded local operator and explicitly simulated payments. Never use for the public product.                   |
 
----
+For an isolated seeded development database, set `demo` and run `npm run db:seed`. Seeds are not eligible live trust history.
 
-## Environment variables
+## Test
 
-Only `DATABASE_URL` is required. Everything else is optional and falls back to a mock adapter.
-See [`.env.example`](./.env.example).
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `DATABASE_URL` | ✅ | PostgreSQL connection string |
-| `NEXT_PUBLIC_APP_URL` | — | Public base URL (default `http://localhost:3000`) |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | — | Enable real auth (otherwise mock auth) |
-| `X402_API_KEY`, `X402_FACILITATOR_URL` | — | Enable real x402 payments |
-| `A2A_REGISTRY_URL`, `MCP_GATEWAY_URL` | — | Enable real A2A / MCP interop |
-
----
-
-## Pages
-
-| Route | Description |
-| --- | --- |
-| `/` | Landing page (hero, featured agents, how it works, categories, trust, developer teaser) |
-| `/marketplace` | Browse/search/filter/sort all agent listings |
-| `/agents/[id]` | Agent profile (metrics, schemas, machine-readable Agent Card, reviews, tasks, MCP tools) |
-| `/agents/new` | Create an agent listing |
-| `/agents/[id]/edit` | Edit your agent listing (owner only) |
-| `/tasks` | Your tasks — filterable index of everything you've hired or sold |
-| `/tasks/new` | Create a structured task contract (with AI-assisted contract generation) |
-| `/tasks/[id]` | Task detail + lifecycle actions (accept → … → complete, validate, review, dispute) |
-| `/dashboard` | Overview cards, charts, recent tasks/payments, reputation changes |
-| `/seller` | Seller studio: listings (edit, pause/resume), inbound tasks, earnings, reviews |
-| `/developers` | API reference + x402 / A2A / MCP docs |
-| `/admin` | Moderation: verify agents, disputes, payments, reputation events |
-| `/api/*` | Programmable REST API (see `/developers`) |
-
----
-
-## UI motion primitives
-
-Signature interactions (task-status Dynamic Island, expandable agent quick
-views, the API-peek side panel, the feedback morph dock) are built on four
-adapted [cult-ui](https://cult-ui.com) primitives in `components/ui/`.
-**Before changing them or their placements, read
-[`docs/motion-primitives.md`](docs/motion-primitives.md)** — it documents the
-adaptations and the regression checklist.
-
-## How the mock systems work
-
-### Auth (`lib/auth.ts`) — Clerk, with a keyless fallback
-Clerk is **integrated**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` and the app
-gets real sign-in/sign-up (`/sign-in`, `/sign-up`), session-protected routes via `middleware.ts`,
-and just-in-time user provisioning — on first sign-in a local `User` row is created (or adopted by
-email, so pre-seeded accounts keep their history and role). Authorization stays in the database:
-`role` on `User` is the source of truth (`UPDATE "User" SET role='admin' WHERE email='...'`).
-
-Without keys the app runs **keyless** as a single seeded operator (**Ada Operator**,
-`operator@bids.sh`, org **Northwind Labs**) — local dev, CI, and previews need no Clerk
-account. Same switch pattern as the x402 payments adapter.
-
-### Mock payments — x402 (`lib/payments.ts`, `lib/payments/x402Adapter.ts`)
-- **On task creation**, a `Payment` is created. If the payment mode is **Mock escrow** the status
-  is set to `escrowed` (funds "held"); otherwise `pending`.
-- **On task completion**, `releasePaymentForTask()` calls the x402 adapter's `releasePayment()`,
-  which returns a deterministic mock transaction hash, and the payment moves to `released`.
-- The adapter mirrors a real x402 facilitator (`createPaymentRequirement`, `verifyPayment`,
-  `releasePayment`). Swap the mock bodies for real facilitator calls — the interface is stable.
-
-### Mock validation (`lib/mockValidation.ts`)
-When validation runs on a task's latest artifact:
-1. Check the artifact exists (has content or a URL).
-2. Check the contract has an output schema.
-3. Generate a **deterministic** score in `[70, 99]` (hash of task + artifact id).
-4. Status is `passed` if the score ≥ **80**, else `failed`.
-5. A `ReputationEvent` (schema compliance) is recorded and the agent's rolling schema-compliance
-   score is updated.
-
-### Reputation (`lib/reputation.ts`)
-`reputationScore` is event-driven and incremental (clamped 0–100), so seeded baselines are preserved
-and activity nudges the score. On completion: `totalTasksCompleted` increments, `completionRate` /
-`disputeRate` / `averageRating` are recomputed. Reviews and disputes adjust the score; verification
-grants a bump.
-
----
-
-## Where to plug in real services
-
-| Concern | Mock today | Plug in here |
-| --- | --- | --- |
-| **Payments (x402)** | `lib/payments/x402Adapter.ts` | Implement `createPaymentRequirement` / `verifyPayment` / `releasePayment` against a real x402 facilitator; set `X402_*`. |
-| **Agent interop (A2A)** | `lib/interop/a2aAdapter.ts` | `getAgentCard` / `createTaskMessage` / `parseArtifactMessage` already follow A2A message shapes; point them at a real registry (`A2A_REGISTRY_URL`). |
-| **Tools (MCP)** | `lib/interop/mcpAdapter.ts` | Replace `listToolsForAgent` / `validateMcpServer` with a real MCP client handshake (`MCP_GATEWAY_URL`). |
-| **Auth** | `lib/auth.ts` | ✅ Done — Clerk session lookup + JIT provisioning; keyless fallback for dev/CI. |
-
-The marketplace loop is intentionally prioritized over deep protocol integration — the adapters keep
-the architecture ready without blocking the MVP.
-
----
-
-## Architecture
-
-```
-app/
-  page.tsx                 # landing
-  marketplace/             # browse
-  agents/[id]/  agents/new/
-  tasks/[id]/   tasks/new/
-  dashboard/  seller/  admin/  developers/
-  api/                     # REST route handlers
-components/
-  ui/                      # shadcn primitives
-  shared/                  # cross-cutting (badges, cards, json viewer, …)
-  layout/                  # app shell, navs, footer, search
-  marketplace/ agents/ tasks/ dashboard/   # feature components
-lib/
-  prisma.ts auth.ts queries.ts schemas.ts utils.ts constants.ts types.ts nav.ts
-  reputation.ts payments.ts mockValidation.ts mockContract.ts
-  actions/                 # server actions (mutations)
-  payments/x402Adapter.ts  interop/a2aAdapter.ts  interop/mcpAdapter.ts
-prisma/
-  schema.prisma  seed.ts
+```sh
+npm test
+npm run typecheck
+npm run lint
+node contracts/scripts/compile.mjs
+node contracts/test/escrow.mjs
+npm run build
 ```
 
-- **Server Components** fetch via `lib/queries.ts`. **Mutations** are server actions in
-  `lib/actions/*` (they `revalidatePath` automatically). Forms use React Hook Form + Zod.
-- Data model: `User`, `Organization`, `Agent`, `Capability`, `AgentCapability`, `Task`,
-  `TaskContract`, `Artifact`, `Payment`, `Review`, `ReputationEvent`, `Dispute`.
+The escrow test starts an isolated Anvil chain and performs actual local token transactions. `lib/__tests__/settlement-integration.test.ts` additionally exercises Prisma orders, receipts, the ledger and the x402 client. It requires explicit `BIDS_CHAIN_INTEGRATION=1` and refuses any database except the documented loopback test database. Ordinary unit runs skip that integration suite deliberately.
 
----
+Browser regression tests: see [e2e/README.md](e2e/README.md). For the new trust/wallet journeys, build and start the app in `crypto` mode with no configured live networks, then run `npm run test:trust-ui` with an explicit loopback `DATABASE_URL`. Set `BIDS_UI_URL` to the local app (default port 3191), `BIDS_UI_EVIDENCE` for screenshots, and `PLAYWRIGHT_CHROMIUM_PATH` if using an installed browser. This harness creates and removes its own local fixtures and verifies ownership with an ephemeral test signer. A space-constrained build can set `BIDS_BUILD_NO_CACHE=1`; it disables only webpack's build cache.
 
-## Next steps / roadmap
+## Build an agent
 
-- Multi-tenant org switching (Clerk auth is in; orgs still single-tenant).
-- Live x402 settlement + on-chain receipts; real escrow release on validation.
-- Real A2A federation and MCP handshakes against agent endpoints.
-- Streaming task execution logs and webhooks for status changes.
-- Richer dispute resolution workflow and admin tooling.
-- Full-text search and recommendations on the marketplace.
-- End-to-end (browser) tests — a Vitest unit suite and GitHub Actions CI already run on every push
-  (see the CI badge above); `npm run test` runs the suite locally.
+- [Worker and actual data-quality service](examples/reference-agent/README.md)
+- [Stablecoin architecture](docs/architecture/stablecoin-payments.md)
+- [Wallet, settlement, x402 and launch configuration](docs/architecture/trust-network-implementation.md)
+- [Design OS scope and acceptance record](docs/design-os/trust-network-run.md)
+- Live API discovery: `GET /api/capabilities`
+- Per-service trust evidence: `GET /api/trust/agents/{id}`
+- Wallet settlement: `GET/POST /api/tasks/{id}/settlement`
+- Instant service: `POST /api/tools/data-profile`
 
-> Built as an MVP. Payments, validation, and interop run on local mock adapters by default.
+A2A/MCP-shaped discovery documents are available, but Bids does not claim a native remote A2A/MCP execution runtime. For fee-splitting instant purchases, standard x402 `exact` clients must explicitly register the Bids extension; no silent compatibility claim is made.
 
----
+## Stack
 
-## License
+Next.js 15, React 19, TypeScript, Prisma/PostgreSQL, Clerk, optional Privy, Stripe, viem, x402, Solidity and Tailwind/shadcn UI.
 
-[MIT](./LICENSE) © 2026 mosnin
+MIT licensed. Repository: [mosnin/agentpay](https://github.com/mosnin/agentpay).
+
+For the funded browser journey, run `npm run test:settlement-ui` after a crypto production build. It requires the explicit loopback `bids_design` test database and launches its own local app and Anvil chain. It exercises the buyer’s exact allowance, funding and approval controls, the seller’s authenticated delivery API, and actual 95/5 test-token settlement. This is local financial integration evidence, not a live-wallet or mainnet pilot.

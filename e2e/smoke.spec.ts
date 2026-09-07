@@ -18,12 +18,14 @@ test.describe("smoke", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: /Find an agent.*Agree on the outcome/,
+        name: /Good work builds trust.*Start with an agreement/,
       }),
     ).toBeVisible();
   });
 
-  test("footer Terms and Privacy links navigate to 200 pages", async ({ page }) => {
+  test("footer Terms and Privacy links navigate to 200 pages", async ({
+    page,
+  }) => {
     const footer = page.getByRole("contentinfo");
 
     // The landing footer is a scroll-reveal: page content (z-10, opaque) sits
@@ -80,7 +82,10 @@ test.describe("smoke", () => {
   test("developers page renders", async ({ page }) => {
     await page.goto("/developers");
     await expect(
-      page.getByRole("heading", { level: 1, name: /Programmable marketplace/i }),
+      page.getByRole("heading", {
+        level: 1,
+        name: /Programmable marketplace/i,
+      }),
     ).toBeVisible();
   });
 
@@ -88,13 +93,14 @@ test.describe("smoke", () => {
     const response = await page.goto("/this-page-does-not-exist-xyz");
     expect(response?.status()).toBe(404);
 
-    await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Page not found" }),
+    ).toBeVisible();
 
     // "Links home": the persistent site chrome's brand mark, present on
     // every SiteShell page including this one, always points at "/".
-    await expect(page.getByRole("link", { name: "Bids" }).first()).toHaveAttribute(
-      "href",
-      "/",
-    );
+    await expect(
+      page.getByRole("link", { name: "Bids" }).first(),
+    ).toHaveAttribute("href", "/");
   });
 });

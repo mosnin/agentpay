@@ -69,7 +69,8 @@ function guideFor(
 ): string | undefined {
   switch (status) {
     case "pending":
-      if (task.funded === false) return "The buyer must fund this agreement before the seller can accept or start work.";
+      if (task.funded === false)
+        return "The buyer must fund this agreement before the seller can accept or start work.";
       return task.canWork
         ? "A new commission for your agent. Accept it to get started."
         : "Waiting for the agent to accept. You can cancel while it's still pending.";
@@ -144,7 +145,10 @@ export function TaskActions({ task }: TaskActionsProps) {
         if (key === "approve") trackFirstTaskCompleted({ taskId: id });
       } else {
         setActionError(res.error ?? "Action failed. Please try again.");
-        settleIsland({ label: res.error ?? "Action failed", tone: "error" }, 2600);
+        settleIsland(
+          { label: res.error ?? "Action failed", tone: "error" },
+          2600,
+        );
       }
       setBusyKey(null);
     });
@@ -154,16 +158,22 @@ export function TaskActions({ task }: TaskActionsProps) {
 
   // Every button mirrors its server action's authorization — a viewer only
   // sees the moves that are actually theirs to make.
-  const showAccept = task.funded !== false && optimisticStatus === "pending" && task.canWork;
-  const showStart = task.funded !== false && optimisticStatus === "accepted" && task.canWork;
-  const showSubmit = task.funded !== false &&
-    ["accepted", "running", "submitted"].includes(optimisticStatus) && task.canWork;
+  const showAccept =
+    task.funded !== false && optimisticStatus === "pending" && task.canWork;
+  const showStart =
+    task.funded !== false && optimisticStatus === "accepted" && task.canWork;
+  const showSubmit =
+    task.funded !== false &&
+    ["accepted", "running", "submitted"].includes(optimisticStatus) &&
+    task.canWork;
   // "validating" now means "awaiting buyer approval" — a real pass already
   // happened automatically on submission, so only the buyer (or an admin)
   // gets the button that actually releases payment.
   const showApprove = optimisticStatus === "validating" && task.canApprove;
   const showReview = optimisticStatus === "completed";
-  const showDispute = ACTIVE_STATUSES.has(optimisticStatus);
+  const showDispute =
+    task.paymentProvider !== "stablecoin" &&
+    ACTIVE_STATUSES.has(optimisticStatus);
   const showCancel =
     ["draft", "pending", "accepted", "running"].includes(optimisticStatus) &&
     task.canCancel;
@@ -171,7 +181,8 @@ export function TaskActions({ task }: TaskActionsProps) {
   // approve as the buyer — so it needs a viewer holding both sides.
   const showDemo = ACTIVE_STATUSES.has(optimisticStatus) && task.canSimulate;
 
-  const isTerminal = optimisticStatus === "completed" || optimisticStatus === "cancelled";
+  const isTerminal =
+    optimisticStatus === "completed" || optimisticStatus === "cancelled";
 
   // Primary actions advance the lifecycle; secondary actions are escapes.
   const hasPrimary = showAccept || showStart || showSubmit || showApprove;
@@ -210,9 +221,15 @@ export function TaskActions({ task }: TaskActionsProps) {
           <Button
             className="w-full justify-start"
             disabled={pending}
-            onClick={() => run("accept", () => acceptTask(id), "Task accepted", "accepted")}
+            onClick={() =>
+              run("accept", () => acceptTask(id), "Task accepted", "accepted")
+            }
           >
-            {isBusy("accept") ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
+            {isBusy("accept") ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <CheckCircle2 />
+            )}
             {isBusy("accept") ? "Accepting…" : "Accept task"}
           </Button>
         )}
@@ -221,9 +238,15 @@ export function TaskActions({ task }: TaskActionsProps) {
           <Button
             className="w-full justify-start"
             disabled={pending}
-            onClick={() => run("start", () => startTask(id), "Task started", "running")}
+            onClick={() =>
+              run("start", () => startTask(id), "Task started", "running")
+            }
           >
-            {isBusy("start") ? <Loader2 className="animate-spin" /> : <PlayCircle />}
+            {isBusy("start") ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <PlayCircle />
+            )}
             {isBusy("start") ? "Starting…" : "Start task"}
           </Button>
         )}
@@ -257,20 +280,28 @@ export function TaskActions({ task }: TaskActionsProps) {
                 )
               }
             >
-              {isBusy("approve") ? <Loader2 className="animate-spin" /> : <Lock />}
+              {isBusy("approve") ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Lock />
+              )}
               {isBusy("approve")
                 ? "Releasing payment…"
                 : "Approve & release payment"}
             </Button>
             <p className="px-1 text-xs text-muted-foreground">
-              Closes the task and settles the agreed payment with the seller. Review the deliverable before approving.
+              Closes the task and settles the agreed payment with the seller.
+              Review the deliverable before approving.
             </p>
           </div>
         )}
 
         {showReview && (
           <ReviewForm taskId={id} alreadyReviewed={task.hasReviewed}>
-            <Button className="w-full justify-start" disabled={task.hasReviewed}>
+            <Button
+              className="w-full justify-start"
+              disabled={task.hasReviewed}
+            >
               {task.hasReviewed ? <ThumbsUp /> : <Star />}
               {task.hasReviewed ? "Review submitted" : "Leave a review"}
             </Button>
@@ -324,10 +355,19 @@ export function TaskActions({ task }: TaskActionsProps) {
               className="w-full justify-start text-muted-foreground hover:text-destructive"
               disabled={pending}
               onClick={() =>
-                run("cancel", () => cancelTask(id), "Task cancelled · payment status updated", "cancelled")
+                run(
+                  "cancel",
+                  () => cancelTask(id),
+                  "Task cancelled · payment status updated",
+                  "cancelled",
+                )
               }
             >
-              {isBusy("cancel") ? <Loader2 className="animate-spin" /> : <Ban />}
+              {isBusy("cancel") ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Ban />
+              )}
               {isBusy("cancel") ? "Cancelling…" : "Cancel task"}
             </Button>
           )}
@@ -343,8 +383,8 @@ export function TaskActions({ task }: TaskActionsProps) {
 
       {optimisticStatus === "disputed" && (
         <p className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
-          <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
-          A dispute is open. Resolution is handled from the admin console.
+          <ShieldAlert className="h-3.5 w-3.5 shrink-0" />A dispute is open.
+          Resolution is handled from the admin console.
         </p>
       )}
     </div>

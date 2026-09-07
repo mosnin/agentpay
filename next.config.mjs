@@ -10,8 +10,12 @@ const isDev = process.env.NODE_ENV === "development";
 const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 const clerkHost = (() => {
   const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-  const host = Buffer.from(key.replace(/^pk_(test|live)_/, ""), "base64").toString("utf8").replace(/\$$/, "");
-  return /^[a-zA-Z0-9.-]+$/.test(host) && host.includes(".") ? ` https://${host}` : "";
+  const host = Buffer.from(key.replace(/^pk_(test|live)_/, ""), "base64")
+    .toString("utf8")
+    .replace(/\$$/, "");
+  return /^[a-zA-Z0-9.-]+$/.test(host) && host.includes(".")
+    ? ` https://${host}`
+    : "";
 })();
 const clerkScript = hasClerk
   ? `${clerkHost} https://*.clerk.accounts.dev https://challenges.cloudflare.com https://*.protect.clerk.com`
@@ -20,7 +24,13 @@ const clerkConnect = hasClerk
   ? `${clerkHost} https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.protect.clerk.com:*`
   : "";
 const clerkImg = hasClerk ? " https://img.clerk.com" : "";
-const clerkFrame = hasClerk ? "frame-src https://challenges.cloudflare.com" : "";
+const hasPrivy = hasClerk && Boolean(process.env.NEXT_PUBLIC_PRIVY_APP_ID);
+const privyConnect = hasPrivy
+  ? " https://auth.privy.io wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems https://explorer-api.walletconnect.com"
+  : "";
+const clerkFrame = hasClerk
+  ? `frame-src https://challenges.cloudflare.com${hasPrivy ? " https://auth.privy.io https://verify.walletconnect.com https://verify.walletconnect.org" : ""}`
+  : "";
 
 const CSP = [
   "default-src 'self'",
@@ -31,7 +41,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: https://avatars.githubusercontent.com https://images.unsplash.com${clerkImg}`,
   "font-src 'self'",
-  `connect-src 'self'${clerkConnect}`,
+  `connect-src 'self'${clerkConnect}${privyConnect}`,
   hasClerk ? "worker-src 'self' blob:" : "",
   clerkFrame,
   "object-src 'none'",
@@ -62,6 +72,11 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  webpack(config) {
+    // Optional for space-constrained CI/local builds; no runtime behavior changes.
+    if (process.env.BIDS_BUILD_NO_CACHE === "1") config.cache = false;
+    return config;
+  },
   poweredByHeader: false,
   images: {
     remotePatterns: [

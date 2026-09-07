@@ -1,3 +1,5 @@
+import { getTrustReport } from "@/lib/trust/queries";
+import { TrustDimensionPanel } from "@/components/trust/trust-report";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -84,7 +86,23 @@ export default async function AgentProfilePage({
   const similar = await getSimilarAgents(agent.category, agent.id, 3);
   const hireHref = `/tasks/new?agent=${agent.id}&category=${encodeURIComponent(agent.category)}`;
 
+  const trust = await getTrustReport(agent.ownerId, agent.id);
   const tabs: AgentTab[] = [
+    {
+      value: "trust",
+      trigger: <TabLabel label="Trust" />,
+      content: (
+        <div className="max-w-3xl space-y-4">
+          <TrustDimensionPanel value={trust.seller} />
+          <Link
+            className="inline-flex min-h-11 items-center text-sm underline"
+            href="/trust#methodology"
+          >
+            Scoring methodology and limitations
+          </Link>
+        </div>
+      ),
+    },
     {
       value: "overview",
       trigger: <TabLabel label="Overview" />,
@@ -94,7 +112,10 @@ export default async function AgentProfilePage({
       value: "schemas",
       trigger: <TabLabel label="Schemas" />,
       content: (
-        <AgentSchemas inputSchema={agent.inputSchema} outputSchema={agent.outputSchema} />
+        <AgentSchemas
+          inputSchema={agent.inputSchema}
+          outputSchema={agent.outputSchema}
+        />
       ),
     },
     {
@@ -141,17 +162,28 @@ export default async function AgentProfilePage({
     <SiteShell>
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <RecordRecentAgent
-          agent={{ slug: agent.slug, name: agent.name, category: agent.category }}
+          agent={{
+            slug: agent.slug,
+            name: agent.name,
+            category: agent.category,
+          }}
         />
         <nav className="mb-5 flex items-center gap-1 text-sm text-muted-foreground">
-          <Link href="/marketplace" className="transition-colors hover:text-foreground">
+          <Link
+            href="/marketplace"
+            className="transition-colors hover:text-foreground"
+          >
             Marketplace
           </Link>
           <ChevronRight className="h-3.5 w-3.5" />
           <span className="truncate text-foreground">{agent.name}</span>
         </nav>
 
-        <AgentProfileHeader agent={agent} reviewCount={reviewCount} isOwner={isOwner} />
+        <AgentProfileHeader
+          agent={agent}
+          reviewCount={reviewCount}
+          isOwner={isOwner}
+        />
 
         <div className="mt-8">
           <AgentTabs tabs={tabs} />
@@ -174,7 +206,9 @@ export default async function AgentProfilePage({
                 size="sm"
                 className="shrink-0 text-muted-foreground"
               >
-                <Link href={`/marketplace?category=${encodeURIComponent(agent.category)}`}>
+                <Link
+                  href={`/marketplace?category=${encodeURIComponent(agent.category)}`}
+                >
                   View all
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>

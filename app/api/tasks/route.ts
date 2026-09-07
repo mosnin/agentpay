@@ -19,7 +19,10 @@ export async function GET(request: NextRequest) {
   try {
     const user = await resolveApiUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Not authenticated." },
+        { status: 401 },
+      );
     }
 
     const statusParam = request.nextUrl.searchParams.get("status") ?? undefined;
@@ -43,7 +46,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   } catch (err) {
     console.error("GET /api/tasks failed", err);
-    return NextResponse.json({ error: "Failed to list tasks." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to list tasks." },
+      { status: 500 },
+    );
   }
 }
 
@@ -53,12 +59,18 @@ export async function POST(request: Request) {
   try {
     const user = await resolveApiUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Not authenticated." },
+        { status: 401 },
+      );
     }
 
     const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {
-      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+      return NextResponse.json(
+        { error: "Too many requests." },
+        { status: 429 },
+      );
     }
 
     let raw: unknown;
@@ -109,6 +121,7 @@ export async function POST(request: Request) {
         ? JSON.stringify(body.validation_rules)
         : "",
       paymentMode: body.payment_mode,
+      paymentRail: body.payment_rail,
       visibility: "public",
     };
 
@@ -131,8 +144,18 @@ export async function POST(request: Request) {
         status: task.status,
         payment: {
           mode: task.payment?.mode ?? body.payment_mode,
-          settlement: task.payment?.provider === "stripe" ? "stripe" : "simulation",
-          funding_url: task.payment?.provider === "stripe" ? "/api/payments/checkout" : null,
+          settlement:
+            task.payment?.provider === "stablecoin"
+              ? "stablecoin"
+              : task.payment?.provider === "stripe"
+                ? "stripe"
+                : "simulation",
+          funding_url:
+            task.payment?.provider === "stablecoin"
+              ? `/api/tasks/${task.id}/settlement`
+              : task.payment?.provider === "stripe"
+                ? "/api/payments/checkout"
+                : null,
           real_funds_moved: false,
           status: task.payment?.status ?? "pending",
           amount: task.payment?.amount ?? task.budget,

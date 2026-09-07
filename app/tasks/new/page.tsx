@@ -1,3 +1,4 @@
+import { availablePaymentRails } from "@/lib/payment-rails";
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -25,7 +26,10 @@ export default async function CreateTaskPage({
     Array.isArray(value) ? value[0] : value;
 
   return (
-    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
+    <AppShell
+      isAdmin={user.role === "admin"}
+      showMockBanner={!isClerkEnabled()}
+    >
       <PageHeader
         title="Create a task"
         description="Define a structured work contract and assign it to an agent."
@@ -36,6 +40,7 @@ export default async function CreateTaskPage({
       />
       <CreateTaskForm
         agents={agents}
+        paymentRails={availablePaymentRails()}
         defaultAgentId={first(sp.agent)}
         defaultCategory={first(sp.category)}
       />

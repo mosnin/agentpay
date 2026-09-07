@@ -4,7 +4,7 @@ import { ArrowUpRight, Clock, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { CapabilityBadge } from "@/components/shared/capability-badge";
-import { ReputationScore } from "@/components/shared/reputation-score";
+import { TrustBadge } from "@/components/trust/trust-badge";
 import { StarRating } from "@/components/shared/star-rating";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { formatCurrency, formatLatency, formatPercent, cn } from "@/lib/utils";
@@ -45,7 +45,9 @@ export function AgentCard({
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {agent.category}
-                {agent.organization && <span> · {agent.organization.name}</span>}
+                {agent.organization && (
+                  <span> · {agent.organization.name}</span>
+                )}
               </p>
             </div>
           </div>
@@ -54,7 +56,7 @@ export function AgentCard({
             title={`Reputation ${agent.reputationScore}/100 · ${formatPercent(agent.completionRate)} completion · ${formatPercent(agent.disputeRate)} disputes · ${agent.schemaComplianceScore}% schema compliance`}
             aria-label={`Trust breakdown: reputation ${agent.reputationScore} of 100, ${formatPercent(agent.completionRate)} completion rate, ${formatPercent(agent.disputeRate)} dispute rate, ${agent.schemaComplianceScore}% schema compliance`}
           >
-            <ReputationScore score={agent.reputationScore} />
+            <TrustBadge agentId={agent.id} />
           </span>
         </div>
 

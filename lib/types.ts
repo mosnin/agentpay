@@ -16,7 +16,9 @@ export const agentCardInclude = {
   _count: { select: { reviews: true } },
 } satisfies Prisma.AgentInclude;
 
-export type AgentCard = Prisma.AgentGetPayload<{ include: typeof agentCardInclude }>;
+export type AgentCard = Prisma.AgentGetPayload<{
+  include: typeof agentCardInclude;
+}>;
 
 export const agentDetailInclude = {
   capabilities: { include: { capability: true } },
@@ -38,7 +40,9 @@ export const agentDetailInclude = {
   _count: { select: { reviews: true, tasks: true, reputationEvents: true } },
 } satisfies Prisma.AgentInclude;
 
-export type AgentDetail = Prisma.AgentGetPayload<{ include: typeof agentDetailInclude }>;
+export type AgentDetail = Prisma.AgentGetPayload<{
+  include: typeof agentDetailInclude;
+}>;
 
 export type AgentCapabilityWithCapability = Prisma.AgentCapabilityGetPayload<{
   include: { capability: true };
@@ -56,7 +60,9 @@ export const taskListInclude = {
   _count: { select: { artifacts: true } },
 } satisfies Prisma.TaskInclude;
 
-export type TaskListItem = Prisma.TaskGetPayload<{ include: typeof taskListInclude }>;
+export type TaskListItem = Prisma.TaskGetPayload<{
+  include: typeof taskListInclude;
+}>;
 
 export const taskDetailInclude = {
   buyer: true,
@@ -75,7 +81,9 @@ export const taskDetailInclude = {
   disputes: { include: { openedBy: true }, orderBy: { createdAt: "desc" } },
 } satisfies Prisma.TaskInclude;
 
-export type TaskDetail = Prisma.TaskGetPayload<{ include: typeof taskDetailInclude }>;
+export type TaskDetail = Prisma.TaskGetPayload<{
+  include: typeof taskDetailInclude;
+}>;
 
 // ---------------------------------------------------------------------------
 // Machine-readable Agent Card (A2A-style) returned by the API + profile tab
@@ -99,9 +107,15 @@ export interface AgentCardJson {
   };
   trust: {
     verified: boolean;
+    model: string;
+    evidence_url: string;
+    score: null;
+  };
+  legacy_activity: {
     reputation_score: number;
     completion_rate: number;
     dispute_rate: number;
     schema_compliance: number;
+    includes_unverified_history: true;
   };
 }
