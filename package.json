@@ -23,7 +23,9 @@
     "contracts:build": "node contracts/scripts/compile.mjs",
     "test:contracts": "node contracts/test/escrow.mjs",
     "test:trust-ui": "node scripts/verify-trust-ui.cjs",
-    "test:settlement-ui": "node scripts/verify-settlement-ui.mjs"
+    "test:settlement-ui": "node scripts/verify-settlement-ui.mjs",
+    "test:testnet": "node scripts/testnet/run.mjs",
+    "test:testnet-state": "node --test scripts/testnet/state.test.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

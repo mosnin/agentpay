@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-07T02:48:30.639Z",
+  "chainId": 84532,
+  "block": "46490511",
+  "deployer": "0xf589e624e1f01c5C5D0fAA3Cb8227b46dCED30B1",
+  "deployerTestETH": "0",
+  "buyer": "0x612f0F755594c37910d83823f9054957ED8bB7a4",
+  "buyerTestUSDCUnits": "20000000",
+  "decimals": 6,
+  "status": "Gas funding pending; contract transaction tests have not run"
+}

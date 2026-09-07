@@ -1,0 +1,17 @@
+{
+  "testnetOnly": true,
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "createdAt": "2026-09-07T02:41:31.886Z",
+  "addresses": {
+    "deployer": "0xf589e624e1f01c5C5D0fAA3Cb8227b46dCED30B1",
+    "buyer": "0x612f0F755594c37910d83823f9054957ED8bB7a4",
+    "seller": "0xb813d7f36dAe27b53aBAcd30b7B619bA8C0f8acA",
+    "treasury": "0x36FfD522268387891a5AAabf8CA6e766EC8745a7",
+    "arbiter": "0x591Fa46e1057CbD0fb83a243391e16b15d0589ce"
+  },
+  "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "feeBps": 500,
+  "feeStatus": "Test fixture only; production fee remains undecided",
+  "status": "Awaiting test ETH for deployment"
+}
