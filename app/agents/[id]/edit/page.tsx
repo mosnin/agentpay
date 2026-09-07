@@ -22,13 +22,13 @@ export default async function EditAgentPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [agent, user, organizations] = await Promise.all([
+  const [agent, user] = await Promise.all([
     getAgentByIdOrSlug(id),
     getCurrentUser(),
-    getOrganizations(),
   ]);
 
   if (!agent) notFound();
+  const organizations = await getOrganizations(user?.organizationId);
 
   // Only the owner may edit. Render an explicit, reliable not-authorized state
   // rather than a redirect (a redirect after the layout starts streaming would
@@ -76,7 +76,7 @@ export default async function EditAgentPage({
       ? JSON.stringify(agent.outputSchema, null, 2)
       : "",
     organizationId: agent.organizationId ?? undefined,
-    verified: agent.verified,
+    verified: false,
   };
 
   return (

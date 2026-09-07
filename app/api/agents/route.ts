@@ -93,6 +93,7 @@ export async function POST(request: Request) {
       pricingModel: body.pricing_model ?? body.pricingModel ?? "per_task",
       startingPrice: body.starting_price ?? body.startingPrice ?? body.price,
       currency: body.currency ?? "USD",
+      organizationId: body.organization_id ?? body.organizationId,
       endpointUrl: body.endpoint_url ?? body.endpointUrl ?? "",
       mcpServerUrl: body.mcp_server_url ?? body.mcpServerUrl ?? "",
       inputSchema: body.input_schema ? JSON.stringify(body.input_schema) : "",

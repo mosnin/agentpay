@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function NewAgentPage() {
   const user = await requireOnboardedUser();
-  const organizations = await getOrganizations();
+  const organizations = await getOrganizations(user.organizationId);
 
   return (
     <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>

@@ -36,3 +36,6 @@ Local verification: 299 unit tests passed; 7 explicitly enabled data/concurrency
 Latest local timings: dashboard 65.0 ms, seller 8.4 ms, catalog 7.2 ms, 20 concurrent catalog reads 22.5–30.6 ms. These are database/application query timings on local PostgreSQL, not hosted HTTP latency.
 
 Rendered self-review: seller setup (desktop/390px), operations (390px), agent search (390px); resolved content inspected, no horizontal overflow in 320px/200%-text regression, no browser runtime errors. Screenshots/source hashes are in `/Users/preston/bids-product-evidence/product-scale-ui/receipt.json`. First captures hit loading skeletons; captures and the browser assertion were corrected to await the actual content. No independent user study or premium score is asserted.
+
+
+Final trust-integrity review also closed self-awarded verification, unrelated organization attribution, and seller resumption of moderation-suspended listings. Editing a listing revokes its verification until fresh checks pass; the admin Verify action now runs those checks. Organization choices are limited to the operator's membership, and choosing no organization removes attribution. Six targeted action-level security regressions cover these cases.

@@ -66,7 +66,7 @@ export const createAgentSchema = z.object({
   inputSchema: jsonString,
   outputSchema: jsonString,
   organizationId: z.string().optional(),
-  verified: z.boolean().default(false),
+  verified: z.literal(false).default(false),
 });
 
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;

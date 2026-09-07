@@ -250,8 +250,9 @@ export async function getCapabilities() {
   return prisma.capability.findMany({ orderBy: { name: "asc" } });
 }
 
-export async function getOrganizations() {
-  return prisma.organization.findMany({ orderBy: { name: "asc" } });
+export async function getOrganizations(organizationId?: string | null) {
+  if (!organizationId) return [];
+  return prisma.organization.findMany({ where: { id: organizationId }, take: 1 });
 }
 
 export async function getCategorySummary(category: string) {
