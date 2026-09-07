@@ -53,3 +53,16 @@ Verified after a clean `npm ci` on Node 22.22.2; CI is configured for Node 24 an
 The three high audit entries are the same `deepmerge-ts` advisory propagated through `@prisma/config` and `prisma`; the remaining root moderate advisories concern `decode-uri-component` and older `uuid` through wallet SDK dependencies. These findings remain visible in audit output. This phase did not force incompatible major-version replacements or claim all dependencies are cleared.
 
 Crypto builds retain third-party optional Farcaster and dynamic-import warnings. Their provider flows remain unverified. Mobile settlement and trust screenshots were inspected after this build. Full logs, public-only audit reports and screenshots are in `/Users/preston/bids-product-evidence/production-*`.
+
+
+## Hosted acceptance and isolated preview database
+
+GitHub Actions run [34158388965](https://github.com/mosnin/agentpay/actions/runs/34158388965) passed all three jobs for code commit `6cb32feb0c1c5fbd79649ea4880f06f30b45d9db`: application checks, contracts/persistent settlement including the funded browser journey, and browser regressions. This is hosted CI evidence on Node 24, in addition to the local receipt above.
+
+The first Vercel preview built successfully but its homepage failed at runtime because the old database lacked `Agent.verificationStatus`. This is why build success was not accepted as product runtime success.
+
+The linked Neon project was identified through Vercel Storage as `jolly-cell-69692494` (resource `bids`). An isolated copy of the actual main branch (`br-spring-flower-adbt1kfi`) was created as `bids-release-pr18` (`br-hidden-boat-adjuflr2`). A private pre-migration backup was saved outside the repository. Production data and schema were not modified.
+
+The actual schema differed from the old recorded production commit: four earlier API/invitation/notification/webhook tables already existed. The [observed-schema upgrade](observed-to-baseline-20260907.sql) was generated from that exact snapshot and reviewed as additive; it was applied only to the isolated branch. The resulting schema was verified against the pre-trust baseline before marking that baseline applied, then the three additive migrations were deployed. Final schema comparison matched the release. Counts and sorted-ID hashes for User, Agent, Task, Payment and Artifact were preserved. Copied agent API keys were revoked on the preview branch only.
+
+Vercel's DATABASE_URL, DATABASE_URL_UNPOOLED, NEXT_PUBLIC_APP_URL and crypto payment mode were set specifically for git branch `codex/design-os-product-improvements`, leaving production settings untouched. The database connection strings remain private; no key or connection string is included in this receipt. The preview retains Vercel access protection and has no live payment network configured. It is a review environment, not live-money acceptance.

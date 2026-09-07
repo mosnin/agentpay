@@ -66,7 +66,7 @@ The initial migration captures the pre-trust schema at the implementation baseli
 3. Only when the schemas match, mark `20260906000000_baseline` applied. Then deploy the additive trust, instant-broadcast and observer migrations.
 4. Do not backfill unknown funding/delivery/approval timestamps with invented values. Historical records without sufficient evidence stay ineligible for trust.
 
-The local test database was baselined only after matching the existing pre-trust schema. No production migration was run.
+The local test database was baselined only after matching the existing pre-trust schema. No production migration was run. On September 7, an isolated copy of the actual hosted database revealed four earlier tables already present; that copy required the separately reviewed [observed-schema upgrade](observed-to-baseline-20260907.sql), rather than replaying CREATE TABLE statements from the older main-to-baseline script. See the [hosted migration receipt](production-release-status.md#hosted-acceptance-and-isolated-preview-database). Always compare the actual target schema before choosing either script.
 
 ## Acceptance and remaining gates
 
