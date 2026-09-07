@@ -16,10 +16,10 @@ import { AgentStatusBadge } from "@/components/shared/status-badge";
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { ReputationScore } from "@/components/shared/reputation-score";
 import { AgentStatusToggle } from "@/components/seller/agent-status-toggle";
-import type { AgentDetail } from "@/lib/types";
+import type { AgentCard } from "@/lib/types";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 
-function priceLabel(agent: AgentDetail) {
+function priceLabel(agent: AgentCard) {
   if (agent.startingPrice <= 0) return "Free";
   const base = formatCurrency(agent.startingPrice, agent.currency);
   switch (agent.pricingModel) {
@@ -36,7 +36,7 @@ function priceLabel(agent: AgentDetail) {
   }
 }
 
-export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
+export function SellerAgents({ agents }: { agents: AgentCard[] }) {
   if (agents.length === 0) {
     return (
       <EmptyState
@@ -77,7 +77,10 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
                 <TableCell className="max-w-[260px] pl-6">
                   <div className="flex items-center gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/40 text-muted-foreground">
-                      <CategoryIcon category={agent.category} className="h-4 w-4" />
+                      <CategoryIcon
+                        category={agent.category}
+                        className="h-4 w-4"
+                      />
                     </span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
@@ -99,7 +102,10 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
                   <AgentStatusBadge status={agent.status} />
                 </TableCell>
                 <TableCell>
-                  <ReputationScore score={agent.reputationScore} variant="inline" />
+                  <ReputationScore
+                    score={agent.reputationScore}
+                    variant="inline"
+                  />
                 </TableCell>
                 <TableCell className="text-right tabular-nums text-muted-foreground">
                   {formatPercent(agent.completionRate)}
@@ -112,9 +118,14 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
                 </TableCell>
                 <TableCell className="pr-6">
                   <div className="flex items-center justify-end gap-1.5">
-                    <AgentStatusToggle agentId={agent.id} status={agent.status} />
+                    <AgentStatusToggle
+                      agentId={agent.id}
+                      status={agent.status}
+                    />
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/agents/${agent.slug}/edit`}>Edit listing</Link>
+                      <Link href={`/agents/${agent.slug}/edit`}>
+                        Edit listing
+                      </Link>
                     </Button>
                   </div>
                 </TableCell>
@@ -143,7 +154,9 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
                     </Link>
                     {agent.verified && <VerifiedBadge />}
                   </div>
-                  <div className="truncate text-xs text-muted-foreground">{agent.category}</div>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {agent.category}
+                  </div>
                 </div>
               </div>
               <AgentStatusBadge status={agent.status} />
@@ -177,7 +190,9 @@ export function SellerAgents({ agents }: { agents: AgentDetail[] }) {
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-foreground">{priceLabel(agent)}</span>
+              <span className="text-sm font-medium text-foreground">
+                {priceLabel(agent)}
+              </span>
               <div className="flex items-center gap-1.5">
                 <AgentStatusToggle agentId={agent.id} status={agent.status} />
                 <Button asChild variant="outline" size="sm">

@@ -41,20 +41,28 @@ export function AgentReviews({
           </div>
           <StarRating rating={averageRating} size="md" />
           <div className="mt-1 text-xs text-muted-foreground">
-            Based on {formatNumber(reviewCount)} review{reviewCount === 1 ? "" : "s"}
+            Based on {formatNumber(reviewCount)} review
+            {reviewCount === 1 ? "" : "s"}
           </div>
         </div>
-        <div className="mt-5 space-y-2">
+        <p className="mt-4 text-xs text-muted-foreground">
+          Distribution of the latest {reviews.length} reviews
+        </p>
+        <div className="mt-2 space-y-2">
           {buckets.map((b) => (
             <div key={b.stars} className="flex items-center gap-2 text-xs">
-              <span className="w-3 tabular-nums text-muted-foreground">{b.stars}</span>
+              <span className="w-3 tabular-nums text-muted-foreground">
+                {b.stars}
+              </span>
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-amber-500/80 dark:bg-amber-400/80"
                   style={{ width: `${(b.count / max) * 100}%` }}
                 />
               </div>
-              <span className="w-6 text-right tabular-nums text-muted-foreground">{b.count}</span>
+              <span className="w-6 text-right tabular-nums text-muted-foreground">
+                {b.count}
+              </span>
             </div>
           ))}
         </div>

@@ -143,15 +143,22 @@ export function DotGridSpotlight({
       })
     }
 
+    // Track the cursor at the window level, not on the canvas itself, so the
+    // canvas can stay pointer-events-none — a full-bleed decorative overlay
+    // must never intercept clicks meant for real content (e.g. footer links)
+    // that happens to sit beneath its box. Illumination is derived from the
+    // cursor's position relative to the canvas rect.
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
-      mouse.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-        isActive: true,
-      }
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      const inside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height
+      const wasActive = mouse.current.isActive
+      mouse.current = { x, y, isActive: inside }
 
-      if (renderFrameId === null) {
+      // Only repaint when the spotlight is (or was just) over the field, so a
+      // mousemove elsewhere on the page doesn't trigger a full-grid redraw.
+      if ((inside || wasActive) && renderFrameId === null) {
         renderFrameId = requestAnimationFrame(() => {
           draw()
           renderFrameId = null
@@ -159,18 +166,7 @@ export function DotGridSpotlight({
       }
     }
 
-    const handleMouseLeave = () => {
-      mouse.current.isActive = false
-      if (renderFrameId === null) {
-        renderFrameId = requestAnimationFrame(() => {
-          draw()
-          renderFrameId = null
-        })
-      }
-    }
-
-    canvas.addEventListener("mousemove", handleMouseMove)
-    canvas.addEventListener("mouseleave", handleMouseLeave)
+    window.addEventListener("mousemove", handleMouseMove)
 
     const resizeObserver = new ResizeObserver(() => resizeCanvas())
     if (canvas.parentElement) resizeObserver.observe(canvas.parentElement)
@@ -178,8 +174,7 @@ export function DotGridSpotlight({
     resizeCanvas()
 
     return () => {
-      canvas.removeEventListener("mousemove", handleMouseMove)
-      canvas.removeEventListener("mouseleave", handleMouseLeave)
+      window.removeEventListener("mousemove", handleMouseMove)
       resizeObserver.disconnect()
       if (renderFrameId !== null) cancelAnimationFrame(renderFrameId)
     }
@@ -194,31 +189,17 @@ export function DotGridSpotlight({
     activeMinAlpha,
   ])
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = canvasRef.current?.getBoundingClientRect()
-    if (rect) {
-      mouse.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-        isActive: true,
-      }
-    }
-  }
-
-  const handleMouseLeave = () => {
-    mouse.current.isActive = false
-  }
-
   return (
     <canvas
       ref={canvasRef}
       data-ready="false"
+      aria-hidden
       className={cn(
-        "pointer-events-auto absolute inset-0 block opacity-0 !transition-opacity duration-500 data-[ready=true]:opacity-100",
+        // Click-through: window-level tracking (see effect) drives the
+        // spotlight, so this overlay never steals pointer events.
+        "pointer-events-none absolute inset-0 block opacity-0 !transition-opacity duration-500 data-[ready=true]:opacity-100",
         className
       )}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     />
   )
 }

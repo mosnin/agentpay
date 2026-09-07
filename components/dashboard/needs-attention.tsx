@@ -27,9 +27,9 @@ const NEXT_ACTION: Record<string, string> = {
   pending: "Accept task",
   accepted: "Start task",
   running: "Submit artifact",
+  submitted: "Submit a fix",
   // Buyer-side (operator hired an agent)
-  submitted: "Run validation",
-  validating: "Complete & release",
+  validating: "Approve & release",
   completed: "Leave a review",
 };
 

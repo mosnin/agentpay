@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paymentMode } from "./payment-mode";
 import { CATEGORY_VALUES } from "./constants";
 
 const categoryEnum = z.enum(CATEGORY_VALUES as [string, ...string[]], {
@@ -65,7 +66,7 @@ export const createAgentSchema = z.object({
   inputSchema: jsonString,
   outputSchema: jsonString,
   organizationId: z.string().optional(),
-  verified: z.boolean().default(false),
+  verified: z.literal(false).default(false),
 });
 
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;
@@ -80,6 +81,10 @@ export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;
 // ---------------------------------------------------------------------------
 
 export const createTaskSchema = z.object({
+  idempotencyKey: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{8,128}$/)
+    .optional(),
   title: z.string().min(3, "Add a title").max(140),
   objective: z.string().min(10, "Describe the objective (10+ chars)").max(6000),
   category: categoryEnum,
@@ -93,13 +98,14 @@ export const createTaskSchema = z.object({
     .max(1_000_000),
   deadline: z.string().optional().or(z.literal("")),
   validationRules: z.string().max(4000).optional().or(z.literal("")),
+  paymentRail: z.enum(["stripe", "crypto"]).optional(),
   paymentMode: z.enum([
     "mock_escrow",
     "pay_per_task",
     "subscription_access",
     "bounty",
   ]),
-  visibility: z.enum(["public", "private", "unlisted"]).default("public"),
+  visibility: z.enum(["public", "private", "unlisted"]).default("private"),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
@@ -152,6 +158,7 @@ export const completeOnboardingSchema = z.object({
 export type CompleteOnboardingInput = z.infer<typeof completeOnboardingSchema>;
 
 export const apiCreateTaskSchema = z.object({
+  visibility: z.enum(["public", "private", "unlisted"]).default("private"),
   objective: z.string().min(3),
   title: z.string().optional(),
   category: z.string().default("Growth"),
@@ -161,8 +168,13 @@ export const apiCreateTaskSchema = z.object({
   input_payload: z.record(z.unknown()).optional(),
   output_schema: z.record(z.unknown()).optional(),
   validation_rules: z.record(z.unknown()).optional(),
+  payment_rail: z.enum(["stripe", "crypto"]).optional(),
   payment_mode: z
     .enum(["mock_escrow", "pay_per_task", "subscription_access", "bounty"])
-    .default("mock_escrow"),
+    .default(() =>
+      ["stripe", "crypto"].includes(paymentMode())
+        ? "pay_per_task"
+        : "mock_escrow",
+    ),
 });
 export type ApiCreateTaskInput = z.infer<typeof apiCreateTaskSchema>;

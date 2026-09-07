@@ -170,7 +170,9 @@ function CircuitBoard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden",
+        // Purely decorative: never let the animated grid/traces intercept
+        // clicks meant for real content layered nearby (e.g. footer links).
+        "pointer-events-none relative overflow-hidden",
         className
       )}
       style={{ width, height }}

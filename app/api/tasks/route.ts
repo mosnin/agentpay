@@ -1,10 +1,10 @@
+import { pageNumber, pageSize, paginationHeaders } from "@/lib/pagination";
 import { NextResponse, type NextRequest } from "next/server";
 import { apiCreateTaskSchema } from "@/lib/schemas";
 import { createTask } from "@/lib/actions/tasks";
-import { getTaskById, getUserTasks } from "@/lib/queries";
-import { getCurrentUser } from "@/lib/auth";
+import { getTaskById, getUserTasksPaginated } from "@/lib/queries";
 import { statusesForFilter } from "@/lib/constants";
-import { getRateLimitKey } from "@/lib/api-auth";
+import { getRateLimitKey, resolveApiUser } from "@/lib/api-auth";
 import { strictRateLimit } from "@/lib/ratelimit";
 
 /** Derive a concise title from the first ~8 words of the objective. */
@@ -15,16 +15,30 @@ function titleFromObjective(objective: string): string {
 
 // GET /api/tasks — list the operator's tasks (as buyer, or owner of the selling
 // agent). Optional ?status= filter: active | completed | disputed | cancelled,
-// or a raw lifecycle status. Auth is mocked for the MVP (the demo operator).
+// or a raw lifecycle status. Auth required: session or `Authorization: Bearer <api key>`.
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const user = await resolveApiUser(request);
     if (!user) {
-      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Not authenticated." },
+        { status: 401 },
+      );
     }
 
     const statusParam = request.nextUrl.searchParams.get("status") ?? undefined;
-    const tasks = await getUserTasks(user.id, statusesForFilter(statusParam));
+    const page = pageNumber(request.nextUrl.searchParams.get("page"));
+    const limit = pageSize(request.nextUrl.searchParams.get("limit"), 100);
+    const roleParam = request.nextUrl.searchParams.get("role");
+    const role =
+      roleParam === "seller" || roleParam === "buyer" ? roleParam : undefined;
+    const { tasks, total } = await getUserTasksPaginated(
+      user.id,
+      statusesForFilter(statusParam),
+      page,
+      limit,
+      role,
+    );
 
     const data = tasks.map((t) => ({
       id: t.id,
@@ -41,20 +55,36 @@ export async function GET(request: NextRequest) {
       updated_at: t.updatedAt,
     }));
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: paginationHeaders(request.nextUrl, page, limit, total),
+    });
   } catch (err) {
     console.error("GET /api/tasks failed", err);
-    return NextResponse.json({ error: "Failed to list tasks." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to list tasks." },
+      { status: 500 },
+    );
   }
 }
 
 // POST /api/tasks — create a task programmatically (A2A-style contract body).
-// Auth is mocked for the MVP: the task is created on behalf of the demo operator.
+// Auth required: session or `Authorization: Bearer <api key>`.
 export async function POST(request: Request) {
   try {
+    const user = await resolveApiUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: "Not authenticated." },
+        { status: 401 },
+      );
+    }
+
     const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {
-      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+      return NextResponse.json(
+        { error: "Too many requests." },
+        { status: 429 },
+      );
     }
 
     let raw: unknown;
@@ -85,6 +115,7 @@ export async function POST(request: Request) {
     }
 
     const values = {
+      idempotencyKey: request.headers.get("idempotency-key") ?? undefined,
       title: body.title ?? titleFromObjective(body.objective),
       objective: body.objective,
       category: body.category,
@@ -104,7 +135,8 @@ export async function POST(request: Request) {
         ? JSON.stringify(body.validation_rules)
         : "",
       paymentMode: body.payment_mode,
-      visibility: "public",
+      paymentRail: body.payment_rail,
+      visibility: body.visibility,
     };
 
     const res = await createTask(values);
@@ -126,6 +158,19 @@ export async function POST(request: Request) {
         status: task.status,
         payment: {
           mode: task.payment?.mode ?? body.payment_mode,
+          settlement:
+            task.payment?.provider === "stablecoin"
+              ? "stablecoin"
+              : task.payment?.provider === "stripe"
+                ? "stripe"
+                : "simulation",
+          funding_url:
+            task.payment?.provider === "stablecoin"
+              ? `/api/tasks/${task.id}/settlement`
+              : task.payment?.provider === "stripe"
+                ? "/api/payments/checkout"
+                : null,
+          real_funds_moved: false,
           status: task.payment?.status ?? "pending",
           amount: task.payment?.amount ?? task.budget,
           currency: task.payment?.currency ?? task.currency,

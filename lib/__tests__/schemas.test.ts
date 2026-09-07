@@ -66,10 +66,10 @@ describe("createTaskSchema", () => {
     paymentMode: "mock_escrow",
   };
 
-  it("accepts a valid task and defaults visibility to public", () => {
+  it("accepts a valid task and defaults visibility to private", () => {
     const r = createTaskSchema.safeParse(valid);
     expect(r.success).toBe(true);
-    if (r.success) expect(r.data.visibility).toBe("public");
+    if (r.success) expect(r.data.visibility).toBe("private");
   });
 
   it("rejects missing agent, short objective, and bad payment mode", () => {

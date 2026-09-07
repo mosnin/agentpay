@@ -1,6 +1,9 @@
 "use client";
+import { AgentPicker } from "@/components/tasks/agent-picker";
 
-import { useState, useTransition } from "react";
+import { paymentMode } from "@/lib/payment-mode";
+import { PaymentNotice } from "@/components/shared/payment-notice";
+import { useState, useTransition, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
@@ -39,16 +42,13 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
-import {
-  CATEGORIES,
-  PAYMENT_MODES,
-  VISIBILITY_OPTIONS,
-} from "@/lib/constants";
+import { CATEGORIES, PAYMENT_MODES, VISIBILITY_OPTIONS } from "@/lib/constants";
 import {
   generateStructuredContract,
   type StructuredContract,
 } from "@/lib/mockContract";
 import { createTask } from "@/lib/actions/tasks";
+import { trackFirstTaskCreated } from "@/components/analytics/track";
 import { createTaskSchema, type CreateTaskInput } from "@/lib/schemas";
 import { formatCurrency, cn } from "@/lib/utils";
 
@@ -65,8 +65,13 @@ export interface AgentSelectOption {
 
 interface CreateTaskFormProps {
   agents: AgentSelectOption[];
+  paymentRails?: ("stripe" | "crypto")[];
   defaultAgentId?: string;
   defaultCategory?: string;
+  initialValues?: Partial<CreateTaskInput>;
+  savedRevision?: number;
+  savedCreationKey?: string;
+  repeated?: boolean;
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -75,10 +80,16 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export function CreateTaskForm({
-  agents,
+  agents: initialAgents,
+  paymentRails = [],
   defaultAgentId,
   defaultCategory,
+  initialValues,
+  savedRevision = 0,
+  savedCreationKey,
+  repeated = false,
 }: CreateTaskFormProps) {
+  const [agents, setAgents] = useState(initialAgents);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [contract, setContract] = useState<StructuredContract | null>(null);
@@ -126,7 +137,7 @@ export function CreateTaskForm({
     defaultValues: {
       title: presetTitle,
       objective: "",
-      category: presetCategory || undefined,
+      category: presetCategory || presetAgentObj?.category || undefined,
       sellerAgentId: presetAgent,
       inputInstructions: "",
       inputDataUrl: "",
@@ -134,8 +145,14 @@ export function CreateTaskForm({
       budget: presetBudget,
       deadline: defaultDeadline,
       validationRules: "",
-      paymentMode: "mock_escrow",
-      visibility: "public",
+      paymentRail: paymentRails.includes(paymentMode() as "stripe" | "crypto")
+        ? (paymentMode() as "stripe" | "crypto")
+        : paymentRails[0],
+      paymentMode: ["stripe", "crypto"].includes(paymentMode())
+        ? "pay_per_task"
+        : "mock_escrow",
+      visibility: "private",
+      ...initialValues,
     },
   });
 
@@ -143,7 +160,8 @@ export function CreateTaskForm({
     const { objective, category, expectedOutputFormat } = getValues();
     if (!objective || objective.trim().length === 0) {
       toast.info("Add an objective first", {
-        description: "Describe what you want done so we can draft the contract.",
+        description:
+          "Describe what you want done so we can draft the contract.",
       });
       return;
     }
@@ -160,7 +178,10 @@ export function CreateTaskForm({
 
   function applyContract() {
     if (!contract) return;
-    setValue("title", contract.title, { shouldValidate: true, shouldDirty: true });
+    setValue("title", contract.title, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
     setValue(
       "expectedOutputFormat",
       JSON.stringify(contract.outputSchema, null, 2),
@@ -175,12 +196,88 @@ export function CreateTaskForm({
     });
   }
 
+  const creationKey = useRef<string | undefined>(savedCreationKey);
+  const revision = useRef(savedRevision);
+  const forkBrief = useRef(repeated);
+  const [draftStatus, setDraftStatus] = useState(
+    repeated
+      ? "Previous terms copied. Review the brief; funding is authorized separately."
+      : savedRevision
+        ? "Recovered your saved brief."
+        : "Your brief saves as you write.",
+  );
+  const saveQueue = useRef(Promise.resolve());
+  const finished = useRef(false);
+  function saveBrief(values: Partial<CreateTaskInput>) {
+    const run = saveQueue.current
+      .catch(() => {})
+      .then(async () => {
+        if (finished.current) return;
+        setDraftStatus("Saving brief…");
+        const r = await fetch("/api/brief", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            revision: revision.current,
+            fork: forkBrief.current,
+            values,
+          }),
+        });
+        const result = await r.json();
+        if (!r.ok)
+          throw new Error(
+            result.error ?? "Could not save. Your text is still in this form.",
+          );
+        forkBrief.current = false;
+        revision.current = result.revision;
+        creationKey.current = result.creationKey;
+        setDraftStatus("Brief saved to your account.");
+      });
+    saveQueue.current = run;
+    return run;
+  }
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const subscription = watch(() => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        void saveBrief(getValues()).catch((e) => setDraftStatus(e.message));
+      }, 1500);
+    });
+    return () => {
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
+    // The queue and revision live in refs, shared by autosave and submission.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watch, getValues]);
   function onSubmit(values: CreateTaskInput) {
     startTransition(async () => {
-      const res = await createTask(values);
+      try {
+        await saveBrief(values);
+      } catch (e) {
+        setDraftStatus((e as Error).message);
+        toast.error(
+          "Save the brief before creating the task. Your input is preserved.",
+        );
+        return;
+      }
+      const res = await createTask({
+        ...values,
+        idempotencyKey: creationKey.current,
+      });
       if (res.ok) {
+        finished.current = true;
+        await fetch("/api/brief", {
+          method: "DELETE",
+          headers: { "If-Match": String(revision.current) },
+        }).catch(() => {});
+        trackFirstTaskCreated({
+          taskId: res.data!.id,
+          category: values.category,
+        });
         toast.success("Task created", {
-          description: "Your contract is live and pending agent acceptance.",
+          description: "Continue to funding before the seller begins.",
         });
         router.push(`/tasks/${res.data!.id}`);
       } else {
@@ -203,11 +300,46 @@ export function CreateTaskForm({
       {/* Left column — the form                                           */}
       {/* ---------------------------------------------------------------- */}
       <div className="min-w-0 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p role="status" className="text-sm text-muted-foreground">
+            {draftStatus}
+          </p>
+          {savedRevision > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  try {
+                    await saveQueue.current.catch(() => {});
+                    const r = await fetch("/api/brief", {
+                      method: "DELETE",
+                      headers: { "If-Match": String(revision.current) },
+                    });
+                    if (!r.ok) throw new Error();
+                    finished.current = true;
+                    window.location.assign("/tasks/new");
+                  } catch {
+                    setDraftStatus(
+                      "Could not discard. Reload to recover the latest saved brief.",
+                    );
+                  }
+                })
+              }
+            >
+              Discard saved brief
+            </Button>
+          )}
+        </div>
         {/* Who you're hiring — confirmation when an agent is selected */}
         {selectedAgent && (
           <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] p-4">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/40 text-primary">
-              <CategoryIcon category={selectedAgent.category} className="h-5 w-5" />
+              <CategoryIcon
+                category={selectedAgent.category}
+                className="h-5 w-5"
+              />
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
@@ -234,7 +366,10 @@ export function CreateTaskForm({
             </div>
             <div className="shrink-0 text-right">
               <div className="text-sm font-semibold text-foreground">
-                {formatCurrency(selectedAgent.startingPrice, selectedAgent.currency)}
+                {formatCurrency(
+                  selectedAgent.startingPrice,
+                  selectedAgent.currency,
+                )}
               </div>
               <div className="text-[11px] text-muted-foreground">starting</div>
             </div>
@@ -285,12 +420,18 @@ export function CreateTaskForm({
                       value={field.value ?? ""}
                       onValueChange={field.onChange}
                     >
-                      <SelectTrigger id="category" aria-invalid={Boolean(errors.category)}>
+                      <SelectTrigger
+                        id="category"
+                        aria-invalid={Boolean(errors.category)}
+                      >
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
                         {CATEGORIES.map((category) => (
-                          <SelectItem key={category.value} value={category.value}>
+                          <SelectItem
+                            key={category.value}
+                            value={category.value}
+                          >
                             {category.label}
                           </SelectItem>
                         ))}
@@ -307,57 +448,24 @@ export function CreateTaskForm({
                   control={control}
                   name="sellerAgentId"
                   render={({ field }) => (
-                    <Select
+                    <AgentPicker
+                      initial={agents}
                       value={field.value ?? ""}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        // Sensible default: seed the budget from the agent's
-                        // starting price unless the buyer already set one.
-                        const price = Number(agentById(value)?.startingPrice ?? 0);
+                      invalid={Boolean(errors.sellerAgentId)}
+                      onSelect={(agent) => {
+                        setAgents((previous) => [
+                          ...previous.filter((a) => a.id !== agent.id),
+                          agent,
+                        ]);
+                        field.onChange(agent.id);
                         const current = Number(getValues("budget")) || 0;
-                        if (price > 0 && current === 0) {
-                          setValue("budget", price, {
+                        if (agent.startingPrice > 0 && current === 0)
+                          setValue("budget", agent.startingPrice, {
                             shouldValidate: true,
                             shouldDirty: true,
                           });
-                        }
                       }}
-                      disabled={!hasAgents}
-                    >
-                      <SelectTrigger
-                        id="sellerAgentId"
-                        aria-invalid={Boolean(errors.sellerAgentId)}
-                      >
-                        <SelectValue
-                          placeholder={
-                            hasAgents ? "Assign an agent" : "No agents available"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {agents.map((agent) => (
-                          <SelectItem key={agent.id} value={agent.id}>
-                            <span className="flex w-full items-center justify-between gap-3">
-                              <span className="flex items-center gap-1.5 truncate">
-                                <span className="truncate font-medium">
-                                  {agent.name}
-                                </span>
-                                {agent.verified && (
-                                  <ShieldCheck className="h-3 w-3 shrink-0 text-primary" />
-                                )}
-                              </span>
-                              <span className="shrink-0 text-xs text-muted-foreground">
-                                {agent.category} ·{" "}
-                                {formatCurrency(
-                                  Number(agent.startingPrice),
-                                  agent.currency,
-                                )}
-                              </span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    />
                   )}
                 />
                 <FieldError message={errors.sellerAgentId?.message} />
@@ -416,15 +524,22 @@ export function CreateTaskForm({
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="expectedOutputFormat">Expected output format</Label>
+              <Label htmlFor="expectedOutputFormat">
+                Expected output format
+              </Label>
               <Textarea
                 id="expectedOutputFormat"
                 rows={4}
                 className="font-mono text-xs"
-                placeholder='A JSON schema or a plain description, e.g. {"records": [{"company": "string", "email": "string"}]}'
+                placeholder='Describe the deliverable, or use JSON Schema: {"type":"object","required":["answer"],"properties":{"answer":{"type":"string"}}}'
                 aria-invalid={Boolean(errors.expectedOutputFormat)}
                 {...register("expectedOutputFormat")}
               />
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                JSON Schema checks structure. Plain descriptions and validation
+                rules are instructions for human review; they do not verify
+                accuracy automatically.
+              </p>
               <FieldError message={errors.expectedOutputFormat?.message} />
             </div>
 
@@ -486,6 +601,23 @@ export function CreateTaskForm({
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div className="space-y-2">
+                {paymentRails.length > 0 && (
+                  <label className="mb-4 block text-sm">
+                    Payment rail
+                    <select
+                      {...register("paymentRail")}
+                      className="mt-2 min-h-11 w-full rounded border bg-background p-2"
+                    >
+                      {paymentRails.map((rail) => (
+                        <option key={rail} value={rail}>
+                          {rail === "stripe"
+                            ? "Card · Stripe Checkout"
+                            : "Stablecoin · wallet escrow"}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
                 <Label htmlFor="paymentMode">Payment mode</Label>
                 <Controller
                   control={control}
@@ -500,7 +632,16 @@ export function CreateTaskForm({
                       </SelectTrigger>
                       <SelectContent>
                         {PAYMENT_MODES.map((mode) => (
-                          <SelectItem key={mode.value} value={mode.value}>
+                          <SelectItem
+                            key={mode.value}
+                            value={mode.value}
+                            disabled={
+                              mode.value !==
+                              (["stripe", "crypto"].includes(paymentMode())
+                                ? "pay_per_task"
+                                : "mock_escrow")
+                            }
+                          >
                             {mode.label}
                           </SelectItem>
                         ))}
@@ -540,6 +681,13 @@ export function CreateTaskForm({
           </CardContent>
         </Card>
 
+        <p className="text-sm font-medium lg:hidden">
+          Agreed budget: {formatCurrency(Number(watch("budget")) || 0)}.{" "}
+          {paymentMode() === "demo"
+            ? "Charged today: $0."
+            : "Payment is required at checkout before work starts."}
+        </p>
+        <PaymentNotice />
         <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
           <Button
             type="button"
@@ -549,7 +697,10 @@ export function CreateTaskForm({
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={pending || !hasAgents}>
+          <Button
+            type="submit"
+            disabled={pending || !hasAgents || paymentMode() === "disabled"}
+          >
             {pending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -569,13 +720,49 @@ export function CreateTaskForm({
       {/* Right column — sticky contract preview                           */}
       {/* ---------------------------------------------------------------- */}
       <div className="min-w-0">
-        <div className="lg:sticky lg:top-24">
-          <Card className="glass overflow-hidden">
+        <div className="space-y-5 lg:sticky lg:top-24">
+          <section
+            aria-label="Your agreement"
+            className="rounded-xl border border-border bg-card p-5"
+          >
+            <h2 className="text-lg font-semibold tracking-tight">
+              Your agreement
+            </h2>
+            <dl className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Agent</dt>
+                <dd className="text-right font-medium">
+                  {selectedAgent?.name ?? "Choose an agent"}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Agreed budget</dt>
+                <dd className="font-medium">
+                  {formatCurrency(Number(watch("budget")) || 0)}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Due on creation</dt>
+                <dd className="text-right font-medium">
+                  {paymentMode() === "demo"
+                    ? "$0 · simulation"
+                    : "$0 · funding is a separate step"}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-5 border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">
+              Creating a task sends a request. The seller accepts and delivers
+              from their own environment. You review the result and explicitly
+              approve completion.
+            </p>
+          </section>
+          <PaymentNotice />
+          <Card className="overflow-hidden">
             <CardHeader className="gap-3">
               <div>
                 <CardTitle className="text-base">Contract preview</CardTitle>
                 <CardDescription>
-                  A machine-readable work contract.
+                  Optional helper: a template, not an AI review of your brief.
                 </CardDescription>
               </div>
               <Button

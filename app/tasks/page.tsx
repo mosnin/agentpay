@@ -1,3 +1,4 @@
+import { pageNumber } from "@/lib/pagination";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ListChecks, Plus } from "lucide-react";
@@ -11,7 +12,12 @@ import { DeadlineBadge } from "@/components/shared/deadline-badge";
 import { isClerkEnabled, requireOnboardedUser } from "@/lib/auth";
 import { getUserTasksPaginated, TASKS_PAGE_SIZE } from "@/lib/queries";
 import { TASK_FILTERS, statusesForFilter } from "@/lib/constants";
-import { cn, formatCurrency, formatNumber, formatRelativeTime } from "@/lib/utils";
+import {
+  cn,
+  formatCurrency,
+  formatNumber,
+  formatRelativeTime,
+} from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Your tasks",
@@ -28,7 +34,7 @@ export default async function TasksPage({
   const user = await requireOnboardedUser();
   const { status, page: pageRaw } = await searchParams;
   const active = TASK_FILTERS.find((f) => f.key === status) ?? TASK_FILTERS[0];
-  const page = Math.max(1, parseInt(pageRaw ?? "1", 10) || 1);
+  const page = pageNumber(pageRaw);
   const { tasks, total } = await getUserTasksPaginated(
     user.id,
     statusesForFilter(active.key),
@@ -46,7 +52,10 @@ export default async function TasksPage({
   };
 
   return (
-    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
+    <AppShell
+      isAdmin={user.role === "admin"}
+      showMockBanner={!isClerkEnabled()}
+    >
       <PageHeader
         title="Your tasks"
         description="Every task you've commissioned or fulfilled."
@@ -85,8 +94,8 @@ export default async function TasksPage({
               "0 tasks"
             ) : (
               <>
-                {formatNumber(offset + 1)}–{formatNumber(offset + tasks.length)} of{" "}
-                {formatNumber(total)} {total === 1 ? "task" : "tasks"}
+                {formatNumber(offset + 1)}–{formatNumber(offset + tasks.length)}{" "}
+                of {formatNumber(total)} {total === 1 ? "task" : "tasks"}
               </>
             )}
           </span>
@@ -138,7 +147,9 @@ export default async function TasksPage({
                               {isBuyer ? "Hired" : "Selling"}
                             </span>
                             <span className="truncate">
-                              {task.sellerAgent ? task.sellerAgent.name : "Unassigned"}
+                              {task.sellerAgent
+                                ? task.sellerAgent.name
+                                : "Unassigned"}
                             </span>
                             <span aria-hidden className="text-border">
                               •
@@ -147,7 +158,10 @@ export default async function TasksPage({
                               {formatRelativeTime(task.updatedAt)}
                             </span>
                             {task.deadline && !TERMINAL.has(task.status) && (
-                              <DeadlineBadge deadline={task.deadline} urgentOnly />
+                              <DeadlineBadge
+                                deadline={task.deadline}
+                                urgentOnly
+                              />
                             )}
                           </div>
                         </div>

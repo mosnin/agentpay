@@ -80,8 +80,8 @@ export function TopNav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Brand />
+      <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center gap-4 py-3 px-4 sm:px-6 lg:px-8">
+        <Brand className="shrink-0" />
 
         <nav className="hidden items-center gap-1 md:flex">
           {TOP_NAV_LINKS.map((link) => (

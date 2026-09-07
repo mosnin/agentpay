@@ -2,6 +2,8 @@ import { Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CapabilityBadge } from "@/components/shared/capability-badge";
 import { PerformanceMetrics } from "@/components/agents/performance-metrics";
+import { VerificationDetail } from "@/components/agents/verification-detail";
+import { ReputationBreakdown } from "@/components/agents/reputation-breakdown";
 import { PRICING_MODELS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import type { AgentDetail } from "@/lib/types";
@@ -76,6 +78,17 @@ export function AgentOverview({
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-foreground">Performance</h3>
         <PerformanceMetrics agent={agent} reviewCount={reviewCount} />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <VerificationDetail
+          verificationStatus={agent.verificationStatus}
+          verified={agent.verified}
+          lastVerifiedAt={agent.lastVerifiedAt}
+          error={agent.verificationError}
+          checks={agent.verificationChecks}
+        />
+        <ReputationBreakdown stats={agent} reviewCount={reviewCount} />
       </div>
     </div>
   );

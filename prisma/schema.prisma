@@ -84,14 +84,20 @@ enum ReputationEventType {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  clerkId   String?  @unique
-  name      String?
-  image     String?
-  role      String   @default("operator")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  publicTrustProfile Boolean           @default(false)
+  wallets            WalletAccount[]
+  walletChallenges   WalletChallenge[]
+  spendingPolicies   SpendingPolicy[]
+  trustAppeals       TrustAppeal[]
+  stripeAccountId    String?           @unique
+  id                 String            @id @default(cuid())
+  email              String            @unique
+  clerkId            String?           @unique
+  name               String?
+  image              String?
+  role               String            @default("operator")
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
   // Soft signup preference, not an authorization role — "role" above stays
   // the source of truth for permissions.
@@ -101,10 +107,18 @@ model User {
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  agents   Agent[]   @relation("AgentOwner")
-  tasks    Task[]    @relation("TaskBuyer")
-  reviews  Review[]
-  disputes Dispute[] @relation("DisputeOpener")
+  agents         Agent[]              @relation("AgentOwner")
+  tasks          Task[]               @relation("TaskBuyer")
+  reviews        Review[]
+  disputes       Dispute[]            @relation("DisputeOpener")
+  apiKeys        ApiKey[]
+  notifications  Notification[]
+  sentInvites    OrganizationInvite[] @relation("InviteSender")
+  brief          TaskBrief?
+  savedAgents    SavedAgent[]
+  serviceReports ServiceReport[]
+
+  @@index([createdAt])
 }
 
 model Organization {
@@ -115,49 +129,159 @@ model Organization {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  users  User[]
-  agents Agent[]
+  users   User[]
+  agents  Agent[]
+  invites OrganizationInvite[]
+}
+
+/// Bearer credential for headless agents driving the task API.
+/// The secret is shown once at creation; only its hash is stored.
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  prefix     String    @unique // display fragment, e.g. "bids_ab12"
+  hashedKey  String    @unique
+  scopes     String[]  @default(["account"])
+  expiresAt  DateTime?
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Email invitation into an organization. Open joining is not a thing.
+model OrganizationInvite {
+  id         String    @id @default(cuid())
+  email      String
+  token      String    @unique
+  status     String    @default("pending") // pending | accepted | revoked
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  acceptedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedById    String?
+  invitedBy      User?        @relation("InviteSender", fields: [invitedById], references: [id])
+
+  @@index([organizationId, status])
+  @@index([email])
+}
+
+/// In-app notification. One row per recipient per event.
+model Notification {
+  id        String    @id @default(cuid())
+  type      String // task_accepted | artifact_submitted | approval_needed | task_completed | dispute_opened | invite_received | ...
+  title     String
+  body      String?
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+/// Outbound webhook attempt to a seller agent's endpoint, with retry state —
+/// the delivery log a seller sees on a task.
+model WebhookDelivery {
+  id             String   @id @default(cuid())
+  event          String // task.assigned | ...
+  url            String
+  status         String   @default("pending") // pending | success | failed
+  attempts       Int      @default(0)
+  responseStatus Int?
+  lastError      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
 }
 
 model Agent {
-  id                    String       @id @default(cuid())
-  name                  String
-  slug                  String       @unique
-  shortDescription      String
-  longDescription       String
-  category              String
-  status                AgentStatus  @default(active)
-  verified              Boolean      @default(false)
-  endpointUrl           String?
-  mcpServerUrl          String?
-  pricingModel          PricingModel @default(per_task)
-  startingPrice         Float        @default(0)
-  currency              String       @default("USD")
-  averageRating         Float        @default(0)
-  reputationScore       Int          @default(50)
-  completionRate        Float        @default(0)
-  averageLatencyMinutes Int          @default(0)
-  schemaComplianceScore Float        @default(0)
-  disputeRate           Float        @default(0)
-  totalTasksCompleted   Int          @default(0)
-  inputSchema           Json?
-  outputSchema          Json?
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
+  id                        String       @id @default(cuid())
+  name                      String
+  slug                      String       @unique
+  shortDescription          String
+  longDescription           String
+  category                  String
+  status                    AgentStatus  @default(active)
+  // `verified` stays the effective badge every surface already reads; the
+  // verification program (Team 1) is now what earns and revokes it —
+  // verificationStatus is the richer source of truth it mirrors.
+  verified                  Boolean      @default(false)
+  verificationStatus        String       @default("unverified") // unverified | pending | verified | failed
+  verificationAttemptId     String?
+  lastVerificationAttemptAt DateTime?
+  lastVerifiedAt            DateTime?
+  verificationError         String?
+  workerSeenAt              DateTime?
+  workerCapacity            Int          @default(0)
+  endpointUrl               String?
+  mcpServerUrl              String?
+  pricingModel              PricingModel @default(per_task)
+  startingPrice             Float        @default(0)
+  currency                  String       @default("USD")
+  averageRating             Float        @default(0)
+  reputationScore           Int          @default(50)
+  completionRate            Float        @default(0)
+  averageLatencyMinutes     Int          @default(0)
+  schemaComplianceScore     Float        @default(0)
+  disputeRate               Float        @default(0)
+  totalTasksCompleted       Int          @default(0)
+  // Reputation integrity (Team 2): timestamp of the last recompute, so the
+  // decay pass can weight recent performance over stale history.
+  reputationUpdatedAt       DateTime?
+  inputSchema               Json?
+  outputSchema              Json?
+  createdAt                 DateTime     @default(now())
+  updatedAt                 DateTime     @updatedAt
 
   ownerId        String
   owner          User          @relation("AgentOwner", fields: [ownerId], references: [id])
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  capabilities     AgentCapability[]
-  tasks            Task[]            @relation("TaskSellerAgent")
-  reviews          Review[]
-  reputationEvents ReputationEvent[]
+  capabilities       AgentCapability[]
+  tasks              Task[]              @relation("TaskSellerAgent")
+  reviews            Review[]
+  reputationEvents   ReputationEvent[]
+  verificationChecks VerificationCheck[]
+  savedBy            SavedAgent[]
 
   @@index([category])
   @@index([reputationScore])
   @@index([verified])
+  @@index([status, reputationScore, id])
+  @@index([ownerId, createdAt])
+  @@index([status, lastVerificationAttemptAt, id])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "agent_name_trgm_idx")
+}
+
+// Audit trail for the verification program (Team 1): each automated check
+// (endpoint health challenge, output-schema round-trip, owner identity) writes
+// a row here so a "Verified" badge is always traceable to a passing check and
+// can be expired the moment one fails.
+model VerificationCheck {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  kind      String // health | schema | identity
+  passed    Boolean
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([agentId, createdAt])
 }
 
 model Capability {
@@ -170,6 +294,8 @@ model Capability {
   updatedAt   DateTime @updatedAt
 
   agents AgentCapability[]
+
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "capability_name_trgm_idx")
 }
 
 model AgentCapability {
@@ -185,35 +311,49 @@ model AgentCapability {
 }
 
 model Task {
-  id         String         @id @default(cuid())
-  title      String
-  objective  String
-  category   String
-  status     TaskStatus     @default(draft)
-  visibility TaskVisibility @default(public)
-  budget     Float          @default(0)
-  currency   String         @default("USD")
-  deadline   DateTime?
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  fundedAt         DateTime?
+  acceptedAt       DateTime?
+  firstSubmittedAt DateTime?
+  completedAt      DateTime?
+  paymentOrder     PaymentOrder?
+  trustFindings    TrustFinding[]
+  workerLeaseToken String?
+  workerLeaseUntil DateTime?
+  creationKey      String?        @unique
+  creationDigest   String?
+  id               String         @id @default(cuid())
+  title            String
+  objective        String
+  category         String
+  status           TaskStatus     @default(draft)
+  visibility       TaskVisibility @default(public)
+  budget           Float          @default(0)
+  currency         String         @default("USD")
+  deadline         DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   buyerId       String
   buyer         User    @relation("TaskBuyer", fields: [buyerId], references: [id])
   sellerAgentId String?
   sellerAgent   Agent?  @relation("TaskSellerAgent", fields: [sellerAgentId], references: [id])
 
-  contract         TaskContract?
-  artifacts        Artifact[]
-  payment          Payment?
-  reviews          Review[]
-  reputationEvents ReputationEvent[]
-  disputes         Dispute[]
+  contract          TaskContract?
+  artifacts         Artifact[]
+  payment           Payment?
+  reviews           Review[]
+  reputationEvents  ReputationEvent[]
+  disputes          Dispute[]
+  webhookDeliveries WebhookDelivery[]
 
   @@index([status])
   @@index([category])
   @@index([buyerId])
   @@index([sellerAgentId])
   @@index([updatedAt])
+  @@index([buyerId, updatedAt, id])
+  @@index([sellerAgentId, createdAt, id])
+  @@index([status, deadline])
 }
 
 model TaskContract {
@@ -231,6 +371,7 @@ model TaskContract {
 }
 
 model Artifact {
+  submissionKey    String?          @unique
   id               String           @id @default(cuid())
   taskId           String
   task             Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
@@ -248,17 +389,28 @@ model Artifact {
 }
 
 model Payment {
-  id              String        @id @default(cuid())
-  taskId          String        @unique
-  task            Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  amount          Float
-  currency        String        @default("USD")
-  status          PaymentStatus @default(pending)
-  mode            PaymentMode   @default(mock_escrow)
-  provider        String        @default("x402_mock")
-  transactionHash String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  amountMinor           Int?
+  livemode              Boolean       @default(false)
+  sellerAccountId       String?
+  stripeSessionId       String?       @unique
+  stripePaymentIntentId String?       @unique
+  stripeChargeId        String?
+  stripeTransferId      String?       @unique
+  stripeRefundId        String?
+  operation             String?
+  operationStartedAt    DateTime?
+  lastError             String?
+  id                    String        @id @default(cuid())
+  taskId                String        @unique
+  task                  Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  amount                Float
+  currency              String        @default("USD")
+  status                PaymentStatus @default(pending)
+  mode                  PaymentMode   @default(mock_escrow)
+  provider              String        @default("disabled")
+  transactionHash       String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 }
 
 model Review {
@@ -275,7 +427,7 @@ model Review {
   updatedAt DateTime @updatedAt
 
   @@unique([taskId, userId])
-  @@index([agentId])
+  @@index([agentId, createdAt])
   @@index([taskId])
 }
 
@@ -294,16 +446,326 @@ model ReputationEvent {
 }
 
 model Dispute {
-  id         String        @id @default(cuid())
+  findings   TrustFinding[]
+  id         String         @id @default(cuid())
   taskId     String
-  task       Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task       Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
   openedById String
-  openedBy   User          @relation("DisputeOpener", fields: [openedById], references: [id])
+  openedBy   User           @relation("DisputeOpener", fields: [openedById], references: [id])
   reason     String
-  status     DisputeStatus @default(open)
+  status     DisputeStatus  @default(open)
   resolution String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   @@index([status])
+}
+
+model PaymentEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+}
+
+model WalletAccount {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family           String
+  address          String
+  label            String
+  provider         String           @default("external")
+  providerWalletId String?          @unique
+  verifiedAt       DateTime
+  isPayout         Boolean          @default(false)
+  revokedAt        DateTime?
+  createdAt        DateTime         @default(now())
+  policies         SpendingPolicy[]
+
+  @@unique([family, address])
+  @@index([userId])
+}
+
+model WalletChallenge {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family     String
+  address    String
+  message    String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, expiresAt])
+}
+
+model SpendingPolicy {
+  id               String                @id @default(cuid())
+  userId           String
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId         String
+  wallet           WalletAccount         @relation(fields: [walletId], references: [id])
+  name             String
+  networks         String[]
+  assets           String[]
+  recipients       String[]
+  perPaymentUnits  BigInt
+  perDayUnits      BigInt
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  apiKeyId         String?
+  providerPolicyId String?
+  providerSignerId String?
+  state            String                @default("pending")
+  createdAt        DateTime              @default(now())
+  reservations     SpendingReservation[]
+
+  @@index([userId])
+}
+
+model SpendingReservation {
+  id              String         @id @default(cuid())
+  policyId        String
+  policy          SpendingPolicy @relation(fields: [policyId], references: [id])
+  orderId         String         @unique
+  amountUnits     BigInt
+  state           String         @default("reserved")
+  transactionHash String?
+  createdAt       DateTime       @default(now())
+
+  @@index([policyId, createdAt])
+}
+
+model PaymentOrder {
+  id             String           @id @default(cuid())
+  taskId         String           @unique
+  task           Task             @relation(fields: [taskId], references: [id])
+  jobKey         String           @unique
+  network        String
+  token          String
+  symbol         String
+  decimals       Int
+  escrow         String
+  treasury       String
+  arbiter        String
+  buyerAddress   String
+  sellerAddress  String
+  totalUnits     BigInt
+  feeUnits       BigInt
+  sellerUnits    BigInt
+  feeBps         Int
+  feeMode        String
+  deliverBy      DateTime
+  reviewSeconds  Int
+  disputeSeconds Int
+  termsHash      String
+  state          String           @default("quoted")
+  livemode       Boolean          @default(false)
+  fundedAt       DateTime?
+  settledAt      DateTime?
+  artifactHash   String?
+  lastError      String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  attempts       PaymentAttempt[]
+  ledger         LedgerEntry[]
+
+  @@index([network, state])
+}
+
+model PaymentAttempt {
+  id              String       @id @default(cuid())
+  orderId         String
+  order           PaymentOrder @relation(fields: [orderId], references: [id])
+  network         String
+  transactionHash String
+  kind            String
+  state           String       @default("submitted")
+  blockHash       String?
+  blockNumber     BigInt?
+  createdAt       DateTime     @default(now())
+  confirmedAt     DateTime?
+
+  @@unique([network, transactionHash])
+}
+
+model LedgerEntry {
+  id              String       @id @default(cuid())
+  orderId         String
+  order           PaymentOrder @relation(fields: [orderId], references: [id])
+  eventKey        String       @unique
+  network         String
+  token           String
+  debitAccount    String
+  creditAccount   String
+  amountUnits     BigInt
+  transactionHash String
+  createdAt       DateTime     @default(now())
+
+  @@index([orderId])
+}
+
+model TaskOutbox {
+  id            String    @id @default(cuid())
+  taskId        String
+  event         String
+  dedupeKey     String    @unique
+  payload       Json
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now())
+  deliveredAt   DateTime?
+  lockedUntil   DateTime?
+  lastError     String?
+  createdAt     DateTime  @default(now())
+
+  @@index([deliveredAt, nextAttemptAt])
+}
+
+model TrustFinding {
+  id            String        @id @default(cuid())
+  taskId        String
+  task          Task          @relation(fields: [taskId], references: [id])
+  disputeId     String
+  dispute       Dispute       @relation(fields: [disputeId], references: [id])
+  subjectUserId String
+  outcome       String
+  publicReason  String
+  decidedById   String
+  supersededAt  DateTime?
+  createdAt     DateTime      @default(now())
+  appeals       TrustAppeal[]
+
+  @@index([subjectUserId, supersededAt])
+}
+
+model TrustAppeal {
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  findingId    String
+  finding      TrustFinding @relation(fields: [findingId], references: [id])
+  reason       String
+  state        String       @default("open")
+  response     String?
+  reviewedById String?
+  createdAt    DateTime     @default(now())
+  reviewedAt   DateTime?
+
+  @@unique([userId, findingId])
+}
+
+model PaidRequest {
+  id              String    @id @default(cuid())
+  userId          String
+  inputHash       String
+  input           Json
+  network         String
+  sellerAddress   String
+  treasury        String
+  router          String
+  asset           String
+  amountUnits     BigInt
+  feeBps          Int
+  nonce           String    @unique
+  expiresAt       DateTime
+  state           String    @default("quoted")
+  payer           String?
+  rawTransaction  String?
+  relayerNonce    BigInt?
+  transactionHash String?
+  output          Json?
+  createdAt       DateTime  @default(now())
+  settledAt       DateTime?
+
+  @@index([userId, state])
+}
+
+model RelayerSequence {
+  id        String   @id
+  nextNonce BigInt
+  updatedAt DateTime @updatedAt
+}
+
+model ChainCursor {
+  id          String   @id
+  blockNumber BigInt
+  blockHash   String
+  halted      Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+}
+
+/// Durable scheduler lease; attempt identity fences late completions.
+model OperationJob {
+  id            String         @id
+  leaseToken    String?
+  leaseUntil    DateTime?
+  lastSuccessAt DateTime?
+  runs          OperationRun[]
+}
+
+model OperationRun {
+  id         String       @id @default(cuid())
+  jobId      String
+  job        OperationJob @relation(fields: [jobId], references: [id])
+  state      String       @default("running")
+  startedAt  DateTime     @default(now())
+  finishedAt DateTime?
+  summary    String?
+
+  @@index([jobId, startedAt])
+}
+
+model OperationAudit {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  targetId  String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model TaskBrief {
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @id
+  values      Json
+  revision    Int      @default(1)
+  creationKey String   @unique @default(uuid())
+  updatedAt   DateTime @updatedAt
+}
+
+model SavedAgent {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId    String
+  agentId   String
+  createdAt DateTime @default(now())
+
+  @@id([userId, agentId])
+  @@index([userId, createdAt])
+}
+
+model ServiceReport {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  taskId    String?
+  subject   String
+  detail    String
+  state     String   @default("open")
+  response  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([state, createdAt])
+}
+
+model RateLimitBucket {
+  id        String   @id
+  tokens    Float
+  updatedAt DateTime @default(now())
+
+  @@index([updatedAt])
 }

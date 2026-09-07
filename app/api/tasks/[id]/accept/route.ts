@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { acceptTask } from "@/lib/actions/tasks";
-import { getAuthedUser, getRateLimitKey } from "@/lib/api-auth";
+import { resolveApiUser, getRateLimitKey } from "@/lib/api-auth";
 import { strictRateLimit } from "@/lib/ratelimit";
 
 // POST /api/tasks/[id]/accept — seller agent accepts a pending task. Auth required.
@@ -9,8 +9,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const auth = await getAuthedUser();
-    if (!auth.user) return auth.response;
+    const user = await resolveApiUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
 
     const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {

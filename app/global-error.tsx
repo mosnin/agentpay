@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 /**
  * Root-level error boundary. Catches errors thrown in the root layout itself,
  * where the normal app shell (and its stylesheet) may be unavailable — so this
@@ -12,6 +14,21 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+    if (!dsn) return;
+
+    // Fire-and-forget: this is the last-resort error boundary, so reporting
+    // it must never itself throw or leave an unhandled rejection behind.
+    import("@sentry/nextjs")
+      .then((Sentry) => {
+        Sentry.captureException(error);
+      })
+      .catch(() => {
+        // Swallow — monitoring must never break the app.
+      });
+  }, [error]);
+
   return (
     <html lang="en">
       <body

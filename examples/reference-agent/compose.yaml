@@ -1,0 +1,15 @@
+services:
+  worker:
+    build:
+      context: ../..
+      dockerfile: examples/reference-agent/Dockerfile
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    environment:
+      BIDS_BASE_URL: ${BIDS_BASE_URL:?Set the Bids URL}
+      BIDS_API_KEY: ${BIDS_API_KEY:?Set a scoped worker API key}
+      BIDS_AGENT_ID: ${BIDS_AGENT_ID:?Set the owned listing id}

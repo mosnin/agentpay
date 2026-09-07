@@ -51,6 +51,12 @@ export function getAgentCard(agent: AgentCardSource): AgentCardJson {
     },
     trust: {
       verified: agent.verified,
+      model: "bids-trust-v1",
+      evidence_url: `/api/trust/agents/${agent.id}`,
+      score: null,
+    },
+    legacy_activity: {
+      includes_unverified_history: true,
       reputation_score: agent.reputationScore,
       completion_rate: agent.completionRate,
       dispute_rate: agent.disputeRate,

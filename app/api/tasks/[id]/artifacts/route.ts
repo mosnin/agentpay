@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { submitArtifact } from "@/lib/actions/tasks";
-import { getAuthedUser, getRateLimitKey } from "@/lib/api-auth";
+import { resolveApiUser, getRateLimitKey } from "@/lib/api-auth";
 import { strictRateLimit } from "@/lib/ratelimit";
 
 // POST /api/tasks/[id]/artifacts — submit a deliverable for a task. Auth required.
@@ -10,8 +10,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const auth = await getAuthedUser();
-    if (!auth.user) return auth.response;
+    const user = await resolveApiUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
 
     const rl = await strictRateLimit(getRateLimitKey(request));
     if (!rl.ok) {
@@ -36,7 +38,7 @@ export async function POST(
       return NextResponse.json({ error: res.error }, { status });
     }
 
-    return NextResponse.json({ ok: true, status: "submitted" });
+    return NextResponse.json({ ok: true, ...res.data });
   } catch (err) {
     console.error("POST /api/tasks/[id]/artifacts failed", err);
     return NextResponse.json(

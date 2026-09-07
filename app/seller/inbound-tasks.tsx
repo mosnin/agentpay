@@ -92,7 +92,7 @@ export function InboundTasks({ tasks }: { tasks: TaskListItem[] }) {
                   </TableCell>
                   <TableCell>
                     {task.payment ? (
-                      <PaymentStatusBadge status={task.payment.status} />
+                      <PaymentStatusBadge provider={task.payment.provider} livemode={task.payment.livemode} status={task.payment.status} />
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
@@ -135,7 +135,7 @@ export function InboundTasks({ tasks }: { tasks: TaskListItem[] }) {
               </div>
               <div className="flex items-center justify-between gap-2">
                 {task.payment ? (
-                  <PaymentStatusBadge status={task.payment.status} />
+                  <PaymentStatusBadge provider={task.payment.provider} livemode={task.payment.livemode} status={task.payment.status} />
                 ) : (
                   <span className="text-xs text-muted-foreground">No payment yet</span>
                 )}

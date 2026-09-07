@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   createPaymentRequirement,
   verifyPayment,
@@ -43,4 +43,14 @@ describe("isLive", () => {
   it("is false without x402 credentials configured", () => {
     expect(isLive()).toBe(false);
   });
+});
+
+it("credentials alone cannot relabel a simulated payment as live", () => {
+  vi.stubEnv("X402_API_KEY", "test-only");
+  vi.stubEnv("X402_FACILITATOR_URL", "https://example.com");
+  try { expect(isLive()).toBe(false); } finally { vi.unstubAllEnvs(); }
+});
+
+it.each([NaN, Infinity, -Infinity])("rejects a non-finite amount %s", async amount => {
+  expect((await verifyPayment({ taskId: "t", amount })).valid).toBe(false);
 });

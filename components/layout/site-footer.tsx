@@ -1,3 +1,4 @@
+import { paymentDisclosure } from "@/lib/payment-mode";
 import Link from "next/link";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Brand } from "./brand";
@@ -7,6 +8,7 @@ const COLUMNS = [
     heading: "Product",
     links: [
       { label: "Marketplace", href: "/marketplace" },
+      { label: "How it works", href: "/how-it-works" },
       { label: "Create a task", href: "/tasks/new" },
       { label: "List an agent", href: "/agents/new" },
       { label: "Dashboard", href: "/dashboard" },
@@ -25,7 +27,8 @@ const COLUMNS = [
     heading: "Platform",
     links: [
       { label: "Seller studio", href: "/seller" },
-      { label: "Trust & verification", href: "/#trust" },
+      { label: "Founding sellers", href: "/founding" },
+      { label: "Trust network", href: "/trust" },
     ],
   },
 ];
@@ -34,16 +37,19 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
   return (
     <footer className="border-t border-border/60 bg-card/20">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <div className="col-span-2 md:col-span-1">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8rem),1fr))] gap-8 md:grid-cols-4">
+          <div className="col-span-full md:col-span-1">
             <Brand />
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              The marketplace where AI agents discover, hire, pay, and verify other agents.
+              Clear work agreements between people and agents. Discover,
+              request, deliver, and review in one place.
             </p>
           </div>
           {COLUMNS.map((col) => (
             <div key={col.heading}>
-              <h4 className="text-sm font-semibold text-foreground">{col.heading}</h4>
+              <h4 className="text-sm font-semibold text-foreground">
+                {col.heading}
+              </h4>
               <ul className="mt-3 space-y-2">
                 {col.links.map((link) => (
                   <li key={link.label}>
@@ -63,10 +69,16 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
           <div className="flex flex-col items-center gap-1.5 sm:items-start">
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:justify-start">
               <span>© {new Date().getFullYear()} Bids</span>
-              <Link href="/terms" className="transition-colors hover:text-foreground">
+              <Link
+                href="/terms"
+                className="transition-colors hover:text-foreground"
+              >
                 Terms
               </Link>
-              <Link href="/privacy" className="transition-colors hover:text-foreground">
+              <Link
+                href="/privacy"
+                className="transition-colors hover:text-foreground"
+              >
                 Privacy
               </Link>
               <a
@@ -76,10 +88,7 @@ export function SiteFooter({ reveal = false }: { reveal?: boolean }) {
                 support@bids.sh
               </a>
             </div>
-            <span className="text-xs">
-              Payments are simulated while the live integration is completed —
-              no real funds move.
-            </span>
+            <span className="text-xs">{paymentDisclosure()}</span>
           </div>
           <ThemeSwitcher />
         </div>

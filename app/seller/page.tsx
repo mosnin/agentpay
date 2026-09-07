@@ -1,3 +1,12 @@
+import { SettledEarnings } from "@/components/dashboard/settled-earnings";
+import { SetupProgress } from "@/components/dashboard/setup-progress";
+import { getSetupProgress } from "@/lib/activation";
+import { pageNumber } from "@/lib/pagination";
+import { Pagination } from "@/components/shared/pagination";
+import { availablePaymentRails } from "@/lib/payment-rails";
+import { PayoutSetup } from "@/components/payments/payment-button";
+import { paymentMode } from "@/lib/payment-mode";
+import { PaymentNotice } from "@/components/shared/payment-notice";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CircleDollarSign, Inbox, PlusCircle, Star, Store } from "lucide-react";
@@ -5,7 +14,13 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { MetricCard } from "@/components/shared/metric-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { DashboardChart } from "@/components/dashboard/lazy-chart";
 import { isClerkEnabled, requireOnboardedUser } from "@/lib/auth";
 import { getSellerData } from "@/lib/queries";
@@ -19,32 +34,33 @@ export const metadata: Metadata = {
   description: "Manage your listings, inbound work, earnings, and reviews.",
 };
 
-/** Pipeline value of inbound work, grouped by lifecycle stage, for the mini-chart. */
-function buildPipeline(tasks: Awaited<ReturnType<typeof getSellerData>>["inboundTasks"]) {
-  const buckets: { key: string; label: string; statuses: string[] }[] = [
-    { key: "open", label: "Open", statuses: ["pending", "accepted"] },
-    { key: "in_progress", label: "In progress", statuses: ["running", "submitted", "validating"] },
-    { key: "completed", label: "Completed", statuses: ["completed"] },
-  ];
-
-  return buckets.map((bucket) => {
-    const value = tasks
-      .filter((t) => bucket.statuses.includes(t.status))
-      .reduce((sum, t) => sum + t.budget, 0);
-    return { stage: bucket.label, value };
-  });
-}
-
-export default async function SellerPage() {
+export default async function SellerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; agentPage?: string; q?: string }>;
+}) {
   const user = await requireOnboardedUser();
-  const data = await getSellerData(user.id);
+  const sp = await searchParams,
+    page = pageNumber(sp.page),
+    agentPage = pageNumber(sp.agentPage),
+    q = (sp.q ?? "").slice(0, 120);
+  const [data, setup] = await Promise.all([
+    getSellerData(user.id, page, agentPage, q),
+    getSetupProgress(user.id),
+  ]);
   const { stats } = data;
 
-  const pipeline = buildPipeline(data.inboundTasks);
+  const pipeline = data.taskGroups.map((g) => ({
+    stage: g.status,
+    value: g._sum.budget ?? 0,
+  }));
   const hasPipeline = pipeline.some((p) => p.value > 0);
 
   return (
-    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
+    <AppShell
+      isAdmin={user.role === "admin"}
+      showMockBanner={!isClerkEnabled()}
+    >
       <PageHeader
         title="Seller studio"
         description="Manage your listings, inbound work, earnings, and reviews."
@@ -58,14 +74,24 @@ export default async function SellerPage() {
       </PageHeader>
 
       <div className="space-y-10">
+        <SetupProgress title="Launch your service" steps={setup.seller} />
+        <PaymentNotice />
+        <SettledEarnings userId={user.id} />
+        {availablePaymentRails().includes("stripe") && (
+          <PayoutSetup connected={Boolean(user.stripeAccountId)} />
+        )}
         {/* Stats */}
         <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
-            label="Total earnings"
+            label={
+              paymentMode() === "demo"
+                ? "Simulated earnings"
+                : "Card earnings (USD)"
+            }
             value={formatCurrency(stats.totalEarnings)}
             icon={CircleDollarSign}
             tone="green"
-            hint="Released to your agents"
+            hint="See your Stripe account for bank payout status"
           />
           <MetricCard
             label="Listings"
@@ -97,9 +123,12 @@ export default async function SellerPage() {
           <section>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Inbound pipeline value</CardTitle>
+                <CardTitle className="text-base">
+                  Inbound pipeline value
+                </CardTitle>
                 <CardDescription>
-                  Budget of inbound tasks by stage — your potential and realized earnings.
+                  Agreed budgets by stage. Pipeline value is agreed work, not a
+                  bank balance.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -124,7 +153,7 @@ export default async function SellerPage() {
                 Your agents
               </h2>
               <p className="text-sm text-muted-foreground">
-                Listings you own and their live marketplace performance.
+                Your most recent 100 listings and their marketplace performance.
               </p>
             </div>
             {data.ownedAgents.length > 0 && (
@@ -136,7 +165,28 @@ export default async function SellerPage() {
               </Button>
             )}
           </div>
+          <form className="my-4 flex flex-wrap gap-3">
+            <label className="text-sm">
+              Find your agent
+              <input
+                name="q"
+                defaultValue={q}
+                maxLength={120}
+                className="ml-3 rounded-md border bg-background p-3"
+              />
+            </label>
+            <Button type="submit" variant="outline">
+              Search
+            </Button>
+          </form>
           <SellerAgents agents={data.ownedAgents} />
+          <Pagination
+            page={agentPage}
+            total={data.matchingAgents}
+            pageSize={25}
+            parameter="agentPage"
+            pathname={`/seller?page=${page}&q=${encodeURIComponent(q)}`}
+          />
         </section>
 
         {/* Inbound tasks */}
@@ -146,10 +196,17 @@ export default async function SellerPage() {
               Inbound tasks
             </h2>
             <p className="text-sm text-muted-foreground">
-              Work buyers have routed to your agents. Highlighted rows need your attention.
+              Work buyers have routed to your agents. Highlighted rows need your
+              attention.
             </p>
           </div>
           <InboundTasks tasks={data.inboundTasks} />
+          <Pagination
+            page={page}
+            total={data.taskCount}
+            pageSize={25}
+            pathname="/seller"
+          />
         </section>
 
         {/* Reviews */}

@@ -12,30 +12,54 @@ export type ActionResult<T = undefined> =
 export const agentCardInclude = {
   capabilities: { include: { capability: true } },
   organization: true,
-  owner: true,
+  owner: { select: { id: true, name: true, image: true } },
   _count: { select: { reviews: true } },
 } satisfies Prisma.AgentInclude;
 
-export type AgentCard = Prisma.AgentGetPayload<{ include: typeof agentCardInclude }>;
+export type AgentCard = Prisma.AgentGetPayload<{
+  include: typeof agentCardInclude;
+}>;
 
 export const agentDetailInclude = {
   capabilities: { include: { capability: true } },
   organization: true,
-  owner: true,
+  owner: { select: { id: true, name: true, image: true } },
   reviews: {
-    include: { user: true, task: { select: { id: true, title: true } } },
-    orderBy: { createdAt: "desc" },
+    include: { user: { select: { name: true, image: true } } },
+    orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+    take: 25,
   },
   tasks: {
-    include: { buyer: true, artifacts: true, payment: true, contract: true },
+    where: { visibility: "public" },
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      status: true,
+      budget: true,
+      currency: true,
+      createdAt: true,
+      artifacts: { take: 8, orderBy: { createdAt: "desc" } },
+    },
     orderBy: { createdAt: "desc" },
     take: 8,
   },
   reputationEvents: { orderBy: { createdAt: "desc" }, take: 25 },
-  _count: { select: { reviews: true, tasks: true, reputationEvents: true } },
+  // Latest verification checks per kind feed the profile's trust panel
+  // (health / schema / identity) — see components/agents/verification-detail.
+  verificationChecks: { orderBy: { createdAt: "desc" }, take: 12 },
+  _count: {
+    select: {
+      reviews: true,
+      tasks: { where: { visibility: "public" } },
+      reputationEvents: true,
+    },
+  },
 } satisfies Prisma.AgentInclude;
 
-export type AgentDetail = Prisma.AgentGetPayload<{ include: typeof agentDetailInclude }>;
+export type AgentDetail = Prisma.AgentGetPayload<{
+  include: typeof agentDetailInclude;
+}>;
 
 export type AgentCapabilityWithCapability = Prisma.AgentCapabilityGetPayload<{
   include: { capability: true };
@@ -53,7 +77,9 @@ export const taskListInclude = {
   _count: { select: { artifacts: true } },
 } satisfies Prisma.TaskInclude;
 
-export type TaskListItem = Prisma.TaskGetPayload<{ include: typeof taskListInclude }>;
+export type TaskListItem = Prisma.TaskGetPayload<{
+  include: typeof taskListInclude;
+}>;
 
 export const taskDetailInclude = {
   buyer: true,
@@ -72,7 +98,9 @@ export const taskDetailInclude = {
   disputes: { include: { openedBy: true }, orderBy: { createdAt: "desc" } },
 } satisfies Prisma.TaskInclude;
 
-export type TaskDetail = Prisma.TaskGetPayload<{ include: typeof taskDetailInclude }>;
+export type TaskDetail = Prisma.TaskGetPayload<{
+  include: typeof taskDetailInclude;
+}>;
 
 // ---------------------------------------------------------------------------
 // Machine-readable Agent Card (A2A-style) returned by the API + profile tab
@@ -96,9 +124,15 @@ export interface AgentCardJson {
   };
   trust: {
     verified: boolean;
+    model: string;
+    evidence_url: string;
+    score: null;
+  };
+  legacy_activity: {
     reputation_score: number;
     completion_rate: number;
     dispute_rate: number;
     schema_compliance: number;
+    includes_unverified_history: true;
   };
 }

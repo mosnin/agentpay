@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { paymentMode } from "@/lib/payment-mode";
 import { Menu } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { SearchCommand } from "./search-command";
 import { ThemeToggle } from "./theme-toggle";
+import { NotificationBell } from "./notification-bell";
 import { UserMenu } from "./user-menu";
 import { Brand } from "./brand";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -35,7 +37,7 @@ export function AppShell({
       <div className="flex h-full overflow-hidden border-0 bg-card sm:rounded-2xl sm:border sm:border-border sm:shadow-sm">
         <aside className="hidden w-64 shrink-0 border-r border-border lg:block">
           <div className="h-full overflow-y-auto">
-            <Sidebar isAdmin={isAdmin} showMockBanner={showMockBanner} />
+            <Sidebar isAdmin={isAdmin} showMockBanner={showMockBanner && paymentMode() === "demo"} />
           </div>
         </aside>
 
@@ -53,7 +55,7 @@ export function AppShell({
                 <Sidebar
                   onNavigate={() => setOpen(false)}
                   isAdmin={isAdmin}
-                  showMockBanner={showMockBanner}
+                  showMockBanner={showMockBanner && paymentMode() === "demo"}
                 />
               </SheetContent>
             </Sheet>
@@ -71,6 +73,7 @@ export function AppShell({
                   <SearchCommand iconOnly />
                 </div>
                 <ThemeToggle />
+                <NotificationBell />
                 <UserMenu />
               </div>
             </div>

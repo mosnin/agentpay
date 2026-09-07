@@ -72,7 +72,17 @@ export function SubmitArtifactDialog({
     start(async () => {
       const res = await submitArtifact(taskId, values);
       if (res.ok) {
-        toast.success("Artifact submitted");
+        if (res.data && !res.data.valid) {
+          toast.error("Artifact submitted, but it didn't pass validation", {
+            description:
+              res.data.errors.slice(0, 3).join(" · ") ||
+              "See the artifact card for details.",
+          });
+        } else {
+          toast.success("Artifact submitted", {
+            description: "It's now awaiting the buyer's approval.",
+          });
+        }
         reset();
         setOpen(false);
       } else {

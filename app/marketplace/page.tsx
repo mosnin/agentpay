@@ -1,3 +1,4 @@
+import { pageNumber } from "@/lib/pagination";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SearchX, X } from "lucide-react";
@@ -8,9 +9,17 @@ import { AgentCard } from "@/components/marketplace/agent-card";
 import { RecentlyViewed } from "@/components/agents/recently-viewed";
 import { Button } from "@/components/ui/button";
 import { MarketplaceFilters } from "@/components/marketplace/marketplace-filters";
-import { getAgentsPaginated, AGENTS_PAGE_SIZE, getCategoryCounts } from "@/lib/queries";
+import {
+  getAgentsPaginated,
+  AGENTS_PAGE_SIZE,
+  getCategoryCounts,
+} from "@/lib/queries";
 import type { AgentFilter } from "@/lib/queries";
-import { CATEGORY_VALUES, MARKETPLACE_SORTS, PRICING_MODELS } from "@/lib/constants";
+import {
+  CATEGORY_VALUES,
+  MARKETPLACE_SORTS,
+  PRICING_MODELS,
+} from "@/lib/constants";
 import type { MarketplaceSort } from "@/lib/constants";
 import { formatNumber } from "@/lib/utils";
 
@@ -48,7 +57,7 @@ export default async function MarketplacePage({
   const sortRaw = one(sp.sort);
   const verified = one(sp.verified) === "true";
   const pageRaw = one(sp.page);
-  const page = Math.max(1, parseInt(pageRaw ?? "1", 10) || 1);
+  const page = pageNumber(pageRaw);
 
   // Validate against known values so a hand-edited URL can't break the query.
   const category =
@@ -61,7 +70,9 @@ export default async function MarketplacePage({
       : undefined;
   const parsedRating = minRatingRaw ? Number(minRatingRaw) : NaN;
   const minRating =
-    Number.isFinite(parsedRating) && parsedRating > 0 ? parsedRating : undefined;
+    Number.isFinite(parsedRating) && parsedRating > 0
+      ? parsedRating
+      : undefined;
 
   const filter: AgentFilter = {
     q,
@@ -81,7 +92,12 @@ export default async function MarketplacePage({
   const totalPages = Math.ceil(agentTotal / AGENTS_PAGE_SIZE);
   const offset = (page - 1) * AGENTS_PAGE_SIZE;
   const hasFilters = Boolean(
-    q || category || pricingModel || minRating || verified || (sort && sort !== "reputation"),
+    q ||
+      category ||
+      pricingModel ||
+      minRating ||
+      verified ||
+      (sort && sort !== "reputation"),
   );
   const pricingLabel = (v: string) =>
     PRICING_MODELS.find((p) => p.value === v)?.label ?? v;
@@ -90,8 +106,10 @@ export default async function MarketplacePage({
     const sp = new URLSearchParams();
     if (q && omit !== "q") sp.set("q", q);
     if (category && omit !== "category") sp.set("category", category);
-    if (pricingModel && omit !== "pricingModel") sp.set("pricingModel", pricingModel);
-    if (minRating && omit !== "minRating") sp.set("minRating", String(minRating));
+    if (pricingModel && omit !== "pricingModel")
+      sp.set("pricingModel", pricingModel);
+    if (minRating && omit !== "minRating")
+      sp.set("minRating", String(minRating));
     if (verified && omit !== "verified") sp.set("verified", "true");
     if (sort && sort !== "reputation") sp.set("sort", sort);
     const qs = sp.toString();
@@ -114,8 +132,12 @@ export default async function MarketplacePage({
   if (q) activeChips.push({ key: "q", label: `“${q}”` });
   if (category) activeChips.push({ key: "category", label: category });
   if (pricingModel)
-    activeChips.push({ key: "pricingModel", label: pricingLabel(pricingModel) });
-  if (minRating) activeChips.push({ key: "minRating", label: `${minRating}★ & up` });
+    activeChips.push({
+      key: "pricingModel",
+      label: pricingLabel(pricingModel),
+    });
+  if (minRating)
+    activeChips.push({ key: "minRating", label: `${minRating}★ & up` });
   if (verified) activeChips.push({ key: "verified", label: "Verified only" });
 
   return (
@@ -162,7 +184,8 @@ export default async function MarketplacePage({
               ) : (
                 <>
                   <span className="font-medium text-foreground">
-                    {formatNumber(offset + 1)}–{formatNumber(offset + agents.length)}
+                    {formatNumber(offset + 1)}–
+                    {formatNumber(offset + agents.length)}
                   </span>
                   {" of "}
                   <span className="font-medium text-foreground">
@@ -200,11 +223,21 @@ export default async function MarketplacePage({
           {agents.length === 0 ? (
             <EmptyState
               icon={SearchX}
-              title="No agents match your filters"
-              description="Try a broader search, switch categories, or clear your filters to see the full marketplace."
+              title={
+                total === 0
+                  ? "The marketplace is waiting for its first agents"
+                  : "No agents match your filters"
+              }
+              description={
+                total === 0
+                  ? "There is nothing to hire yet. List an agent you can operate, or learn how requests and delivery work before getting started."
+                  : "Try a broader search, switch categories, or clear your filters to see the full marketplace."
+              }
               action={
                 <Button asChild variant="outline">
-                  <Link href="/marketplace">Clear filters</Link>
+                  <Link href={total === 0 ? "/agents/new" : "/marketplace"}>
+                    {total === 0 ? "List an agent" : "Clear filters"}
+                  </Link>
                 </Button>
               }
             />

@@ -1,3 +1,6 @@
+import { SettledEarnings } from "@/components/dashboard/settled-earnings";
+import { paymentMode } from "@/lib/payment-mode";
+import { PaymentNotice } from "@/components/shared/payment-notice";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -17,8 +20,12 @@ import { Button } from "@/components/ui/button";
 import { ChartCard } from "@/components/dashboard/chart-card";
 import { RecentTasksCard } from "@/components/dashboard/recent-tasks-card";
 import { AgentPerformance } from "@/components/dashboard/agent-performance";
-import { NeedsAttention, AllCaughtUp } from "@/components/dashboard/needs-attention";
-import { GetStarted } from "@/components/dashboard/get-started";
+import {
+  NeedsAttention,
+  AllCaughtUp,
+} from "@/components/dashboard/needs-attention";
+import { SetupProgress } from "@/components/dashboard/setup-progress";
+import { getSetupProgress } from "@/lib/activation";
 import {
   RecentPaymentsCard,
   type RecentPayment,
@@ -38,7 +45,10 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const user = await requireOnboardedUser();
-  const data = await getDashboardData(user.id);
+  const [data, setup] = await Promise.all([
+    getDashboardData(user.id),
+    getSetupProgress(user.id),
+  ]);
   const {
     stats,
     charts,
@@ -57,14 +67,18 @@ export default async function DashboardPage() {
 
   const metrics = [
     {
-      label: "Total spend",
+      label:
+        paymentMode() === "demo" ? "Simulated spend" : "Card payments (USD)",
       value: formatCurrency(stats.totalSpend),
       hint: "Released to sellers",
       icon: Wallet,
       tone: "blue" as const,
     },
     {
-      label: "Total earnings",
+      label:
+        paymentMode() === "demo"
+          ? "Simulated earnings"
+          : "Card earnings (USD)",
       value: formatCurrency(stats.totalEarnings),
       hint: "From your agents",
       icon: Coins,
@@ -101,7 +115,10 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <AppShell isAdmin={user.role === "admin"} showMockBanner={!isClerkEnabled()}>
+    <AppShell
+      isAdmin={user.role === "admin"}
+      showMockBanner={!isClerkEnabled()}
+    >
       <PageHeader
         title={firstName ? `Welcome back, ${firstName}` : "Dashboard"}
         description="Your marketplace activity at a glance."
@@ -118,7 +135,18 @@ export default async function DashboardPage() {
       </PageHeader>
 
       <div className="space-y-6">
-        {isNewUser && <GetStarted />}
+        <PaymentNotice />
+        <SettledEarnings userId={user.id} />
+        {isNewUser && (
+          <SetupProgress
+            title={
+              setup.intent === "seller"
+                ? "Launch your service"
+                : "Your first request"
+            }
+            steps={setup.intent === "seller" ? setup.seller : setup.buyer}
+          />
+        )}
 
         {/* Overview metrics */}
         <section
@@ -134,9 +162,12 @@ export default async function DashboardPage() {
               tone={metric.tone}
               hint={metric.hint}
               href={
-                ["Total earnings", "Agents owned", "Average reputation"].includes(
-                  metric.label,
-                )
+                [
+                  "Simulated earnings",
+                  "Card earnings (USD)",
+                  "Agents owned",
+                  "Average reputation",
+                ].includes(metric.label)
                   ? "/seller"
                   : undefined
               }
@@ -156,7 +187,7 @@ export default async function DashboardPage() {
         <section aria-label="Trends" className="space-y-6">
           <ChartCard
             title="Task volume"
-            description="Marketplace tasks created over the last 14 days."
+            description="Your buying and selling activity over the last 14 days (UTC)."
             variant="area"
             data={charts.taskVolume}
             xKey="date"
@@ -171,7 +202,7 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <ChartCard
               title="Revenue by category"
-              description="Earnings released to your agents, grouped by category."
+              description="Card earnings in USD released to your agents, grouped by category."
               variant="bar"
               data={charts.revenueByCategory}
               xKey="category"
@@ -203,7 +234,10 @@ export default async function DashboardPage() {
         </section>
 
         {/* Activity */}
-        <section aria-label="Activity" className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <section
+          aria-label="Activity"
+          className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+        >
           <div className="lg:col-span-2">
             <RecentTasksCard tasks={recentTasks} />
           </div>

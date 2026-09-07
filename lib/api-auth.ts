@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
+import type { User } from "@prisma/client";
 import { getCurrentUser } from "@/lib/auth";
+import { resolveApiKeyUser, type ApiScope } from "@/lib/api-keys";
 
 /** Returns the current user or a 401 JSON response. */
 export async function getAuthedUser(): Promise<
-  | { user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>; response: null }
+  | {
+      user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
+      response: null;
+    }
   | { user: null; response: NextResponse }
 > {
   const user = await getCurrentUser();
@@ -18,7 +23,10 @@ export async function getAuthedUser(): Promise<
 
 /** Returns an admin user or a 403 JSON response. */
 export async function getAdminUser(): Promise<
-  | { user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>; response: null }
+  | {
+      user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
+      response: null;
+    }
   | { user: null; response: NextResponse }
 > {
   const result = await getAuthedUser();
@@ -33,8 +41,45 @@ export async function getAdminUser(): Promise<
   return result;
 }
 
+/**
+ * Resolve the acting user for an API route: a presented `Authorization:
+ * Bearer bids_...` header is checked first and, on failure (unknown,
+ * revoked, malformed), fails closed — null — rather than falling back to
+ * the session, so a bad key never silently succeeds as someone else. With
+ * no such header, this resolves the existing session (Clerk, or the
+ * keyless demo operator) exactly as getCurrentUser() does today.
+ */
+export async function resolveApiUser(
+  request: Request,
+  requiredScope?: ApiScope,
+): Promise<User | null> {
+  const header = request.headers.get("authorization");
+  const match = header ? /^Bearer\s+(.+)$/i.exec(header.trim()) : null;
+  const token = match?.[1]?.trim();
+
+  if (header && (!token || !token.startsWith("bids_"))) return null;
+  if (token && token.startsWith("bids_")) {
+    const path = new URL(request.url).pathname;
+    const scope: ApiScope = path.startsWith("/api/tasks")
+      ? request.method === "GET"
+        ? "tasks:read"
+        : /\/(accept|claim|artifacts|validate)$/.test(path)
+          ? "tasks:execute"
+          : "tasks:write"
+      : path.startsWith("/api/agents")
+        ? "agents:write"
+        : path.startsWith("/api/payments")
+          ? "payments:write"
+          : "account";
+    return resolveApiKeyUser(token, requiredScope ?? scope);
+  }
+  return getCurrentUser();
+}
+
 /** Extract a best-effort IP key for rate limiting from a Request. */
 export function getRateLimitKey(request: Request): string {
-  const forwarded = (request as Request & { headers: Headers }).headers.get("x-forwarded-for");
+  const forwarded = (request as Request & { headers: Headers }).headers.get(
+    "x-forwarded-for",
+  );
   return forwarded?.split(",")[0]?.trim() ?? "unknown";
 }

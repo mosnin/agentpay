@@ -1,0 +1,127 @@
+import { beforeEach, expect, it, vi } from "vitest";
+import type Stripe from "stripe";
+vi.mock("server-only", () => ({}));
+const m = vi.hoisted(() => ({
+  findEvent: vi.fn(),
+  createEvent: vi.fn(),
+  findPayment: vi.fn(),
+  findFirst: vi.fn(),
+  updatePayment: vi.fn(),
+  updateManyPayment: vi.fn(),
+  updateTask: vi.fn(),
+  updateManyTask: vi.fn(),
+  intent: vi.fn(),
+}));
+vi.mock("@/lib/prisma", () => {
+  const client = {
+    paymentEvent: { findUnique: m.findEvent, create: m.createEvent },
+    payment: {
+      findUnique: m.findPayment,
+      findFirst: m.findFirst,
+      update: m.updatePayment,
+      updateMany: m.updateManyPayment,
+    },
+    task: { update: m.updateTask, updateMany: m.updateManyTask },
+  };
+  return {
+    prisma: {
+      ...client,
+      $transaction: (fn: (c: typeof client) => unknown) => fn(client),
+    },
+  };
+});
+vi.mock("@/lib/payments/stripe", () => ({
+  stripeLive: () => false,
+  stripeClient: () => ({ paymentIntents: { retrieve: m.intent } }),
+}));
+import { processPaymentEvent } from "@/lib/payments/events";
+const payment = {
+  id: "pay",
+  taskId: "task",
+  amountMinor: 1200,
+  livemode: false,
+  status: "pending",
+};
+const event = () =>
+  ({
+    id: "evt",
+    type: "checkout.session.completed",
+    created: 1788700000,
+    livemode: false,
+    data: {
+      object: {
+        id: "cs",
+        livemode: false,
+        payment_status: "paid",
+        amount_total: 1200,
+        currency: "usd",
+        client_reference_id: "task",
+        payment_intent: "pi",
+        metadata: { paymentId: "pay" },
+      },
+    },
+  }) as unknown as Stripe.Event;
+beforeEach(() => {
+  vi.clearAllMocks();
+  m.updateManyPayment.mockResolvedValue({ count: 1 });
+  m.findEvent.mockResolvedValue(null);
+  m.findPayment.mockResolvedValue(payment);
+  m.intent.mockResolvedValue({
+    id: "pi",
+    status: "succeeded",
+    amount_received: 1200,
+    latest_charge: "ch",
+  });
+});
+it("rejects mismatched funding without persisting a payment change", async () => {
+  m.findPayment.mockResolvedValue({ ...payment, amountMinor: 1300 });
+  await expect(processPaymentEvent(event())).rejects.toThrow("mismatch");
+  expect(m.updateManyPayment).not.toHaveBeenCalled();
+});
+it("does not treat the success redirect as payment proof", async () => {
+  m.intent.mockResolvedValue({
+    id: "pi",
+    status: "processing",
+    amount_received: 0,
+  });
+  await expect(processPaymentEvent(event())).rejects.toThrow("confirmed");
+  expect(m.createEvent).not.toHaveBeenCalled();
+});
+it("updates pending funding using the provider charge and records the event", async () => {
+  await processPaymentEvent(event());
+  expect(m.updateManyPayment).toHaveBeenCalledWith({
+    where: { id: "pay", status: "pending" },
+    data: expect.objectContaining({ status: "escrowed", stripeChargeId: "ch" }),
+  });
+  expect(m.createEvent).toHaveBeenCalledWith({
+    data: { id: "evt", type: "checkout.session.completed" },
+  });
+});
+it("does not process a delivered event twice", async () => {
+  m.findEvent.mockResolvedValue({ id: "evt" });
+  await processPaymentEvent(event());
+  expect(m.findPayment).not.toHaveBeenCalled();
+  expect(m.updateManyPayment).not.toHaveBeenCalled();
+});
+it("does not restore refunded money from an old funding event", async () => {
+  m.findPayment.mockResolvedValue({ ...payment, status: "refunded" });
+  await processPaymentEvent(event());
+  expect(m.updateManyPayment).not.toHaveBeenCalled();
+});
+it("requires a retry if funding arrives before the checkout is saved", async () => {
+  m.findPayment.mockResolvedValue(null);
+  await expect(processPaymentEvent(event())).rejects.toThrow("persisted");
+  expect(m.createEvent).not.toHaveBeenCalled();
+});
+
+it("records provider funding time only on the successful pending transition", async () => {
+  await processPaymentEvent(event());
+  expect(m.updateManyTask).toHaveBeenCalledWith({
+    where: { id: "task", fundedAt: null },
+    data: { fundedAt: new Date(1788700000 * 1000) },
+  });
+  m.updateManyTask.mockClear();
+  m.updateManyPayment.mockResolvedValue({ count: 0 });
+  await processPaymentEvent(event());
+  expect(m.updateManyTask).not.toHaveBeenCalled();
+});

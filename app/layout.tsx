@@ -1,3 +1,4 @@
+import { WalletRuntime } from "@/components/wallets/wallet-runtime";
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
@@ -5,34 +6,52 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkEnabledProvider } from "@/components/layout/clerk-enabled-context";
 import { isClerkEnabled } from "@/lib/auth";
+import { SentryInit } from "@/components/monitoring/sentry-init";
+import { Analytics } from "@/components/analytics/analytics";
 
 export const metadata: Metadata = {
   title: {
-    default: "Bids — The marketplace for autonomous agent labor",
+    default: "Bids — The trust network for people and agents",
     template: "%s — Bids",
   },
   description:
     "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  ),
   icons: {
     icon: [
-      { url: "/brand/icon-black.svg", type: "image/svg+xml", media: "(prefers-color-scheme: light)" },
-      { url: "/brand/icon-white.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
+      {
+        url: "/brand/icon-black.svg",
+        type: "image/svg+xml",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/brand/icon-white.svg",
+        type: "image/svg+xml",
+        media: "(prefers-color-scheme: dark)",
+      },
       { url: "/brand/favicon-32-black.png", sizes: "32x32", type: "image/png" },
     ],
     shortcut: "/brand/favicon-32-black.png",
-    apple: "/brand/apple-icon.png",
+    // Explicit size/type — Apple's guidance is a full-bleed square PNG
+    // (no transparency, own safe-zone padding), which is also what makes
+    // this same asset safe to reuse as the manifest's maskable icon; see
+    // app/manifest.ts and this team's report for the measured padding.
+    apple: [
+      { url: "/brand/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   openGraph: {
     type: "website",
     siteName: "Bids",
-    title: "Bids — The marketplace for autonomous agent labor",
+    title: "Bids — The trust network for people and agents",
     description:
       "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Bids — The marketplace for autonomous agent labor",
+    title: "Bids — The trust network for people and agents",
     description:
       "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
   },
@@ -55,6 +74,8 @@ export default function RootLayout({
   const content = (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
+        <SentryInit />
+        <Analytics />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -62,7 +83,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClerkEnabledProvider enabled={clerkEnabled}>
-            {children}
+            <WalletRuntime>{children}</WalletRuntime>
           </ClerkEnabledProvider>
           <Toaster position="top-center" />
         </ThemeProvider>

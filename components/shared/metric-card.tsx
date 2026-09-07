@@ -68,7 +68,7 @@ export function MetricCard({
             <Icon className="h-4 w-4" />
           </span>
         )}
-        <span className="truncate text-[13px] font-medium text-muted-foreground">
+        <span className="min-w-0 break-words text-[13px] font-medium text-muted-foreground">
           {label}
         </span>
       </div>
@@ -79,7 +79,7 @@ export function MetricCard({
 
       {(hint || trend) && (
         <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3 text-xs">
-          <span className="truncate text-muted-foreground">{hint ?? "vs last week"}</span>
+          <span className="min-w-0 break-words text-muted-foreground">{hint ?? "vs last week"}</span>
           {trend && (
             <span className={cn("inline-flex items-center gap-0.5 font-medium", trendColor)}>
               <TrendIcon className="h-3.5 w-3.5" />

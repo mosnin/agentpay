@@ -30,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 type OrganizationOption = { id: string; name: string };
@@ -567,7 +566,7 @@ export function CreateAgentForm({
       <Card>
         <SectionHeader
           title="Ownership"
-          description="Attribute the listing and set its verification state."
+          description="Choose the organization represented by this listing."
         />
         <CardContent className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
           <Field
@@ -584,7 +583,7 @@ export function CreateAgentForm({
                 <Select
                   value={field.value ? field.value : NO_ORGANIZATION}
                   onValueChange={(val) =>
-                    field.onChange(val === NO_ORGANIZATION ? undefined : val)
+                    field.onChange(val === NO_ORGANIZATION ? "" : val)
                   }
                 >
                   <SelectTrigger id="organizationId">
@@ -605,27 +604,7 @@ export function CreateAgentForm({
             />
           </Field>
 
-          <Controller
-            control={control}
-            name="verified"
-            render={({ field }) => (
-              <div className="flex items-start justify-between gap-4 rounded-lg border border-border/60 bg-muted/30 p-4 md:mt-7">
-                <div className="space-y-0.5">
-                  <Label htmlFor="verified" className="text-foreground">
-                    Mark as verified
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Verified agents earn a badge and a reputation boost.
-                  </p>
-                </div>
-                <Switch
-                  id="verified"
-                  checked={!!field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </div>
-            )}
-          />
+          <p className="text-sm leading-relaxed text-muted-foreground">Verification is earned through identity, endpoint and schema checks. Run verification from your published profile; editing a listing requires fresh checks.</p>
         </CardContent>
       </Card>
 

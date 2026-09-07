@@ -34,6 +34,7 @@ function parse(raw: unknown): AgentSummary | null {
   if (!raw || typeof raw !== "object") return null;
   const a = raw as Record<string, unknown>;
   const trust = (a.trust ?? {}) as Record<string, unknown>;
+  const activity = (a.legacy_activity ?? {}) as Record<string, unknown>;
   const pricing = (a.pricing ?? {}) as Record<string, unknown>;
   const org = a.organization as { name?: string } | null;
   if (!a.slug) return null;
@@ -43,7 +44,7 @@ function parse(raw: unknown): AgentSummary | null {
     category: String(a.category ?? ""),
     shortDescription: String(a.short_description ?? ""),
     verified: Boolean(trust.verified),
-    reputationScore: Number(trust.reputation_score ?? 0),
+    reputationScore: Number(activity.reputation_score ?? 0),
     averageRating: Number(a.average_rating ?? 0),
     reviewCount: Number(a.review_count ?? 0),
     startingPrice: Number(pricing.starting_price ?? 0),
@@ -91,7 +92,11 @@ export function AgentHoverCard({
   }, [agentId]);
 
   return (
-    <HoverCard openDelay={200} closeDelay={100} onOpenChange={(o) => o && load()}>
+    <HoverCard
+      openDelay={200}
+      closeDelay={100}
+      onOpenChange={(o) => o && load()}
+    >
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent className="w-80">
         {data ? (
@@ -121,13 +126,21 @@ export function AgentHoverCard({
 
             <div className="flex items-center justify-between border-t border-border/60 pt-2.5 text-xs">
               {data.averageRating > 0 ? (
-                <StarRating rating={data.averageRating} size="sm" showValue count={data.reviewCount} />
+                <StarRating
+                  rating={data.averageRating}
+                  size="sm"
+                  showValue
+                  count={data.reviewCount}
+                />
               ) : (
                 <span className="text-muted-foreground">No reviews yet</span>
               )}
               <span className="font-medium text-foreground">
                 {formatCurrency(data.startingPrice, data.currency)}
-                <span className="font-normal text-muted-foreground"> start</span>
+                <span className="font-normal text-muted-foreground">
+                  {" "}
+                  start
+                </span>
               </span>
             </div>
 
@@ -144,7 +157,9 @@ export function AgentHoverCard({
             <div className="h-4 w-32 animate-pulse rounded bg-muted" />
             <div className="h-3 w-full animate-pulse rounded bg-muted" />
             <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
-            <span className="sr-only">{loading ? "Loading agent…" : "Agent preview"}</span>
+            <span className="sr-only">
+              {loading ? "Loading agent…" : "Agent preview"}
+            </span>
           </div>
         )}
       </HoverCardContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bot,
   Scale,
@@ -94,6 +95,7 @@ export interface AdminPaymentRow {
   status: string;
   mode: string;
   provider: string;
+  livemode: boolean;
   transactionHash: string | null;
   updatedAt: string;
 }
@@ -108,6 +110,7 @@ export interface AdminReputationEventRow {
 }
 
 interface AdminTabsProps {
+  activeTab?: string;
   agents: AdminAgentRow[];
   disputes: AdminDisputeRow[];
   suspiciousTasks: AdminSuspiciousTaskRow[];
@@ -124,16 +127,26 @@ function TabCard({ children }: { children: React.ReactNode }) {
 }
 
 export function AdminTabs({
+  activeTab = "agents",
   agents,
   disputes,
   suspiciousTasks,
   payments,
   reputationEvents,
 }: AdminTabsProps) {
+  const router = useRouter();
   const openDisputeCount = disputes.filter((d) => d.status === "open").length;
 
   return (
-    <Tabs defaultValue="agents" className="space-y-4">
+    <Tabs
+      defaultValue={activeTab}
+      onValueChange={(value) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", value);
+        router.replace(url.pathname + url.search, { scroll: false });
+      }}
+      className="space-y-4"
+    >
       <div className="overflow-x-auto">
         <TabsList className="h-auto flex-wrap justify-start gap-1">
           <TabsTrigger value="agents" className="gap-1.5">
@@ -409,7 +422,7 @@ export function AdminTabs({
                       {formatCurrency(p.amount, p.currency)}
                     </TableCell>
                     <TableCell>
-                      <PaymentStatusBadge status={p.status} />
+                      <PaymentStatusBadge provider={p.provider} livemode={p.livemode} status={p.status} />
                     </TableCell>
                     <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
                       {PAYMENT_MODE_LABELS[p.mode] ?? p.mode}

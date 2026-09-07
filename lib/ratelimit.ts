@@ -5,11 +5,10 @@ import { Redis } from "@upstash/redis";
  * Rate limiting — Upstash Redis when configured, in-process token bucket
  * otherwise. Same mock/live switch pattern as auth and payments: set
  * UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN and limits become
- * global across serverless instances; leave them unset and the in-memory
- * fallback keeps local dev and CI dependency-free.
+ * global across serverless instances. Without Redis, production uses an atomic
+ * PostgreSQL bucket; local/demo tests use bounded process memory.
  *
- * The fallback is per-instance only — on a multi-replica deployment it
- * under-counts, which is why production should always set the env vars.
+ * Sensitive limits fail closed when their configured shared store is unavailable.
  */
 
 interface Bucket {
@@ -31,16 +30,20 @@ const upstashEnabled = Boolean(
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
 );
 
-function makeUpstashLimiter(opts: LimiterOptions) {
+function makeUpstashLimiter(opts: LimiterOptions, scope: string) {
   return new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.tokenBucket(opts.refillRate, "1 s", opts.capacity),
-    prefix: "bids:rl",
+    prefix: `bids:rl:${scope}`,
   });
 }
 
-const upstashDefault = upstashEnabled ? makeUpstashLimiter(DEFAULT_LIMITS) : null;
-const upstashStrict = upstashEnabled ? makeUpstashLimiter(STRICT_LIMITS) : null;
+const upstashDefault = upstashEnabled
+  ? makeUpstashLimiter(DEFAULT_LIMITS, "default")
+  : null;
+const upstashStrict = upstashEnabled
+  ? makeUpstashLimiter(STRICT_LIMITS, "strict")
+  : null;
 
 let warnedFallback = false;
 function warnFallbackOnce() {
@@ -54,6 +57,7 @@ function warnFallbackOnce() {
 // --- In-memory fallback ------------------------------------------------------
 
 const store = new Map<string, Bucket>();
+const MAX_LOCAL_BUCKETS = 10_000;
 
 function refill(bucket: Bucket, capacity: number, refillRate: number) {
   const now = Date.now();
@@ -62,9 +66,19 @@ function refill(bucket: Bucket, capacity: number, refillRate: number) {
   bucket.lastRefill = now;
 }
 
-function localRateLimit(key: string, cost: number, opts: LimiterOptions): { ok: boolean } {
+function localRateLimit(
+  key: string,
+  cost: number,
+  opts: LimiterOptions,
+): { ok: boolean } {
   let bucket = store.get(key);
   if (!bucket) {
+    if (store.size >= MAX_LOCAL_BUCKETS) {
+      const cutoff = Date.now() - 60_000;
+      for (const [id, entry] of store)
+        if (entry.lastRefill < cutoff) store.delete(id);
+      if (store.size >= MAX_LOCAL_BUCKETS) return { ok: false };
+    }
     bucket = { tokens: opts.capacity, lastRefill: Date.now() };
     store.set(key, bucket);
   }
@@ -100,8 +114,25 @@ export async function rateLimit(
       return { ok: true };
     }
   }
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE !== "demo"
+  ) {
+    try {
+      const { databaseRateLimit } = await import("./database-rate-limit");
+      return await databaseRateLimit(
+        `default:${key}`,
+        cost,
+        opts.capacity,
+        opts.refillRate,
+      );
+    } catch {
+      console.error("[ratelimit] Database unavailable; allowing public read.");
+      return { ok: true };
+    }
+  }
   warnFallbackOnce();
-  return localRateLimit(key, cost, opts);
+  return localRateLimit(`default:${key}`, cost, opts);
 }
 
 /**
@@ -114,10 +145,32 @@ export async function strictRateLimit(key: string): Promise<{ ok: boolean }> {
       const res = await upstashStrict.limit(key);
       return { ok: res.success };
     } catch (err) {
-      console.error("[ratelimit] Upstash error — failing open", err);
-      return { ok: true };
+      console.error(
+        "[ratelimit] Upstash error — rejecting sensitive mutation",
+        err,
+      );
+      return { ok: false };
+    }
+  }
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE !== "demo"
+  ) {
+    try {
+      const { databaseRateLimit } = await import("./database-rate-limit");
+      return await databaseRateLimit(
+        `strict:${key}`,
+        1,
+        STRICT_LIMITS.capacity,
+        STRICT_LIMITS.refillRate,
+      );
+    } catch {
+      console.error(
+        "[ratelimit] Database unavailable; rejecting sensitive mutation.",
+      );
+      return { ok: false };
     }
   }
   warnFallbackOnce();
-  return localRateLimit(key, 1, STRICT_LIMITS);
+  return localRateLimit(`strict:${key}`, 1, STRICT_LIMITS);
 }

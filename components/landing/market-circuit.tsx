@@ -58,7 +58,10 @@ export function MarketCircuit({ className }: { className?: string }) {
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-full", className)}
+      // aria-hidden + pointer-events-none: the scaled inner board's unscaled
+      // layout box overflows this container's height and would otherwise float
+      // an invisible hit-area over the content below (e.g. the footer links).
+      className={cn("pointer-events-none relative w-full", className)}
       style={{ height: scale ? CANVAS_H * scale : CANVAS_H }}
       aria-hidden
     >

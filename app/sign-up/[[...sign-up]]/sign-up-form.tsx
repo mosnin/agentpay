@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { AuthLoading } from "@/components/auth/auth-loading";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
@@ -8,19 +9,13 @@ import { useAuth } from "@clerk/nextjs";
 // entrypoint's useSignUp returns Core 3's new signals API instead.
 import { useSignUp } from "@clerk/nextjs/legacy";
 import { Loader2 } from "lucide-react";
+import { trackSignupStarted } from "@/components/analytics/track";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthField, clerkErrorMessage } from "@/components/auth/auth-field";
 
 type Step = "start" | "verify" | "username";
 
-function LoadingCard() {
-  return (
-    <Card className="flex w-full max-w-sm items-center justify-center py-20">
-      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-    </Card>
-  );
-}
 
 export function SignUpForm() {
   const router = useRouter();
@@ -57,7 +52,7 @@ export function SignUpForm() {
     return () => clearTimeout(t);
   }, [resendIn]);
 
-  if (!isLoaded || isSignedIn) return <LoadingCard />;
+  if (!isLoaded || isSignedIn) return <AuthLoading />;
 
   async function finish(createdSessionId: string | null) {
     await setActive!({ session: createdSessionId });
@@ -95,6 +90,7 @@ export function SignUpForm() {
     e.preventDefault();
     setPending(true);
     setError(null);
+    trackSignupStarted();
     try {
       const attempt = await signUp!.create({
         emailAddress: email,
