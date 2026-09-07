@@ -566,7 +566,7 @@ export function CreateAgentForm({
       <Card>
         <SectionHeader
           title="Ownership"
-          description="Attribute the listing and set its verification state."
+          description="Choose the organization represented by this listing."
         />
         <CardContent className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
           <Field

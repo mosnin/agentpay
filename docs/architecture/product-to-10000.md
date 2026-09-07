@@ -31,7 +31,7 @@ Multi-chain expansion follows the complete first-chain journey. Each additional 
 
 Local receipts and hosted revision are appended after verification. Data-volume tests are isolated fixtures, not 10,000 real people or 10,000 concurrent buyers. Human usability and hosted service capacity remain separate evidence.
 
-Local verification: 299 unit tests passed; 7 explicitly enabled data/concurrency tests passed; 27 browser regressions passed (one worker, zero retries), followed by a four-test rerun that waits for resolved content before enlarged-text checks. Typecheck, lint and the demo production build passed. The 10,000-account fixture also verifies eight competing onboarding submissions create one organization, two verification sweeps reach 50 distinct failed listings, and live seller ledger totals exclude fees/test credits.
+Local verification: 305 unit tests passed; 8 explicitly enabled data/concurrency tests passed; 27 browser regressions passed (one worker, zero retries), followed by a four-test rerun that waits for resolved content before enlarged-text checks. Typecheck, lint and the demo production build passed. The 10,000-account fixture also verifies eight competing onboarding submissions create one organization, two verification sweeps reach 50 distinct failed listings, and live seller ledger totals exclude fees/test credits.
 
 Latest local timings: dashboard 65.0 ms, seller 8.4 ms, catalog 7.2 ms, 20 concurrent catalog reads 22.5–30.6 ms. These are database/application query timings on local PostgreSQL, not hosted HTTP latency.
 

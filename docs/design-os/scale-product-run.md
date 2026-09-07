@@ -26,7 +26,7 @@ Responsive: at 320/390px setup rows stack copy and action, operations rows wrap 
 
 ## Verified outcome
 
-11–13: rendered self-review and mobile/enlarged-text/reduced-motion regressions pass; no premium score or representative-user claim. 14–16: API pagination, interruption/error recovery, privacy and concurrency checks pass; 299 unit, 7 explicit scale and 27 browser cases pass. 17: release candidate only; production/provider acceptance remains open. See `../architecture/product-to-10000.md` for the owned continuation queue and exact evidence boundaries.
+11–13: rendered self-review and mobile/enlarged-text/reduced-motion regressions pass; no premium score or representative-user claim. 14–16: API pagination, interruption/error recovery, privacy and concurrency checks pass; 305 unit, 8 explicit scale and 27 browser cases pass. 17: release candidate only; production/provider acceptance remains open. See `../architecture/product-to-10000.md` for the owned continuation queue and exact evidence boundaries.
 
 Additional observed privacy repair: public agent profiles previously included every task regardless of visibility and full owner/reviewer user fields. Public data projections now exclude private/unlisted work and identity/contact fields, new form/API requests default to private, and a streamed-HTML regression verifies secrets from both private and unlisted fixtures are absent. The existing profile composition is retained.
 
