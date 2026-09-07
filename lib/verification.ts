@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import "server-only";
 
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
@@ -489,6 +490,9 @@ function fetchAgentForVerification(agentId: string) {
       endpointUrl: true,
       outputSchema: true,
       lastVerifiedAt: true,
+      updatedAt: true,
+      lastVerificationAttemptAt: true,
+      verificationAttemptId: true,
       owner: { select: { email: true, clerkId: true } },
     },
   });
@@ -535,21 +539,15 @@ export async function runAgentVerification(
     }
     const verifiedAgent = agent;
 
-    // Mark the run in-flight so a concurrent reader (profile page render,
-    // another cron batch) never sees a stale verified/failed badge while the
-    // health probe (up to HEALTH_CHECK_TIMEOUT_MS) is outstanding. Best
-    // effort — failing to write "pending" must not abort the actual checks.
-    try {
-      await prisma.agent.update({
-        where: { id: agentId },
-        data: {
-          verificationStatus: "pending",
-          lastVerificationAttemptAt: new Date(),
-        },
-      });
-    } catch (err) {
-      console.error("[runAgentVerification] failed to mark pending", err);
-    }
+    // Claim the exact listing revision we read. Edits invalidate this attempt;
+    // a slow check of the old endpoint must never verify the replacement.
+    const attemptAt = new Date();
+    const attemptId = randomUUID();
+    const claim = await prisma.agent.updateMany({
+      where: { id: agentId, updatedAt: agent.updatedAt, verificationAttemptId: agent.verificationAttemptId },
+      data: { verificationStatus: "pending", lastVerificationAttemptAt: attemptAt, verificationAttemptId: attemptId },
+    });
+    if (claim.count !== 1) throw new Error("Listing changed before verification began");
 
     const checks = await Promise.all([
       safeCheck("health", () => runHealthCheck(verifiedAgent.endpointUrl)),
@@ -581,8 +579,8 @@ export async function runAgentVerification(
     // locally: if it fails, the outer catch below reports an honest
     // "internal error" outcome rather than returning `verified` as if the
     // new status had actually been persisted.
-    await prisma.agent.update({
-      where: { id: agentId },
+    const saved = await prisma.agent.updateMany({
+      where: { id: agentId, verificationAttemptId: attemptId, verificationStatus: "pending" },
       data: {
         verified: aggregate.verified,
         verificationStatus: aggregate.verificationStatus,
@@ -590,6 +588,8 @@ export async function runAgentVerification(
         ...(aggregate.verified ? { lastVerifiedAt } : {}),
       },
     });
+
+    if (saved.count !== 1) throw new Error("Listing changed during verification; run fresh checks");
 
     if (aggregate.verified) {
       // Reputation credit is a side effect of an already-persisted pass —

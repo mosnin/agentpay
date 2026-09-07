@@ -139,6 +139,24 @@ describe.skipIf(!run)("10,000 accounts and 100,000 task records", () => {
     expect(result[0].units).toBe("125000000");
     expect(await getStablecoinEarnings("scale-user-2")).toEqual([]);
   });
+  it("does not let an in-flight check restore verification after a listing edit", async () => {
+    const id = "scale-agent-1";
+    const original = db.agent.updateMany.bind(db.agent);
+    const delegate: { updateMany: (args: Parameters<typeof db.agent.updateMany>[0]) => Promise<{ count: number }> } = db.agent;
+    const spy = vi.spyOn(delegate, "updateMany").mockImplementationOnce(async args => {
+      const result = await original(args);
+      await db.agent.update({ where: { id }, data: { longDescription: "Changed listing while verification was in progress", verified: false, verificationStatus: "unverified", lastVerificationAttemptAt: null, verificationAttemptId: null } });
+      return result;
+    });
+    try {
+      const { runAgentVerification } = await import("@/lib/verification");
+      const result = await runAgentVerification(id);
+      expect(result.verified).toBe(false);
+      const agent = await db.agent.findUniqueOrThrow({ where: { id } });
+      expect(agent.verificationStatus).toBe("unverified");
+      expect(agent.lastVerificationAttemptAt).toBeNull();
+    } finally { spy.mockRestore(); }
+  });
   it("persists onboarding once under competing submissions", async () => {
     const { completeOnboarding } = await import("@/lib/actions/onboarding");
     const payload = {

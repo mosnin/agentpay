@@ -138,6 +138,7 @@ export async function updateAgent(values: unknown): Promise<ActionResult<{ id: s
         verificationStatus: "unverified",
         verificationError: null,
         lastVerificationAttemptAt: null,
+        verificationAttemptId: null,
         endpointUrl: rest.endpointUrl || null,
         mcpServerUrl: rest.mcpServerUrl || null,
         inputSchema: inputSchema !== undefined ? (parseJson(inputSchema) ?? undefined) : undefined,

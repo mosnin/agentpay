@@ -216,6 +216,7 @@ model Agent {
   // verificationStatus is the richer source of truth it mirrors.
   verified              Boolean      @default(false)
   verificationStatus    String       @default("unverified") // unverified | pending | verified | failed
+  verificationAttemptId    String?
   lastVerificationAttemptAt DateTime?
   lastVerifiedAt        DateTime?
   verificationError     String?

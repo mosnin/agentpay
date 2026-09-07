@@ -39,3 +39,5 @@ Rendered self-review: seller setup (desktop/390px), operations (390px), agent se
 
 
 Final trust-integrity review also closed self-awarded verification, unrelated organization attribution, and seller resumption of moderation-suspended listings. Editing a listing revokes its verification until fresh checks pass; the admin Verify action now runs those checks. Organization choices are limited to the operator's membership, and choosing no organization removes attribution. Six targeted action-level security regressions cover these cases.
+
+A unique verification-attempt identity now prevents an in-flight check of an old listing from overwriting an edit or a newer run. An eighth real-database regression interleaves a listing edit during verification and proves the saved listing remains unverified. Current unit total: 305.
