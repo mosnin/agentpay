@@ -19,6 +19,10 @@ export async function getOperationsData(now = new Date()) {
     claims,
     chains,
     disputes,
+    jobs,
+    runs,
+    deadLetters,
+    successfulBuyers,
   ] = await Promise.all([
     prisma.user.count({ where: { clerkId: { not: null } } }),
     prisma.user.count({
@@ -93,8 +97,43 @@ export async function getOperationsData(now = new Date()) {
         createdAt: { lt: dayAgo },
       },
     }),
+    prisma.operationJob.findMany({ take: 10, orderBy: { id: "asc" } }),
+    prisma.operationRun.findMany({
+      take: 30,
+      orderBy: [{ startedAt: "desc" }, { id: "desc" }],
+    }),
+    prisma.taskOutbox.findMany({
+      where: { deliveredAt: null, attempts: { gte: 8 } },
+      select: { id: true, taskId: true, attempts: true, createdAt: true },
+      take: 25,
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    }),
+    prisma.user.count({
+      where: {
+        clerkId: { not: null },
+        tasks: {
+          some: {
+            status: "completed",
+            OR: [
+              {
+                payment: {
+                  provider: "stripe",
+                  livemode: true,
+                  status: "released",
+                },
+              },
+              { paymentOrder: { livemode: true, state: "released" } },
+            ],
+          },
+        },
+      },
+    }),
   ]);
   return {
+    jobs,
+    runs,
+    deadLetters,
+    successfulBuyers,
     measuredAt: now,
     accounts,
     onboarded,

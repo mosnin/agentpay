@@ -37,8 +37,13 @@ async function api(path, method = "GET", body, extra = {}) {
     signal: AbortSignal.timeout(15000),
   });
   const data = await response.json();
-  if (!response.ok)
-    throw new Error(`${response.status}: ${data.error || "Request failed"}`);
+  if (!response.ok) {
+    const error = new Error(
+      `${response.status}: ${data.error || "Request failed"}`,
+    );
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 async function processTask(row) {
@@ -101,26 +106,53 @@ async function processTask(row) {
 // Read a bounded batch and rotate through history before repeating. Filtering
 // seller work avoids burying assignments under this operator's buyer history.
 let pollPage = 1;
+let pollFailures = 0;
 do {
-  const tasks = await api(`/api/tasks?status=active&role=seller&limit=100&page=${pollPage}`);
-  pollPage = tasks.length === 100 && pollPage < 10000 ? pollPage + 1 : 1;
-  for (const task of tasks.filter(
-    (t) =>
-      t.seller_agent?.id === agentId &&
-      [
-        "pending",
-        "accepted",
-        "running",
-        ...(process.env.BIDS_WALLET_SIGNER_PATH ? ["validating"] : []),
-      ].includes(t.status),
-  )) {
-    if (stopping) break;
-    try {
-      await processTask(task);
-    } catch (error) {
-      console.error(`Task ${task.id}: ${error.message}`);
+  try {
+    await api(`/api/agents/${agentId}/heartbeat`, "POST", { capacity: 1 });
+    const tasks = await api(
+      `/api/tasks?status=active&role=seller&limit=100&page=${pollPage}`,
+    );
+    pollPage = tasks.length === 100 && pollPage < 10000 ? pollPage + 1 : 1;
+    for (const task of tasks.filter(
+      (t) =>
+        t.seller_agent?.id === agentId &&
+        [
+          "pending",
+          "accepted",
+          "running",
+          ...(process.env.BIDS_WALLET_SIGNER_PATH ? ["validating"] : []),
+        ].includes(t.status),
+    )) {
+      if (stopping) break;
+      try {
+        await api(`/api/agents/${agentId}/heartbeat`, "POST", { capacity: 0 });
+        await processTask(task);
+      } catch (error) {
+        console.error(`Task ${task.id}: ${error.message}`);
+      }
     }
+    pollFailures = 0;
+    if (process.env.BIDS_RUN_ONCE === "true" || stopping) break;
+  } catch (error) {
+    console.error(`Worker polling: ${error.message}`);
+    if (
+      [401, 403, 404].includes(error.status) ||
+      process.env.BIDS_RUN_ONCE === "true"
+    ) {
+      process.exitCode = 1;
+      break;
+    }
+    pollFailures++;
   }
-  if (process.env.BIDS_RUN_ONCE === "true" || stopping) break;
-  await new Promise((r) => setTimeout(r, 10000));
+  await new Promise((r) =>
+    setTimeout(
+      r,
+      Math.min(120000, 10000 * 2 ** Math.min(pollFailures, 4)) +
+        Math.random() * 1000,
+    ),
+  );
 } while (!stopping);
+await api(`/api/agents/${agentId}/heartbeat`, "POST", { capacity: 0 }).catch(
+  () => {},
+);

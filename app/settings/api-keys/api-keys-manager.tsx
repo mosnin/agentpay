@@ -39,6 +39,8 @@ export interface ApiKeyListItem {
   createdAt: Date;
   lastUsedAt: Date | null;
   revokedAt: Date | null;
+  scopes: string[];
+  expiresAt: Date | null;
 }
 
 type RevealState = { name: string; secret: string } | null;
@@ -47,6 +49,10 @@ export function ApiKeysManager({ keys }: { keys: ApiKeyListItem[] }) {
   const router = useRouter();
   const [createOpen, setCreateOpen] = React.useState(false);
   const [name, setName] = React.useState("");
+  const [profile, setProfile] = React.useState<"worker" | "reader" | "account">(
+    "worker",
+  );
+  const [lifetime, setLifetime] = React.useState(90);
   const [pending, startCreate] = React.useTransition();
 
   const [reveal, setReveal] = React.useState<RevealState>(null);
@@ -69,25 +75,29 @@ export function ApiKeysManager({ keys }: { keys: ApiKeyListItem[] }) {
       return;
     }
     startCreate(async () => {
-      const res = await createApiKey(trimmed);
+      const res = await createApiKey(trimmed, profile, lifetime);
       if (res.ok && res.data) {
         setCreateOpen(false);
         setReveal({ name: trimmed, secret: res.data.secret });
         setRevealOpen(true);
         router.refresh();
       } else {
-        toast.error(res.ok ? "Something went wrong. Please try again." : res.error);
+        toast.error(
+          res.ok ? "Something went wrong. Please try again." : res.error,
+        );
       }
     });
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">Your keys</h2>
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Your keys
+          </h2>
           <p className="text-sm text-muted-foreground">
-            Every key issued to your account, newest first.
+            Active credentials first, followed by recent history (up to 100).
           </p>
         </div>
         {keys.length > 0 && (
@@ -147,6 +157,42 @@ export function ApiKeysManager({ keys }: { keys: ApiKeyListItem[] }) {
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="key-profile">Permissions</Label>
+              <select
+                className="w-full rounded-md border bg-background p-3"
+                id="key-profile"
+                value={profile}
+                onChange={(e) => setProfile(e.target.value as typeof profile)}
+              >
+                <option value="worker">
+                  Worker — read tasks, deliver work, manage listings
+                </option>
+                <option value="reader">Read task history only</option>
+                <option value="account">
+                  Full account access — includes payments
+                </option>
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Worker keys cannot create purchases, approve payment, manage
+                wallets or administer the platform.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="key-expiry">Expires after</Label>
+              <select
+                className="w-full rounded-md border bg-background p-3"
+                id="key-expiry"
+                value={lifetime}
+                onChange={(e) => setLifetime(Number(e.target.value))}
+              >
+                {[7, 30, 90].map((d) => (
+                  <option key={d} value={d}>
+                    {d} days
+                  </option>
+                ))}
+              </select>
+            </div>
             <DialogFooter>
               <Button
                 type="button"
@@ -172,13 +218,16 @@ export function ApiKeysManager({ keys }: { keys: ApiKeyListItem[] }) {
           <DialogHeader>
             <DialogTitle>API key created</DialogTitle>
             <DialogDescription>
-              This is the only time you&apos;ll see this key. Store it somewhere safe.
+              This is the only time you&apos;ll see this key. Store it somewhere
+              safe.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             {reveal && (
               <>
-                <p className="text-sm font-medium text-foreground">{reveal.name}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {reveal.name}
+                </p>
                 <SecretBlock secret={reveal.secret} />
               </>
             )}
@@ -213,21 +262,34 @@ function KeyList({ keys }: { keys: ApiKeyListItem[] }) {
           </TableHeader>
           <TableBody>
             {keys.map((key) => {
-              const revoked = Boolean(key.revokedAt);
+              const revoked =
+                Boolean(key.revokedAt) ||
+                Boolean(key.expiresAt && new Date(key.expiresAt) <= new Date());
               return (
-                <TableRow key={key.id} className={cn("group", revoked && "opacity-60")}>
+                <TableRow
+                  key={key.id}
+                  className={cn("group", revoked && "opacity-60")}
+                >
                   <TableCell className="max-w-[220px] pl-6">
                     <div className="flex items-center gap-2">
-                      <span className="truncate font-medium text-foreground">{key.name}</span>
+                      <span className="truncate font-medium text-foreground">
+                        {key.name}
+                      </span>
                       {revoked && (
                         <Badge
                           variant="outline"
                           className="h-5 shrink-0 px-1.5 text-[10px] text-muted-foreground"
                         >
-                          Revoked
+                          {key.revokedAt ? "Revoked" : "Expired"}
                         </Badge>
                       )}
                     </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {key.scopes.join(", ")} ·{" "}
+                      {key.expiresAt
+                        ? `Expires ${formatDate(key.expiresAt)}`
+                        : "Legacy key · no expiry"}
+                    </p>
                   </TableCell>
                   <TableCell>
                     <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
@@ -262,25 +324,38 @@ function KeyList({ keys }: { keys: ApiKeyListItem[] }) {
       {/* Mobile cards */}
       <div className="divide-y divide-border/60 md:hidden">
         {keys.map((key) => {
-          const revoked = Boolean(key.revokedAt);
+          const revoked =
+            Boolean(key.revokedAt) ||
+            Boolean(key.expiresAt && new Date(key.expiresAt) <= new Date());
           return (
-            <div key={key.id} className={cn("space-y-3 p-4", revoked && "opacity-60")}>
+            <div
+              key={key.id}
+              className={cn("space-y-3 p-4", revoked && "opacity-60")}
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="truncate font-medium text-foreground">{key.name}</span>
+                    <span className="truncate font-medium text-foreground">
+                      {key.name}
+                    </span>
                     {revoked && (
                       <Badge
                         variant="outline"
                         className="h-5 shrink-0 px-1.5 text-[10px] text-muted-foreground"
                       >
-                        Revoked
+                        {key.revokedAt ? "Revoked" : "Expired"}
                       </Badge>
                     )}
                   </div>
                   <code className="mt-0.5 block font-mono text-xs text-muted-foreground">
                     {key.prefix}…
                   </code>
+                  <p className="mt-2 break-words text-xs text-muted-foreground">
+                    {key.scopes.join(", ")} ·{" "}
+                    {key.expiresAt
+                      ? `Expires ${formatDate(key.expiresAt)}`
+                      : "Legacy key · no expiry"}
+                  </p>
                 </div>
                 {!revoked && <RevokeButton id={key.id} name={key.name} />}
               </div>
@@ -360,7 +435,12 @@ function RevokeButton({ id, name }: { id: string; name: string }) {
           >
             Cancel
           </Button>
-          <Button type="button" variant="destructive" disabled={pending} onClick={onConfirm}>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={pending}
+            onClick={onConfirm}
+          >
             {pending && <Loader2 className="animate-spin" />}
             {pending ? "Revoking…" : "Revoke key"}
           </Button>
@@ -398,12 +478,18 @@ function SecretBlock({ secret }: { secret: string }) {
           onClick={copy}
           className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-200"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-success" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
       <div className="overflow-x-auto p-4">
-        <code className="break-all font-mono text-sm leading-relaxed text-zinc-200">{secret}</code>
+        <code className="break-all font-mono text-sm leading-relaxed text-zinc-200">
+          {secret}
+        </code>
       </div>
     </div>
   );

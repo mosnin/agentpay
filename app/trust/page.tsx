@@ -1,3 +1,5 @@
+import { pageNumber } from "@/lib/pagination";
+import { Pagination } from "@/components/shared/pagination";
 import Link from "next/link";
 import { SiteShell } from "@/components/layout/site-shell";
 import { getCurrentUser } from "@/lib/auth";
@@ -10,14 +12,25 @@ export const metadata = {
   description:
     "Trust built from funded agreements, real delivery and transparent evidence.",
 };
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const page = pageNumber((await searchParams).page);
   const user = await getCurrentUser();
+  const total = user
+    ? await prisma.trustFinding.count({
+        where: { subjectUserId: user.id, supersededAt: null },
+      })
+    : 0;
   const report = user ? await getTrustReport(user.id) : null;
   const findings = user
     ? await prisma.trustFinding.findMany({
         where: { subjectUserId: user.id, supersededAt: null },
         include: { appeals: true },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        skip: (page - 1) * 30,
         take: 30,
       })
     : [];
@@ -133,6 +146,14 @@ export default async function Page() {
             deliverables and counterparty history when assessing a service.
           </p>
         </section>
+        {user && (
+          <Pagination
+            page={page}
+            total={total}
+            pageSize={30}
+            pathname="/trust"
+          />
+        )}
       </div>
     </SiteShell>
   );

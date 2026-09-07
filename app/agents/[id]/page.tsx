@@ -1,3 +1,5 @@
+import { prisma } from "@/lib/prisma";
+import { SaveAgent } from "@/components/agents/save-agent";
 import { getTrustReport } from "@/lib/trust/queries";
 import { TrustDimensionPanel } from "@/components/trust/trust-report";
 import type { Metadata } from "next";
@@ -79,6 +81,13 @@ export default async function AgentProfilePage({
     notFound();
   }
 
+  const saved = currentUser
+    ? await prisma.savedAgent.findUnique({
+        where: {
+          userId_agentId: { userId: currentUser.id, agentId: agent.id },
+        },
+      })
+    : null;
   const isOwner = !!currentUser && currentUser.id === agent.ownerId;
   const reviewCount = agent._count.reviews;
   const card = getAgentCard(agent);
@@ -134,11 +143,19 @@ export default async function AgentProfilePage({
       value: "reviews",
       trigger: <TabLabel label="Reviews" count={reviewCount} />,
       content: (
-        <AgentReviews
-          reviews={agent.reviews}
-          averageRating={agent.averageRating}
-          reviewCount={reviewCount}
-        />
+        <div className="space-y-4">
+          <Link
+            className="text-sm underline"
+            href={`/agents/${agent.slug}/reviews`}
+          >
+            Browse all {reviewCount} reviews
+          </Link>
+          <AgentReviews
+            reviews={agent.reviews}
+            averageRating={agent.averageRating}
+            reviewCount={reviewCount}
+          />
+        </div>
       ),
     },
     {
@@ -161,6 +178,9 @@ export default async function AgentProfilePage({
   return (
     <SiteShell>
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        {currentUser && (
+          <SaveAgent agentId={agent.id} initialSaved={Boolean(saved)} />
+        )}
         <RecordRecentAgent
           agent={{
             slug: agent.slug,

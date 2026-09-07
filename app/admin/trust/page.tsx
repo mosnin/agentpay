@@ -1,9 +1,28 @@
+import { pageNumber } from "@/lib/pagination";
+import { Pagination } from "@/components/shared/pagination";
 import { SiteShell } from "@/components/layout/site-shell";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TrustModeration } from "@/components/trust/moderation";
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const user = await requireAdmin();
+  const page = pageNumber((await searchParams).page);
+  const [caseCount, appealCount] = await Promise.all([
+    prisma.dispute.count({
+      where: {
+        status: { in: ["resolved", "rejected"] },
+        task: {
+          buyerId: { not: user.id },
+          sellerAgent: { ownerId: { not: user.id } },
+        },
+      },
+    }),
+    prisma.trustAppeal.count({ where: { state: "open" } }),
+  ]);
   const disputes = await prisma.dispute.findMany({
     where: {
       status: { in: ["resolved", "rejected"] },
@@ -17,14 +36,16 @@ export default async function Page() {
         include: { buyer: true, sellerAgent: { include: { owner: true } } },
       },
     },
-    orderBy: { updatedAt: "desc" },
-    take: 50,
+    orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
+    take: 25,
+    skip: (page - 1) * 25,
   });
   const appeals = await prisma.trustAppeal.findMany({
     where: { state: "open" },
     include: { finding: true },
-    orderBy: { createdAt: "asc" },
-    take: 50,
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    take: 25,
+    skip: (page - 1) * 25,
   });
   return (
     <SiteShell>
@@ -66,6 +87,12 @@ export default async function Page() {
               outcome: a.finding.outcome,
             },
           }))}
+        />
+        <Pagination
+          page={page}
+          total={Math.max(caseCount, appealCount)}
+          pageSize={25}
+          pathname="/admin/trust"
         />
       </div>
     </SiteShell>

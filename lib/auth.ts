@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "./prisma";
-import { resolveApiKeyUser } from "./api-keys";
+import { resolveApiKeyUser, type ApiScope } from "./api-keys";
 
 // ---------------------------------------------------------------------------
 // Auth — Clerk when configured, demo operator otherwise.
@@ -132,7 +132,7 @@ async function getClerkBackedUser() {
  * the same actor the route gate resolved — even in Clerk deployments where
  * a headless request has no cookie session to fall back on.
  */
-async function getBearerKeyUser() {
+async function getBearerKeyUser(scope: ApiScope = "account") {
   // Preserve Next's dynamic-render signal; swallowing it can cache a keyless
   // identity or unauthenticated redirect while prerendering protected pages.
   const authorization = (await headers()).get("authorization");
@@ -143,12 +143,13 @@ async function getBearerKeyUser() {
   if (!authorization) return undefined;
   if (!token || !token.startsWith("bids_")) return null;
 
-  const keyUser = await resolveApiKeyUser(token);
+  const keyUser = await resolveApiKeyUser(token, scope);
   if (!keyUser) return null;
-  return prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: keyUser.id },
     include: { organization: true },
   });
+  return user ? { ...user, role: keyUser.role } : null;
 }
 
 // cache() dedupes the lookup across a single server request — layouts,
@@ -168,8 +169,9 @@ export const getCurrentUser = cache(async () => {
 });
 
 /** Throws if there is no signed-in user (or, keyless, if the DB isn't seeded). */
-export async function requireUser() {
-  const user = await getCurrentUser();
+export async function requireUser(scope: ApiScope = "account") {
+  const bearer = await getBearerKeyUser(scope);
+  const user = bearer === undefined ? await getCurrentUser() : bearer;
   if (!user) {
     throw new Error(
       process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE === "demo" && !isClerkEnabled()

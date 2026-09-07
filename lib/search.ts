@@ -1,7 +1,6 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
-import { ensureSearchIndexes } from "./search-indexes";
 
 // ===========================================================================
 // Marketplace search — Postgres full-text + trigram
@@ -127,7 +126,11 @@ export function compareSearchHits(a: RankableHit, b: RankableHit): number {
  * substring name match, then a match that only landed on a secondary field
  * (description/category/capability) via some other token, then nothing.
  */
-export function nameMatchRelevance(name: string, query: string, tokens: string[]): number {
+export function nameMatchRelevance(
+  name: string,
+  query: string,
+  tokens: string[],
+): number {
   const nameLower = name.toLowerCase();
   const queryLower = query.toLowerCase();
   if (nameLower === queryLower) return 3;
@@ -148,7 +151,9 @@ function agentTokenMatch(token: string): Prisma.AgentWhereInput {
       { category: { contains: token, mode: "insensitive" } },
       {
         capabilities: {
-          some: { capability: { name: { contains: token, mode: "insensitive" } } },
+          some: {
+            capability: { name: { contains: token, mode: "insensitive" } },
+          },
         },
       },
     ],
@@ -168,7 +173,10 @@ export function buildIlikeWhere(tokens: string[]): Prisma.AgentWhereInput {
   };
 }
 
-async function ilikeSearch(query: string, take: number): Promise<AgentSearchHit[]> {
+async function ilikeSearch(
+  query: string,
+  take: number,
+): Promise<AgentSearchHit[]> {
   const tokens = tokenizeQuery(query);
   if (tokens.length === 0) return [];
 
@@ -191,7 +199,10 @@ async function ilikeSearch(query: string, take: number): Promise<AgentSearchHit[
   });
 
   return candidates
-    .map((hit) => ({ ...hit, relevance: nameMatchRelevance(hit.name, query, tokens) }))
+    .map((hit) => ({
+      ...hit,
+      relevance: nameMatchRelevance(hit.name, query, tokens),
+    }))
     .sort(compareSearchHits)
     .slice(0, take)
     .map(({ relevance: _relevance, ...hit }) => hit);
@@ -199,7 +210,10 @@ async function ilikeSearch(query: string, take: number): Promise<AgentSearchHit[
 
 // --- Full-text + trigram search ------------------------------------------
 
-async function ftsSearch(query: string, take: number): Promise<AgentSearchHit[]> {
+async function ftsSearch(
+  query: string,
+  take: number,
+): Promise<AgentSearchHit[]> {
   // Combined search surface: the agent's own text columns plus, via a
   // per-row LATERAL join, its capability names aggregated into one blob.
   // Capability names can't be folded into a static expression index (they
@@ -212,8 +226,7 @@ async function ftsSearch(query: string, take: number): Promise<AgentSearchHit[]>
       coalesce(a.name, '') || ' ' ||
       coalesce(a."shortDescription", '') || ' ' ||
       coalesce(a."longDescription", '') || ' ' ||
-      coalesce(a.category, '') || ' ' ||
-      coalesce(caps.names, '')
+      coalesce(a.category, '')
     )
   `;
   const tsQuery = Prisma.sql`websearch_to_tsquery('english', ${query})`;
@@ -236,6 +249,7 @@ async function ftsSearch(query: string, take: number): Promise<AgentSearchHit[]>
     WHERE a.status = 'active'::"AgentStatus"
       AND (
         ${tsvectorExpr} @@ ${tsQuery}
+        OR to_tsvector('english', coalesce(caps.names, '')) @@ ${tsQuery}
         OR similarity(a.name, ${query}) > ${TRIGRAM_THRESHOLD}
         OR similarity(coalesce(caps.names, ''), ${query}) > ${TRIGRAM_THRESHOLD}
       )
@@ -246,7 +260,7 @@ async function ftsSearch(query: string, take: number): Promise<AgentSearchHit[]>
         similarity(coalesce(caps.names, ''), ${query})
       ) DESC,
       a.verified DESC,
-      a."reputationScore" DESC
+      a."reputationScore" DESC, a.id ASC
     LIMIT ${take}
   `);
 }
@@ -281,7 +295,6 @@ export async function searchAgents(
   const take = clampLimit(limit);
 
   try {
-    await ensureSearchIndexes();
     return await ftsSearch(q, take);
   } catch (err) {
     logFallbackOnce(err);

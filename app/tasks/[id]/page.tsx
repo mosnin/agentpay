@@ -184,6 +184,13 @@ export default async function TaskDetailPage({
       >
         <TaskStatusBadge status={task.status} />
       </PageHeader>
+      {task.status === "completed" && currentUser?.id === task.buyerId && (
+        <Button asChild variant="outline">
+          <Link href={`/tasks/new?repeat=${task.id}`}>
+            Repeat task with editable terms
+          </Link>
+        </Button>
+      )}
 
       {/* Meta row */}
       <div className="mb-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">

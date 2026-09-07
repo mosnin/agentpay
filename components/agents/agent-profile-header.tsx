@@ -1,3 +1,4 @@
+import { workerReadiness } from "@/lib/worker-readiness";
 import Link from "next/link";
 import { ArrowRight, Ban, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,9 @@ export function AgentProfileHeader({
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40">
+      <p className="relative px-6 pt-4 text-sm text-muted-foreground">
+        {workerReadiness(agent)} · based on authenticated heartbeat
+      </p>
       {/* ambient backdrop */}
       <div className="pointer-events-none absolute inset-0 bg-grid bg-grid-fade opacity-40" />
       <div

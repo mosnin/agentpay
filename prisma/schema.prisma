@@ -107,13 +107,16 @@ model User {
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  agents        Agent[]              @relation("AgentOwner")
-  tasks         Task[]               @relation("TaskBuyer")
-  reviews       Review[]
-  disputes      Dispute[]            @relation("DisputeOpener")
-  apiKeys       ApiKey[]
-  notifications Notification[]
-  sentInvites   OrganizationInvite[] @relation("InviteSender")
+  agents         Agent[]              @relation("AgentOwner")
+  tasks          Task[]               @relation("TaskBuyer")
+  reviews        Review[]
+  disputes       Dispute[]            @relation("DisputeOpener")
+  apiKeys        ApiKey[]
+  notifications  Notification[]
+  sentInvites    OrganizationInvite[] @relation("InviteSender")
+  brief          TaskBrief?
+  savedAgents    SavedAgent[]
+  serviceReports ServiceReport[]
 
   @@index([createdAt])
 }
@@ -138,6 +141,8 @@ model ApiKey {
   name       String
   prefix     String    @unique // display fragment, e.g. "bids_ab12"
   hashedKey  String    @unique
+  scopes     String[]  @default(["account"])
+  expiresAt  DateTime?
   lastUsedAt DateTime?
   revokedAt  DateTime?
   createdAt  DateTime  @default(now())
@@ -204,41 +209,43 @@ model WebhookDelivery {
 }
 
 model Agent {
-  id                    String       @id @default(cuid())
-  name                  String
-  slug                  String       @unique
-  shortDescription      String
-  longDescription       String
-  category              String
-  status                AgentStatus  @default(active)
+  id                        String       @id @default(cuid())
+  name                      String
+  slug                      String       @unique
+  shortDescription          String
+  longDescription           String
+  category                  String
+  status                    AgentStatus  @default(active)
   // `verified` stays the effective badge every surface already reads; the
   // verification program (Team 1) is now what earns and revokes it —
   // verificationStatus is the richer source of truth it mirrors.
-  verified              Boolean      @default(false)
-  verificationStatus    String       @default("unverified") // unverified | pending | verified | failed
-  verificationAttemptId    String?
+  verified                  Boolean      @default(false)
+  verificationStatus        String       @default("unverified") // unverified | pending | verified | failed
+  verificationAttemptId     String?
   lastVerificationAttemptAt DateTime?
-  lastVerifiedAt        DateTime?
-  verificationError     String?
-  endpointUrl           String?
-  mcpServerUrl          String?
-  pricingModel          PricingModel @default(per_task)
-  startingPrice         Float        @default(0)
-  currency              String       @default("USD")
-  averageRating         Float        @default(0)
-  reputationScore       Int          @default(50)
-  completionRate        Float        @default(0)
-  averageLatencyMinutes Int          @default(0)
-  schemaComplianceScore Float        @default(0)
-  disputeRate           Float        @default(0)
-  totalTasksCompleted   Int          @default(0)
+  lastVerifiedAt            DateTime?
+  verificationError         String?
+  workerSeenAt              DateTime?
+  workerCapacity            Int          @default(0)
+  endpointUrl               String?
+  mcpServerUrl              String?
+  pricingModel              PricingModel @default(per_task)
+  startingPrice             Float        @default(0)
+  currency                  String       @default("USD")
+  averageRating             Float        @default(0)
+  reputationScore           Int          @default(50)
+  completionRate            Float        @default(0)
+  averageLatencyMinutes     Int          @default(0)
+  schemaComplianceScore     Float        @default(0)
+  disputeRate               Float        @default(0)
+  totalTasksCompleted       Int          @default(0)
   // Reputation integrity (Team 2): timestamp of the last recompute, so the
   // decay pass can weight recent performance over stale history.
-  reputationUpdatedAt   DateTime?
-  inputSchema           Json?
-  outputSchema          Json?
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
+  reputationUpdatedAt       DateTime?
+  inputSchema               Json?
+  outputSchema              Json?
+  createdAt                 DateTime     @default(now())
+  updatedAt                 DateTime     @updatedAt
 
   ownerId        String
   owner          User          @relation("AgentOwner", fields: [ownerId], references: [id])
@@ -250,6 +257,7 @@ model Agent {
   reviews            Review[]
   reputationEvents   ReputationEvent[]
   verificationChecks VerificationCheck[]
+  savedBy            SavedAgent[]
 
   @@index([category])
   @@index([reputationScore])
@@ -257,6 +265,7 @@ model Agent {
   @@index([status, reputationScore, id])
   @@index([ownerId, createdAt])
   @@index([status, lastVerificationAttemptAt, id])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "agent_name_trgm_idx")
 }
 
 // Audit trail for the verification program (Team 1): each automated check
@@ -285,6 +294,8 @@ model Capability {
   updatedAt   DateTime @updatedAt
 
   agents AgentCapability[]
+
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "capability_name_trgm_idx")
 }
 
 model AgentCapability {
@@ -682,4 +693,79 @@ model ChainCursor {
   blockHash   String
   halted      Boolean  @default(false)
   updatedAt   DateTime @updatedAt
+}
+
+/// Durable scheduler lease; attempt identity fences late completions.
+model OperationJob {
+  id            String         @id
+  leaseToken    String?
+  leaseUntil    DateTime?
+  lastSuccessAt DateTime?
+  runs          OperationRun[]
+}
+
+model OperationRun {
+  id         String       @id @default(cuid())
+  jobId      String
+  job        OperationJob @relation(fields: [jobId], references: [id])
+  state      String       @default("running")
+  startedAt  DateTime     @default(now())
+  finishedAt DateTime?
+  summary    String?
+
+  @@index([jobId, startedAt])
+}
+
+model OperationAudit {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  targetId  String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model TaskBrief {
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @id
+  values      Json
+  revision    Int      @default(1)
+  creationKey String   @unique @default(uuid())
+  updatedAt   DateTime @updatedAt
+}
+
+model SavedAgent {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId    String
+  agentId   String
+  createdAt DateTime @default(now())
+
+  @@id([userId, agentId])
+  @@index([userId, createdAt])
+}
+
+model ServiceReport {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  taskId    String?
+  subject   String
+  detail    String
+  state     String   @default("open")
+  response  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([state, createdAt])
+}
+
+model RateLimitBucket {
+  id        String   @id
+  tokens    Float
+  updatedAt DateTime @default(now())
+
+  @@index([updatedAt])
 }

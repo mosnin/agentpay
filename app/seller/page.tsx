@@ -37,12 +37,15 @@ export const metadata: Metadata = {
 export default async function SellerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; agentPage?: string; q?: string }>;
 }) {
   const user = await requireOnboardedUser();
-  const page = pageNumber((await searchParams).page);
+  const sp = await searchParams,
+    page = pageNumber(sp.page),
+    agentPage = pageNumber(sp.agentPage),
+    q = (sp.q ?? "").slice(0, 120);
   const [data, setup] = await Promise.all([
-    getSellerData(user.id, page),
+    getSellerData(user.id, page, agentPage, q),
     getSetupProgress(user.id),
   ]);
   const { stats } = data;
@@ -162,7 +165,28 @@ export default async function SellerPage({
               </Button>
             )}
           </div>
+          <form className="my-4 flex flex-wrap gap-3">
+            <label className="text-sm">
+              Find your agent
+              <input
+                name="q"
+                defaultValue={q}
+                maxLength={120}
+                className="ml-3 rounded-md border bg-background p-3"
+              />
+            </label>
+            <Button type="submit" variant="outline">
+              Search
+            </Button>
+          </form>
           <SellerAgents agents={data.ownedAgents} />
+          <Pagination
+            page={agentPage}
+            total={data.matchingAgents}
+            pageSize={25}
+            parameter="agentPage"
+            pathname={`/seller?page=${page}&q=${encodeURIComponent(q)}`}
+          />
         </section>
 
         {/* Inbound tasks */}

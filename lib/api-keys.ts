@@ -38,7 +38,18 @@ export function hashApiKey(secret: string): string {
  * Resolve the user behind a bearer secret. Returns null for unknown,
  * revoked, or malformed keys. Updates lastUsedAt (best-effort, non-blocking).
  */
-export async function resolveApiKeyUser(secret: string): Promise<User | null> {
+export type ApiScope =
+  | "account"
+  | "tasks:read"
+  | "tasks:execute"
+  | "tasks:write"
+  | "agents:write"
+  | "payments:write";
+
+export async function resolveApiKeyUser(
+  secret: string,
+  scope: ApiScope = "account",
+): Promise<User | null> {
   // Fail fast on anything that isn't shaped like one of ours — skips a hash +
   // query for obviously-foreign bearer tokens (e.g. a Clerk JWT).
   if (!secret.startsWith("bids_")) return null;
@@ -47,12 +58,22 @@ export async function resolveApiKeyUser(secret: string): Promise<User | null> {
     where: { hashedKey: hashApiKey(secret) },
     include: { user: true },
   });
-  if (!apiKey || apiKey.revokedAt) return null;
+  if (
+    !apiKey ||
+    apiKey.revokedAt ||
+    (apiKey.expiresAt && apiKey.expiresAt <= new Date())
+  )
+    return null;
+  if (!apiKey.scopes.includes("account") && !apiKey.scopes.includes(scope))
+    return null;
 
   // Best-effort — must never block or fail the resolution it's piggybacking on.
   void prisma.apiKey
     .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
     .catch((err) => console.error("Failed to update apiKey.lastUsedAt", err));
 
-  return apiKey.user;
+  // Scoped credentials never inherit administrative overrides.
+  return apiKey.scopes.includes("account")
+    ? apiKey.user
+    : { ...apiKey.user, role: "user" };
 }

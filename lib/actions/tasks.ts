@@ -62,9 +62,10 @@ export async function createTask(
   }
   const input = parsed.data;
   const selectedMode = input.paymentRail ?? paymentMode();
+  let recovery: { key: string; digest: string } | null = null;
 
   try {
-    const user = await requireUser();
+    const user = await requireUser("tasks:write");
     if (
       input.paymentRail &&
       !availablePaymentRails().includes(input.paymentRail)
@@ -76,6 +77,7 @@ export async function createTask(
     const creationDigest = createHash("sha256")
       .update(JSON.stringify(input))
       .digest("hex");
+    if (creationKey) recovery = { key: creationKey, digest: creationDigest };
     if (creationKey) {
       const prior = await prisma.task.findUnique({
         where: { creationKey },
@@ -187,6 +189,32 @@ export async function createTask(
     revalidatePath("/marketplace");
     return { ok: true, data: { id: task.id } };
   } catch (err) {
+    if (
+      recovery &&
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      err.code === "P2002"
+    ) {
+      try {
+        const prior = await prisma.task.findUnique({
+          where: { creationKey: recovery.key },
+          include: { payment: true },
+        });
+        if (prior && prior.creationDigest === recovery.digest) {
+          if (!prior.payment)
+            await createPaymentForTask({
+              taskId: prior.id,
+              amount: prior.budget,
+              mode: input.paymentMode,
+              rail: input.paymentRail,
+            });
+          return { ok: true, data: { id: prior.id } };
+        }
+      } catch {
+        /* A retry using the same key can recover a transient database/provider failure. */
+      }
+    }
     console.error("createTask failed", err);
     return { ok: false, error: "Could not create task. Please try again." };
   }
@@ -219,7 +247,7 @@ async function transition(
   to: string,
   gate?: { actors: TaskActorRole[]; deny: string },
 ): Promise<ActionResult> {
-  const user = await requireUser();
+  const user = await requireUser("tasks:execute");
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     select: {
@@ -306,7 +334,7 @@ export async function startTask(taskId: string): Promise<ActionResult> {
 
 export async function cancelTask(taskId: string): Promise<ActionResult> {
   try {
-    const user = await requireUser();
+    const user = await requireUser("tasks:write");
     const task = await prisma.task.findUnique({ where: { id: taskId } });
     if (!task || (user.role !== "admin" && task.buyerId !== user.id))
       return { ok: false, error: "Only the buyer can cancel this task." };
@@ -463,7 +491,7 @@ export async function submitArtifact(
   }
 
   try {
-    const user = await requireUser();
+    const user = await requireUser("tasks:execute");
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       select: {
@@ -652,7 +680,7 @@ export async function runValidation(
   taskId: string,
 ): Promise<ActionResult<{ score: number; status: string }>> {
   try {
-    const user = await requireUser();
+    const user = await requireUser("tasks:execute");
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       include: {
@@ -763,7 +791,7 @@ async function finishTask(params: {
  */
 export async function approveTask(taskId: string): Promise<ActionResult> {
   try {
-    const user = await requireUser();
+    const user = await requireUser("tasks:write");
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       select: {
@@ -841,7 +869,7 @@ export async function simulateTask(taskId: string): Promise<ActionResult> {
       error: "Demo execution is disabled in the working marketplace.",
     };
   try {
-    const user = await requireUser();
+    const user = await requireUser("tasks:write");
     const existing = await prisma.task.findUnique({
       where: { id: taskId },
       select: {
@@ -933,7 +961,7 @@ export async function openDispute(
   }
 
   try {
-    const user = await requireUser();
+    const user = await requireUser("tasks:write");
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       select: {
@@ -1004,7 +1032,7 @@ export async function resolveDispute(
   status: "resolved" | "rejected",
 ): Promise<ActionResult> {
   try {
-    const user = await requireUser();
+    const user = await requireUser("tasks:write");
     if (user.role !== "admin")
       return { ok: false, error: "Forbidden: admin role required." };
     // Enforce the data invariant at the boundary, not just in the dialog:

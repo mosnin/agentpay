@@ -1,3 +1,5 @@
+import { prisma } from "@/lib/prisma";
+import type { CreateTaskInput } from "@/lib/schemas";
 import { availablePaymentRails } from "@/lib/payment-rails";
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/app-shell";
@@ -20,7 +22,40 @@ export default async function CreateTaskPage({
   const sp = await searchParams;
   const first = (value: string | string[] | undefined) =>
     Array.isArray(value) ? value[0] : value;
-  const defaultAgentId = first(sp.agent);
+  const brief = await prisma.taskBrief.findUnique({
+    where: { userId: user.id },
+  });
+  const repeatId = first(sp.repeat);
+  const repeat = repeatId
+    ? await prisma.task.findFirst({
+        where: { id: repeatId, buyerId: user.id, status: "completed" },
+        include: { contract: true },
+      })
+    : null;
+  const repeatedValues: Partial<CreateTaskInput> | undefined = repeat
+    ? {
+        title: repeat.title,
+        objective: repeat.objective,
+        category: repeat.category,
+        sellerAgentId: repeat.sellerAgentId ?? "",
+        budget: repeat.budget,
+        visibility: "private",
+        inputInstructions:
+          (repeat.contract?.inputPayload as { instructions?: string })
+            ?.instructions ?? "",
+        expectedOutputFormat: repeat.contract?.outputSchema
+          ? JSON.stringify(repeat.contract.outputSchema, null, 2)
+          : "",
+        validationRules: Array.isArray(repeat.contract?.validationRules)
+          ? repeat.contract.validationRules.join("\n")
+          : "",
+      }
+    : undefined;
+  const draftValues = brief?.values as Partial<CreateTaskInput> | undefined;
+  const defaultAgentId =
+    repeatedValues?.sellerAgentId ??
+    draftValues?.sellerAgentId ??
+    first(sp.agent);
   const [options, chosen] = await Promise.all([
     getAgentSelectOptions(),
     defaultAgentId
@@ -48,7 +83,11 @@ export default async function CreateTaskPage({
       <CreateTaskForm
         agents={agents}
         paymentRails={availablePaymentRails()}
-        defaultAgentId={first(sp.agent)}
+        defaultAgentId={defaultAgentId}
+        initialValues={repeatedValues ?? draftValues}
+        savedRevision={brief?.revision ?? 0}
+        savedCreationKey={repeat ? undefined : brief?.creationKey}
+        repeated={Boolean(repeat)}
         defaultCategory={first(sp.category)}
       />
     </AppShell>

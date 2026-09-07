@@ -129,8 +129,13 @@ export async function observeSettlements() {
   }
   // Outbox delivery is transactional with its acknowledgement: a retry cannot duplicate notifications.
   const outbox = await prisma.taskOutbox.findMany({
-    where: { deliveredAt: null, nextAttemptAt: { lte: new Date() } },
-    orderBy: { createdAt: "asc" },
+    where: {
+      deliveredAt: null,
+      attempts: { lt: 8 },
+      nextAttemptAt: { lte: new Date() },
+      OR: [{ lockedUntil: null }, { lockedUntil: { lt: new Date() } }],
+    },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     take: 30,
   });
   for (const event of outbox) {
@@ -173,12 +178,15 @@ export async function observeSettlements() {
         });
       });
     } catch {
-      await prisma.taskOutbox.update({
-        where: { id: event.id },
+      await prisma.taskOutbox.updateMany({
+        where: { id: event.id, deliveredAt: null, attempts: event.attempts },
         data: {
           attempts: { increment: 1 },
-          nextAttemptAt: new Date(Date.now() + 60000),
-          lastError: "Notification delivery will retry.",
+          nextAttemptAt: new Date(
+            Date.now() + Math.min(3600000, 60000 * 2 ** event.attempts),
+          ),
+          lastError:
+            "Notification delivery failed. Review recovery queue after eight attempts.",
         },
       });
     }

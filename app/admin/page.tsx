@@ -1,3 +1,5 @@
+import { Pagination } from "@/components/shared/pagination";
+import { pageNumber } from "@/lib/pagination";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -16,14 +18,21 @@ export const metadata: Metadata = {
   description: "Moderate agents, disputes, payments, and reputation.",
 };
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; q?: string }>;
+}) {
   try {
     await requireAdmin();
   } catch {
     notFound();
   }
 
-  const data = await getAdminData();
+  const sp = await searchParams,
+    page = pageNumber(sp.page),
+    q = (sp.q ?? "").slice(0, 120);
+  const data = await getAdminData(page, q);
 
   const agents = data.agents.map((a) => ({
     id: a.id,
@@ -140,12 +149,36 @@ export default async function AdminPage() {
           />
         </div>
 
+        <form className="flex flex-wrap gap-3" action="/admin">
+          <label className="text-sm">
+            Find a listing or dispute by name / task title
+            <input
+              className="ml-3 rounded-md border bg-background p-3"
+              name="q"
+              defaultValue={q}
+              maxLength={120}
+            />
+          </label>
+          <button className="rounded-full border px-5 py-3" type="submit">
+            Search
+          </button>
+        </form>
+        <p className="text-xs text-muted-foreground">
+          Agents and disputes show 25 records per page. Other tabs show recent
+          activity.
+        </p>
         <AdminTabs
           agents={agents}
           disputes={disputes}
           suspiciousTasks={suspiciousTasks}
           payments={payments}
           reputationEvents={reputationEvents}
+        />
+        <Pagination
+          page={page}
+          total={data.paginationTotal}
+          pageSize={25}
+          pathname={`/admin?q=${encodeURIComponent(q)}`}
         />
       </div>
     </AppShell>

@@ -1,0 +1,26 @@
+name: Scheduled product operations
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: bids-scheduled-operations
+  cancel-in-progress: false
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Reconcile settlement and verification batches
+        env:
+          BIDS_OPERATIONS_URL: ${{ vars.BIDS_OPERATIONS_URL }}
+          CRON_SECRET: ${{ secrets.BIDS_CRON_SECRET }}
+          BIDS_DEPLOYMENT_BYPASS: ${{ secrets.BIDS_DEPLOYMENT_BYPASS }}
+        run: |
+          set -eu
+          test -n "$BIDS_OPERATIONS_URL" && test -n "$CRON_SECRET" || { echo 'Operations endpoint or credential is not configured.'; exit 1; }
+          for job in settlements verify; do
+            code=$(curl --silent --show-error --max-time 90 --output /tmp/result.json --write-out '%{http_code}' --header "Authorization: Bearer $CRON_SECRET" --header "x-vercel-protection-bypass: $BIDS_DEPLOYMENT_BYPASS" "$BIDS_OPERATIONS_URL/api/cron/$job")
+            case "$code" in 200|409) echo "$job: HTTP $code" ;; *) echo "$job: HTTP $code; inspect operations run history"; exit 1 ;; esac
+          done

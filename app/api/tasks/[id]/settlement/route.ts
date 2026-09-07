@@ -1,7 +1,8 @@
+import type { ApiScope } from "@/lib/api-keys";
 import { BaseError } from "viem";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getAuthedUser } from "@/lib/api-auth";
+import { resolveApiUser } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 import {
   createOrder,
@@ -9,9 +10,17 @@ import {
   reconcileOrder,
   serialize,
 } from "@/lib/settlement/orders";
-async function actor(id: string) {
-  const a = await getAuthedUser();
-  if (a.response) return a;
+async function actor(request: Request, id: string, scope: ApiScope) {
+  const user = await resolveApiUser(request, scope);
+  if (!user)
+    return {
+      user: null,
+      response: NextResponse.json(
+        { error: "Unauthorized or insufficient key permissions." },
+        { status: 401 },
+      ),
+    };
+  const a = { user, response: null };
   const t = await prisma.task.findUnique({
     where: { id },
     include: { sellerAgent: true },
@@ -31,11 +40,11 @@ async function actor(id: string) {
   return a;
 }
 export async function GET(
-  _: Request,
+  r: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const a = await actor(id);
+  const a = await actor(r, id, "tasks:read");
   if (a.response) return a.response;
   return NextResponse.json(
     serialize(
@@ -54,8 +63,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const a = await actor(id);
-  if (a.response) return a.response;
   const b = z
     .discriminatedUnion("action", [
       z.object({
@@ -91,6 +98,14 @@ export async function POST(
       { error: "Invalid settlement action." },
       { status: 400 },
     );
+  const a = await actor(
+    r,
+    id,
+    ["submit", "reconcile"].includes(b.data.action)
+      ? "tasks:execute"
+      : "payments:write",
+  );
+  if (a.response) return a.response;
   try {
     const d = b.data;
     const result =

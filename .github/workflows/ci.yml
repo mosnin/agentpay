@@ -160,6 +160,10 @@ jobs:
       - run: npm run test:contracts
       - run: npm run test:testnet-state
       - run: npx vitest run lib/__tests__/settlement-integration.test.ts
+      - name: Verify product recovery against PostgreSQL
+        run: npx vitest run lib/__tests__/product-operations-integration.test.ts
+        env:
+          BIDS_PRODUCT_TEST: "1"
       - name: Build stablecoin product
         run: npm run build
         env:

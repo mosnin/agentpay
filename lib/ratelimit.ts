@@ -5,11 +5,10 @@ import { Redis } from "@upstash/redis";
  * Rate limiting — Upstash Redis when configured, in-process token bucket
  * otherwise. Same mock/live switch pattern as auth and payments: set
  * UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN and limits become
- * global across serverless instances; leave them unset and the in-memory
- * fallback keeps local dev and CI dependency-free.
+ * global across serverless instances. Without Redis, production uses an atomic
+ * PostgreSQL bucket; local/demo tests use bounded process memory.
  *
- * The fallback is per-instance only — on a multi-replica deployment it
- * under-counts, which is why production should always set the env vars.
+ * Sensitive limits fail closed when their configured shared store is unavailable.
  */
 
 interface Bucket {
@@ -115,6 +114,23 @@ export async function rateLimit(
       return { ok: true };
     }
   }
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE !== "demo"
+  ) {
+    try {
+      const { databaseRateLimit } = await import("./database-rate-limit");
+      return await databaseRateLimit(
+        `default:${key}`,
+        cost,
+        opts.capacity,
+        opts.refillRate,
+      );
+    } catch {
+      console.error("[ratelimit] Database unavailable; allowing public read.");
+      return { ok: true };
+    }
+  }
   warnFallbackOnce();
   return localRateLimit(`default:${key}`, cost, opts);
 }
@@ -132,6 +148,25 @@ export async function strictRateLimit(key: string): Promise<{ ok: boolean }> {
       console.error(
         "[ratelimit] Upstash error — rejecting sensitive mutation",
         err,
+      );
+      return { ok: false };
+    }
+  }
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PUBLIC_BIDS_PAYMENT_MODE !== "demo"
+  ) {
+    try {
+      const { databaseRateLimit } = await import("./database-rate-limit");
+      return await databaseRateLimit(
+        `strict:${key}`,
+        1,
+        STRICT_LIMITS.capacity,
+        STRICT_LIMITS.refillRate,
+      );
+    } catch {
+      console.error(
+        "[ratelimit] Database unavailable; rejecting sensitive mutation.",
       );
       return { ok: false };
     }

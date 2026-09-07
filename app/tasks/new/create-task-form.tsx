@@ -3,7 +3,7 @@ import { AgentPicker } from "@/components/tasks/agent-picker";
 
 import { paymentMode } from "@/lib/payment-mode";
 import { PaymentNotice } from "@/components/shared/payment-notice";
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
@@ -68,6 +68,10 @@ interface CreateTaskFormProps {
   paymentRails?: ("stripe" | "crypto")[];
   defaultAgentId?: string;
   defaultCategory?: string;
+  initialValues?: Partial<CreateTaskInput>;
+  savedRevision?: number;
+  savedCreationKey?: string;
+  repeated?: boolean;
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -80,6 +84,10 @@ export function CreateTaskForm({
   paymentRails = [],
   defaultAgentId,
   defaultCategory,
+  initialValues,
+  savedRevision = 0,
+  savedCreationKey,
+  repeated = false,
 }: CreateTaskFormProps) {
   const [agents, setAgents] = useState(initialAgents);
   const router = useRouter();
@@ -144,6 +152,7 @@ export function CreateTaskForm({
         ? "pay_per_task"
         : "mock_escrow",
       visibility: "private",
+      ...initialValues,
     },
   });
 
@@ -187,15 +196,82 @@ export function CreateTaskForm({
     });
   }
 
-  const creationKey = useRef<string | undefined>(undefined);
+  const creationKey = useRef<string | undefined>(savedCreationKey);
+  const revision = useRef(savedRevision);
+  const forkBrief = useRef(repeated);
+  const [draftStatus, setDraftStatus] = useState(
+    repeated
+      ? "Previous terms copied. Review the brief; funding is authorized separately."
+      : savedRevision
+        ? "Recovered your saved brief."
+        : "Your brief saves as you write.",
+  );
+  const saveQueue = useRef(Promise.resolve());
+  const finished = useRef(false);
+  function saveBrief(values: Partial<CreateTaskInput>) {
+    const run = saveQueue.current
+      .catch(() => {})
+      .then(async () => {
+        if (finished.current) return;
+        setDraftStatus("Saving brief…");
+        const r = await fetch("/api/brief", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            revision: revision.current,
+            fork: forkBrief.current,
+            values,
+          }),
+        });
+        const result = await r.json();
+        if (!r.ok)
+          throw new Error(
+            result.error ?? "Could not save. Your text is still in this form.",
+          );
+        forkBrief.current = false;
+        revision.current = result.revision;
+        creationKey.current = result.creationKey;
+        setDraftStatus("Brief saved to your account.");
+      });
+    saveQueue.current = run;
+    return run;
+  }
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const subscription = watch(() => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        void saveBrief(getValues()).catch((e) => setDraftStatus(e.message));
+      }, 1500);
+    });
+    return () => {
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
+    // The queue and revision live in refs, shared by autosave and submission.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watch, getValues]);
   function onSubmit(values: CreateTaskInput) {
-    creationKey.current ??= crypto.randomUUID();
     startTransition(async () => {
+      try {
+        await saveBrief(values);
+      } catch (e) {
+        setDraftStatus((e as Error).message);
+        toast.error(
+          "Save the brief before creating the task. Your input is preserved.",
+        );
+        return;
+      }
       const res = await createTask({
         ...values,
         idempotencyKey: creationKey.current,
       });
       if (res.ok) {
+        finished.current = true;
+        await fetch("/api/brief", {
+          method: "DELETE",
+          headers: { "If-Match": String(revision.current) },
+        }).catch(() => {});
         trackFirstTaskCreated({
           taskId: res.data!.id,
           category: values.category,
@@ -224,6 +300,38 @@ export function CreateTaskForm({
       {/* Left column — the form                                           */}
       {/* ---------------------------------------------------------------- */}
       <div className="min-w-0 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p role="status" className="text-sm text-muted-foreground">
+            {draftStatus}
+          </p>
+          {savedRevision > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  try {
+                    await saveQueue.current.catch(() => {});
+                    const r = await fetch("/api/brief", {
+                      method: "DELETE",
+                      headers: { "If-Match": String(revision.current) },
+                    });
+                    if (!r.ok) throw new Error();
+                    finished.current = true;
+                    window.location.assign("/tasks/new");
+                  } catch {
+                    setDraftStatus(
+                      "Could not discard. Reload to recover the latest saved brief.",
+                    );
+                  }
+                })
+              }
+            >
+              Discard saved brief
+            </Button>
+          )}
+        </div>
         {/* Who you're hiring — confirmation when an agent is selected */}
         {selectedAgent && (
           <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] p-4">

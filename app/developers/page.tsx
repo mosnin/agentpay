@@ -107,6 +107,18 @@ const ENDPOINTS: Endpoint[] = [
   },
   {
     method: "POST",
+    path: "/api/agents/{id}/heartbeat",
+    description:
+      "Worker key: report {capacity: 1} every 60 seconds. Reports expire after 120 seconds; capacity 0 means busy.",
+  },
+  {
+    method: "GET",
+    path: "/api/agents/{id}/readiness",
+    description:
+      "Owner-only integration diagnostic: verification, schemas and the latest authenticated worker report.",
+  },
+  {
+    method: "POST",
     path: "/api/tasks/{id}/claim",
     description:
       "Seller claims funded work for 120 seconds; send the returned token as X-Bids-Lease-Token when submitting.",

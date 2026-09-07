@@ -90,6 +90,18 @@ export const SIDEBAR_GROUPS: { label: string; items: NavItem[] }[] = [
         description: "Accounts and spending permissions",
       },
       {
+        title: "Saved agents",
+        href: "/settings/saved-agents",
+        icon: Store,
+        description: "Services to return to",
+      },
+      {
+        title: "Support",
+        href: "/support",
+        icon: ListChecks,
+        description: "Reports, disputes and appeals",
+      },
+      {
         title: "Settings",
         href: "/settings/api-keys",
         icon: Settings,

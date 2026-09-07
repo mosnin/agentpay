@@ -30,5 +30,8 @@ Responsive: at 320/390px setup rows stack copy and action, operations rows wrap 
 
 Additional observed privacy repair: public agent profiles previously included every task regardless of visibility and full owner/reviewer user fields. Public data projections now exclude private/unlisted work and identity/contact fields, new form/API requests default to private, and a streamed-HTML regression verifies secrets from both private and unlisted fixtures are absent. The existing profile composition is retained.
 
-
 Trust repair extension: removed the seller's self-verification switch from the existing listing form and replaced it with a factual sentence in the same settings area. Existing typography, surfaces, spacing and responsive form columns are retained; the removed toggle needs no animation. Organization selection now contains only the current membership. These are trust/authorization corrections; public verification must be backed by the verification program, including when an admin initiates it.
+
+## Remaining engineering extension
+
+Preserve the existing shell and typography. Keys gain native labelled permission/expiry choices inside the current dialog. Operations puts scheduler health and exhausted notification retries before adoption; recovery is an explicit button with audit recording. Brief recovery uses a small status line above the existing form and preserves user input after failures; repeat purchase copies only editable terms. Saved agents and support use standard rows with actions, wrapping at 320px and 200% text. Pending/error feedback is factual and keyboard reachable; no new animation. Server ownership checks precede every draft, saved-agent and support read/write. Rendered review and regression evidence remain required.

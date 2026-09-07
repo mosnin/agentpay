@@ -1,7 +1,9 @@
+import { runOperation, cronAuthorized } from "@/lib/operation-jobs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { runAgentVerification } from "@/lib/verification";
 
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 /**
@@ -36,12 +38,6 @@ const STALE_MS = 24 * 60 * 60 * 1000;
 const BATCH_SIZE = 25;
 const CONCURRENCY = 5;
 
-function isAuthorized(request: Request, secret: string): boolean {
-  const header = request.headers.get("authorization");
-  const match = header ? /^Bearer\s+(.+)$/i.exec(header.trim()) : null;
-  return match?.[1]?.trim() === secret;
-}
-
 /** Bounded-concurrency batch runner — dependency-free (no p-limit in
  * package.json), matching this codebase's preference for small hand-rolled
  * helpers over adding a dependency for a few lines of logic. */
@@ -62,7 +58,7 @@ async function runBatch<T>(
   );
 }
 
-async function handleSweep(request: Request): Promise<NextResponse> {
+async function handleSweep(request: Request): Promise<Response> {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     return NextResponse.json(
@@ -70,70 +66,75 @@ async function handleSweep(request: Request): Promise<NextResponse> {
       { status: 503 },
     );
   }
-  if (!isAuthorized(request, secret)) {
+  if (!cronAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  try {
-    const staleCutoff = new Date(Date.now() - STALE_MS);
-    const candidates = await prisma.agent.findMany({
-      where: {
-        status: "active",
-        OR: [
-          { lastVerificationAttemptAt: null },
-          { lastVerificationAttemptAt: { lt: staleCutoff } },
+  return runOperation("verify", async () => {
+    try {
+      const staleCutoff = new Date(Date.now() - STALE_MS);
+      const candidates = await prisma.agent.findMany({
+        where: {
+          status: "active",
+          OR: [
+            { lastVerificationAttemptAt: null },
+            { lastVerificationAttemptAt: { lt: staleCutoff } },
+          ],
+        },
+        orderBy: [
+          { lastVerificationAttemptAt: { sort: "asc", nulls: "first" } },
+          { id: "asc" },
         ],
-      },
-      orderBy: [
-        { lastVerificationAttemptAt: { sort: "asc", nulls: "first" } },
-        { id: "asc" },
-      ],
-      select: { id: true, verified: true },
-      take: BATCH_SIZE,
-    });
+        select: { id: true, verified: true },
+        take: BATCH_SIZE,
+      });
 
-    let verified = 0;
-    let failed = 0;
-    let expired = 0;
-    const errors: Array<{ agentId: string; error: string }> = [];
+      let verified = 0;
+      let failed = 0;
+      let expired = 0;
+      const errors: Array<{ agentId: string; error: string }> = [];
 
-    await runBatch(candidates, CONCURRENCY, async (candidate) => {
-      try {
-        const outcome = await runAgentVerification(candidate.id);
-        if (outcome.verified) {
-          verified += 1;
-        } else {
-          failed += 1;
-          // Was verified before this run and isn't anymore -> a badge just
-          // got revoked, not merely a never-verified agent still not passing.
-          if (candidate.verified) expired += 1;
+      await runBatch(candidates, CONCURRENCY, async (candidate) => {
+        try {
+          const outcome = await runAgentVerification(candidate.id);
+          if (outcome.verified) {
+            verified += 1;
+          } else {
+            failed += 1;
+            // Was verified before this run and isn't anymore -> a badge just
+            // got revoked, not merely a never-verified agent still not passing.
+            if (candidate.verified) expired += 1;
+          }
+        } catch (err) {
+          // runAgentVerification already guarantees it never throws — this is
+          // belt-and-suspenders so a truly unexpected error (e.g. this
+          // closure itself) still can't take down the rest of the batch.
+          errors.push({
+            agentId: candidate.id,
+            error: err instanceof Error ? err.message : String(err),
+          });
         }
-      } catch (err) {
-        // runAgentVerification already guarantees it never throws — this is
-        // belt-and-suspenders so a truly unexpected error (e.g. this
-        // closure itself) still can't take down the rest of the batch.
-        errors.push({
-          agentId: candidate.id,
-          error: err instanceof Error ? err.message : String(err),
-        });
-      }
-    });
+      });
 
-    return NextResponse.json({
-      ok: true,
-      checked: candidates.length,
-      verified,
-      failed,
-      expired,
-      errors,
-    });
-  } catch (err) {
-    console.error("verification cron sweep failed", err);
-    return NextResponse.json(
-      { error: "Verification sweep failed." },
-      { status: 500 },
-    );
-  }
+      return NextResponse.json(
+        {
+          ok: true,
+          checked: candidates.length,
+          verified,
+          failed,
+          expired,
+          errors,
+        },
+        { status: errors.length ? 503 : 200 },
+      );
+    } catch (err) {
+      console.error("verification cron sweep failed", err);
+      return NextResponse.json(
+        { error: "Verification sweep failed." },
+        { status: 500 },
+      );
+    }
+  });
 }
 
 export async function GET(request: Request) {

@@ -17,6 +17,7 @@ const isProtectedRoute = createRouteMatcher([
   "/agents/(.*)/edit(.*)",
   "/onboarding(.*)",
   "/settings(.*)",
+  "/support(.*)",
   "/invites(.*)",
 ]);
 
@@ -54,5 +55,7 @@ export default hasClerk
   : baseMiddleware;
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|ico|webp)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|ico|webp)$).*)",
+  ],
 };

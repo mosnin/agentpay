@@ -5,12 +5,19 @@ export function Pagination({
   total,
   pageSize,
   pathname,
+  parameter = "page",
 }: {
   page: number;
   total: number;
   pageSize: number;
   pathname: string;
+  parameter?: string;
 }) {
+  const href = (n: number) => {
+    const url = new URL(pathname, "https://bids.sh");
+    url.searchParams.set(parameter, String(n));
+    return url.pathname + url.search;
+  };
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages === 1 && page === 1) return null;
   return (
@@ -25,14 +32,12 @@ export function Pagination({
       <div className="flex gap-2">
         {page > 1 && (
           <Button asChild variant="outline">
-            <Link href={`${pathname}?page=${Math.min(page - 1, pages)}`}>
-              Previous
-            </Link>
+            <Link href={href(Math.min(page - 1, pages))}>Previous</Link>
           </Button>
         )}
         {page < pages && (
           <Button asChild variant="outline">
-            <Link href={`${pathname}?page=${page + 1}`}>Next</Link>
+            <Link href={href(page + 1)}>Next</Link>
           </Button>
         )}
       </div>

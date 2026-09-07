@@ -252,7 +252,10 @@ export async function getCapabilities() {
 
 export async function getOrganizations(organizationId?: string | null) {
   if (!organizationId) return [];
-  return prisma.organization.findMany({ where: { id: organizationId }, take: 1 });
+  return prisma.organization.findMany({
+    where: { id: organizationId },
+    take: 1,
+  });
 }
 
 export async function getCategorySummary(category: string) {
@@ -630,7 +633,12 @@ export async function getDashboardData(userId: string) {
 // SELLER
 // ===========================================================================
 
-export async function getSellerData(userId: string, page = 1) {
+export async function getSellerData(
+  userId: string,
+  page = 1,
+  agentPage = 1,
+  agentQuery = "",
+) {
   const [
     ownedAgents,
     inboundTasks,
@@ -640,12 +648,17 @@ export async function getSellerData(userId: string, page = 1) {
     taskGroups,
     reviewStats,
     taskCount,
+    matchingAgents,
   ] = await Promise.all([
     prisma.agent.findMany({
-      where: { ownerId: userId },
+      where: {
+        ownerId: userId,
+        name: { contains: agentQuery.slice(0, 120), mode: "insensitive" },
+      },
       include: agentCardInclude,
-      take: 100,
-      orderBy: { reputationScore: "desc" },
+      take: 25,
+      skip: (pageNumber(agentPage) - 1) * 25,
+      orderBy: [{ reputationScore: "desc" }, { id: "asc" }],
     }),
     prisma.task.findMany({
       where: { sellerAgent: { ownerId: userId } },
@@ -683,6 +696,12 @@ export async function getSellerData(userId: string, page = 1) {
       _avg: { rating: true },
     }),
     prisma.task.count({ where: { sellerAgent: { ownerId: userId } } }),
+    prisma.agent.count({
+      where: {
+        ownerId: userId,
+        name: { contains: agentQuery.slice(0, 120), mode: "insensitive" },
+      },
+    }),
   ]);
 
   const totalEarnings = releasedAsSeller._sum.amount ?? 0;
@@ -695,6 +714,7 @@ export async function getSellerData(userId: string, page = 1) {
     .reduce((sum, t) => sum + t._count._all, 0);
   const avgRating = reviewStats._avg.rating ?? 0;
   return {
+    matchingAgents,
     taskCount,
     taskGroups,
     ownedAgents,
@@ -714,7 +734,14 @@ export async function getSellerData(userId: string, page = 1) {
 // ADMIN
 // ===========================================================================
 
-export async function getAdminData() {
+export async function getAdminData(page = 1, query = "") {
+  const q = query.trim().slice(0, 120);
+  const agentWhere: Prisma.AgentWhereInput = q
+    ? { name: { contains: q, mode: "insensitive" } }
+    : {};
+  const disputeWhere: Prisma.DisputeWhereInput = q
+    ? { task: { title: { contains: q, mode: "insensitive" } } }
+    : {};
   const [
     agents,
     disputes,
@@ -724,19 +751,25 @@ export async function getAdminData() {
     counts,
   ] = await Promise.all([
     prisma.agent.findMany({
+      where: agentWhere,
+      take: 25,
+      skip: (pageNumber(page) - 1) * 25,
       include: {
         owner: true,
         organization: true,
         _count: { select: { capabilities: true, tasks: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
     }),
     prisma.dispute.findMany({
+      where: disputeWhere,
+      take: 25,
+      skip: (pageNumber(page) - 1) * 25,
       include: {
         task: { include: { sellerAgent: { select: { name: true } } } },
         openedBy: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
     }),
     prisma.payment.findMany({
       include: { task: { select: { id: true, title: true, category: true } } },
@@ -762,6 +795,8 @@ export async function getAdminData() {
     }),
     Promise.all([
       prisma.agent.count(),
+      prisma.agent.count({ where: agentWhere }),
+      prisma.dispute.count({ where: disputeWhere }),
       prisma.agent.count({ where: { verified: false } }),
       prisma.dispute.count({ where: { status: "open" } }),
       prisma.payment.aggregate({
@@ -771,7 +806,14 @@ export async function getAdminData() {
     ]),
   ]);
 
-  const [agentCount, unverifiedCount, openDisputes, releasedSum] = counts;
+  const [
+    agentCount,
+    matchingAgentCount,
+    disputeCount,
+    unverifiedCount,
+    openDisputes,
+    releasedSum,
+  ] = counts;
 
   return {
     agents,
@@ -779,6 +821,7 @@ export async function getAdminData() {
     payments,
     reputationEvents,
     suspiciousTasks,
+    paginationTotal: Math.max(matchingAgentCount, disputeCount),
     stats: {
       agentCount,
       unverifiedCount,

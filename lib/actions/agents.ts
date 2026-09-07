@@ -30,7 +30,10 @@ async function uniqueAgentSlug(name: string): Promise<string> {
   return slug;
 }
 
-async function ensureCapabilities(names: string[], category: string): Promise<string[]> {
+async function ensureCapabilities(
+  names: string[],
+  category: string,
+): Promise<string[]> {
   const ids: string[] = [];
   for (const raw of names) {
     const name = raw.trim();
@@ -60,15 +63,25 @@ export async function createAgent(
 ): Promise<ActionResult<{ id: string; slug: string }>> {
   const parsed = createAgentSchema.safeParse(values);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
+    };
   }
   const input = parsed.data;
 
   try {
-    const user = await requireUser();
-    if (input.organizationId && input.organizationId !== user.organizationId) return { ok: false, error: "You can only publish under your own organization." };
+    const user = await requireUser("agents:write");
+    if (input.organizationId && input.organizationId !== user.organizationId)
+      return {
+        ok: false,
+        error: "You can only publish under your own organization.",
+      };
     const slug = await uniqueAgentSlug(input.name);
-    const capabilityIds = await ensureCapabilities(input.capabilities, input.category);
+    const capabilityIds = await ensureCapabilities(
+      input.capabilities,
+      input.category,
+    );
 
     const agent = await prisma.agent.create({
       data: {
@@ -110,15 +123,20 @@ export async function createAgent(
   }
 }
 
-export async function updateAgent(values: unknown): Promise<ActionResult<{ id: string; slug: string }>> {
+export async function updateAgent(
+  values: unknown,
+): Promise<ActionResult<{ id: string; slug: string }>> {
   const parsed = updateAgentSchema.safeParse(values);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
+    };
   }
   const { id, capabilities, inputSchema, outputSchema, ...rest } = parsed.data;
 
   try {
-    const user = await requireUser();
+    const user = await requireUser("agents:write");
     const existing = await prisma.agent.findUnique({
       where: { id },
       select: { ownerId: true },
@@ -127,12 +145,18 @@ export async function updateAgent(values: unknown): Promise<ActionResult<{ id: s
     if (existing.ownerId !== user.id) {
       return { ok: false, error: "You can only edit agents you own." };
     }
-    if (rest.organizationId && rest.organizationId !== user.organizationId) return { ok: false, error: "You can only publish under your own organization." };
+    if (rest.organizationId && rest.organizationId !== user.organizationId)
+      return {
+        ok: false,
+        error: "You can only publish under your own organization.",
+      };
     const agent = await prisma.agent.update({
       where: { id },
       data: {
         ...rest,
-        ...(rest.organizationId !== undefined ? { organizationId: rest.organizationId || null } : {}),
+        ...(rest.organizationId !== undefined
+          ? { organizationId: rest.organizationId || null }
+          : {}),
         // The edited listing must earn fresh evidence for its current contents.
         verified: false,
         verificationStatus: "unverified",
@@ -141,16 +165,28 @@ export async function updateAgent(values: unknown): Promise<ActionResult<{ id: s
         verificationAttemptId: null,
         endpointUrl: rest.endpointUrl || null,
         mcpServerUrl: rest.mcpServerUrl || null,
-        inputSchema: inputSchema !== undefined ? (parseJson(inputSchema) ?? undefined) : undefined,
-        outputSchema: outputSchema !== undefined ? (parseJson(outputSchema) ?? undefined) : undefined,
+        inputSchema:
+          inputSchema !== undefined
+            ? (parseJson(inputSchema) ?? undefined)
+            : undefined,
+        outputSchema:
+          outputSchema !== undefined
+            ? (parseJson(outputSchema) ?? undefined)
+            : undefined,
       },
     });
 
     if (capabilities && capabilities.length) {
-      const capabilityIds = await ensureCapabilities(capabilities, agent.category);
+      const capabilityIds = await ensureCapabilities(
+        capabilities,
+        agent.category,
+      );
       await prisma.agentCapability.deleteMany({ where: { agentId: id } });
       await prisma.agentCapability.createMany({
-        data: capabilityIds.map((capabilityId) => ({ agentId: id, capabilityId })),
+        data: capabilityIds.map((capabilityId) => ({
+          agentId: id,
+          capabilityId,
+        })),
         skipDuplicates: true,
       });
     }
@@ -165,11 +201,17 @@ export async function updateAgent(values: unknown): Promise<ActionResult<{ id: s
 
 export async function verifyAgent(agentId: string): Promise<ActionResult> {
   try {
-    const user = await requireUser();
-    if (user.role !== "admin") return { ok: false, error: "Forbidden: admin role required." };
+    const user = await requireUser("agents:write");
+    if (user.role !== "admin")
+      return { ok: false, error: "Forbidden: admin role required." };
     const result = await requestVerification(agentId);
     if (!result.ok) return result;
-    if (!result.data?.verified) return { ok: false, error: result.data?.verificationError ?? "Verification checks did not pass." };
+    if (!result.data?.verified)
+      return {
+        ok: false,
+        error:
+          result.data?.verificationError ?? "Verification checks did not pass.",
+      };
     return { ok: true };
   } catch (err) {
     console.error("verifyAgent failed", err);
@@ -182,9 +224,13 @@ export async function setAgentStatus(
   status: "active" | "paused" | "suspended" | "draft",
 ): Promise<ActionResult> {
   try {
-    const user = await requireUser();
-    if (user.role !== "admin") return { ok: false, error: "Forbidden: admin role required." };
-    const agent = await prisma.agent.update({ where: { id: agentId }, data: { status } });
+    const user = await requireUser("agents:write");
+    if (user.role !== "admin")
+      return { ok: false, error: "Forbidden: admin role required." };
+    const agent = await prisma.agent.update({
+      where: { id: agentId },
+      data: { status },
+    });
     revalidateAgentSurfaces(agent.slug);
     return { ok: true };
   } catch (err) {
@@ -203,8 +249,9 @@ export async function setOwnedAgentStatus(
   status: "active" | "paused",
 ): Promise<ActionResult> {
   try {
-    if (status !== "active" && status !== "paused") return { ok: false, error: "Choose active or paused." };
-    const user = await requireUser();
+    if (status !== "active" && status !== "paused")
+      return { ok: false, error: "Choose active or paused." };
+    const user = await requireUser("agents:write");
     const existing = await prisma.agent.findUnique({
       where: { id: agentId },
       select: { ownerId: true, status: true },
@@ -213,8 +260,16 @@ export async function setOwnedAgentStatus(
     if (existing.ownerId !== user.id) {
       return { ok: false, error: "You can only change agents you own." };
     }
-    if (existing.status === "suspended") return { ok: false, error: "This listing is suspended. Contact support to resolve the moderation hold." };
-    const agent = await prisma.agent.update({ where: { id: agentId }, data: { status } });
+    if (existing.status === "suspended")
+      return {
+        ok: false,
+        error:
+          "This listing is suspended. Contact support to resolve the moderation hold.",
+      };
+    const agent = await prisma.agent.update({
+      where: { id: agentId },
+      data: { status },
+    });
     revalidateAgentSurfaces(agent.slug);
     return { ok: true };
   } catch (err) {
