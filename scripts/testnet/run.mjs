@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
+import { confirmedReceipt } from "./confirmation.mjs";
 import {
   createPublicClient,
   createWalletClient,
@@ -102,23 +103,8 @@ async function send(label, role, request) {
           `${label}: broadcast uncertain; persisted transaction preserved for retry`,
         );
     }
-    receipt = await client.waitForTransactionReceipt({
-      hash: op.hash,
-      confirmations: 3,
-      timeout: 120000,
-      pollingInterval: 1500,
-    });
   }
-  if (
-    (await client.getBlockNumber({ cacheTime: 0 })) <
-    receipt.blockNumber + 2n
-  )
-    receipt = await client.waitForTransactionReceipt({
-      hash: op.hash,
-      confirmations: 3,
-      timeout: 120000,
-      pollingInterval: 1500,
-    });
+  receipt = await confirmedReceipt(client, op.hash);
   assert.equal(receipt.status, "success", `${label} reverted`);
   assert.equal(
     (await client.getBlock({ blockNumber: receipt.blockNumber })).hash,
@@ -254,6 +240,7 @@ async function main() {
   );
   if (
     !manifest.escrow &&
+    Object.keys(manifest.operations).length === 0 &&
     (await client.getBalance({ address: accounts.deployer.address })) <
       parseEther("0.001")
   )

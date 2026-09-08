@@ -26,7 +26,7 @@
     "test:trust-ui": "node scripts/verify-trust-ui.cjs",
     "test:settlement-ui": "node scripts/verify-settlement-ui.mjs",
     "test:testnet": "node scripts/testnet/run.mjs",
-    "test:testnet-state": "node --test scripts/testnet/state.test.mjs"
+    "test:testnet-state": "node --test scripts/testnet/state.test.mjs scripts/testnet/confirmation.test.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

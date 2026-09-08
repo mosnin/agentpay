@@ -1,0 +1,212 @@
+{
+  "testnetOnly": true,
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "createdAt": "2026-09-07T02:41:31.886Z",
+  "addresses": {
+    "deployer": "0xf589e624e1f01c5C5D0fAA3Cb8227b46dCED30B1",
+    "buyer": "0x612f0F755594c37910d83823f9054957ED8bB7a4",
+    "seller": "0xb813d7f36dAe27b53aBAcd30b7B619bA8C0f8acA",
+    "treasury": "0x36FfD522268387891a5AAabf8CA6e766EC8745a7",
+    "arbiter": "0x591Fa46e1057CbD0fb83a243391e16b15d0589ce"
+  },
+  "feeBps": 500,
+  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "operations": {
+    "gas-buyer": {
+      "role": "deployer",
+      "hash": "0xa85a471782b30dc88d8c92cccfcf3bef7d90a1056154de8e0b32b31206e2867a",
+      "createdAt": "2026-09-08T17:13:24.295Z",
+      "blockNumber": "46559659",
+      "blockHash": "0x51a1c893a3a86286ab3209861907c376365f9e88d8006629fc82a79b899d1ecb",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:14:36.488Z"
+    },
+    "gas-seller": {
+      "role": "deployer",
+      "hash": "0x10367d153b0c7944218b4159c17f71d36b2d4778cbe92665e8fb1fc321c89145",
+      "createdAt": "2026-09-08T17:14:36.922Z",
+      "blockNumber": "46559695",
+      "blockHash": "0xe59d366b422d07283a7a66adf4f66d7301c5a294fa81a3dde85e649381465f08",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:14:42.110Z"
+    },
+    "gas-arbiter": {
+      "role": "deployer",
+      "hash": "0x277fee3ba0b5c9de69caeb0be9955d6725e4e011b320933aca36d14fd4612e7f",
+      "createdAt": "2026-09-08T17:14:42.419Z",
+      "blockNumber": "46559698",
+      "blockHash": "0x950f5cc685fa029f604e45687375fdbfbcd8de81601265fd18330333745f9f14",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:14:49.217Z"
+    },
+    "deploy-escrow": {
+      "role": "deployer",
+      "hash": "0xb7641ae6daefd6e9739712eb35f733abe1475c4c7b9e3c31f58ba77712d6f459",
+      "createdAt": "2026-09-08T17:14:49.604Z",
+      "blockNumber": "46559702",
+      "blockHash": "0x0bde19088394f7ea7754528e5be89f421367453cea3af95988f1ece2ff8c6067",
+      "contractAddress": "0x3ce7444ac9e8ed7ccd1efbe46af0a08ee4380da8",
+      "confirmedAt": "2026-09-08T17:14:56.313Z"
+    },
+    "deploy-router": {
+      "role": "deployer",
+      "hash": "0x09b01c1d66fd56daa4ebd777f6d95d1a30550249e812906f803a4760ec2aed05",
+      "createdAt": "2026-09-08T17:14:56.613Z",
+      "blockNumber": "46559705",
+      "blockHash": "0x76ce8e97d524db4a242d672da8af64195d735365daafc48d6f1a20c7a4ef9f41",
+      "contractAddress": "0x94a84a72714566cd22bb65568af452aed7b8e7f0",
+      "confirmedAt": "2026-09-08T17:15:03.463Z"
+    },
+    "approve-budget": {
+      "role": "buyer",
+      "hash": "0x25ac8472a270e9181c1ac44f294fd9a1d85cf51789f8d65264017203fcc1f4cb",
+      "createdAt": "2026-09-08T17:15:04.654Z",
+      "blockNumber": "46559709",
+      "blockHash": "0xd3d8f602c6840174dfe2c81282c497a1e0a02f1d39d3a81754e8f86ae08567cb",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:15:11.378Z"
+    },
+    "release-fund": {
+      "role": "buyer",
+      "hash": "0x34336e89b1f31cf52821e23c2f85a19b204839b5edf40782af5e2167d36eca74",
+      "createdAt": "2026-09-08T17:15:11.771Z",
+      "blockNumber": "46559713",
+      "blockHash": "0xe856e77076de20e49a2b56b07c5e6f568b2c8da67f49a22d4e779e31b6507210",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:15:18.562Z"
+    },
+    "release-submit": {
+      "role": "seller",
+      "hash": "0x93bb7dd4df77f633752f63978e74e57493f6540c1d5bbead4fa5aa6340225946",
+      "createdAt": "2026-09-08T17:15:18.981Z",
+      "blockNumber": "46559716",
+      "blockHash": "0xca1b724f29af1468f786ecc86f62f43d8d724e6d5fa389665d46548f6a42f623",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:15:24.167Z"
+    },
+    "release-approve": {
+      "role": "buyer",
+      "hash": "0x48f2334d75c35b5f485f8851b2eda71548d7370597ad38c9642de8f8bbe19cd5",
+      "createdAt": "2026-09-08T17:15:24.576Z",
+      "blockNumber": "46559719",
+      "blockHash": "0x54826c588213e827dce733b9c1088a04652b6793a7e7d1eae0493c6f37705f5b",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:15:31.392Z"
+    },
+    "refund-fund": {
+      "role": "buyer",
+      "hash": "0x9f14bf0a0b12e0c5563c195cdbd2381dd2738fccc1a649aba815c1f24b9202b1",
+      "createdAt": "2026-09-08T17:15:31.762Z",
+      "blockNumber": "46559723",
+      "blockHash": "0xf1d3a99e4c15c96ec46146780c12f153190f9209229efff14e6d4a806032a362",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:15:38.492Z"
+    },
+    "voluntary-refund": {
+      "role": "seller",
+      "hash": "0xf68c7d465e05d3b4aff86520647bdd1271aaf42dbe10b65cf67442f07931db90",
+      "createdAt": "2026-09-08T17:15:39.000Z",
+      "blockNumber": "46559726",
+      "blockHash": "0x9e1eb328928436eeb42659b22409d3816d01f78a5985ef6fb26ff7799816cda1",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:15:44.272Z"
+    },
+    "dispute-fund": {
+      "role": "buyer",
+      "hash": "0x43d71b6319dbc2f5477bee14e0ab71f00f68e7896e1ff502a72f467d0404efee",
+      "createdAt": "2026-09-08T17:15:45.144Z",
+      "blockNumber": "46559730",
+      "blockHash": "0x9d2c42276d685df7208f9622b9b28a6a705cd3cf11d59072d8f05975321a7d99",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:15:53.511Z"
+    },
+    "dispute-submit": {
+      "role": "seller",
+      "hash": "0x1c8113de317347123ddfa30c27bce6cbb06247bfedb6ad219df5a609cba7d108",
+      "createdAt": "2026-09-08T17:15:53.824Z",
+      "blockNumber": "46559734",
+      "blockHash": "0xd2779b9ebb050cb66104bea3905751b48da139d143a3689546c440cf3e63fa68",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:16:00.563Z"
+    },
+    "open-dispute": {
+      "role": "buyer",
+      "hash": "0xea15178e90f6bef9af4c3ca9d5e6ffa8246dd04c003dc1f8bdc4dd9643bd56b1",
+      "createdAt": "2026-09-08T17:16:00.950Z",
+      "blockNumber": "46559737",
+      "blockHash": "0xc1cb4223c4061b3c527b193abe79159789f9698a26ea4a9c71093e2f1d55319a",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:16:06.126Z"
+    },
+    "resolve-dispute": {
+      "role": "arbiter",
+      "hash": "0x98b26965a9c02e40f89f94c2ddef42e6f5c1bd4cfc16575cfcc84b235d56dc0f",
+      "createdAt": "2026-09-08T17:16:06.616Z",
+      "blockNumber": "46559740",
+      "blockHash": "0xdb2ee6473c7275c4f2688c3554a09730a8d0966e7ebca040b242cd07c586c105",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:16:13.389Z"
+    },
+    "instant-pay": {
+      "role": "deployer",
+      "hash": "0xdc7d69029d01d495e4bc1af0557d7534bb2b336f0c653e00543f2201a6cd21ac",
+      "createdAt": "2026-09-08T17:16:13.697Z",
+      "blockNumber": "46559744",
+      "blockHash": "0x3262c74b4117e046bac051838df0b4059b7c47107e5352a64285bd41854779af",
+      "contractAddress": null,
+      "confirmedAt": "2026-09-08T17:16:20.899Z"
+    }
+  },
+  "checks": [
+    "Deployed immutable token, treasury and 5% test fee match",
+    "Fund, artifact commitment, release and duplicate-release rejection",
+    "Voluntary full refund",
+    "Dispute freezes approval, rejects unauthorized resolution and supports partial refund",
+    "Native test USDC ReceiveWithAuthorization atomically splits instant payment",
+    "Exact aggregate conservation: buyer 3 USDC, seller 2.85, treasury 0.15, zero stranded balances"
+  ],
+  "tokenName": "USDC",
+  "tokenVersion": "2",
+  "escrow": "0x3ce7444ac9e8ed7ccd1efbe46af0a08ee4380da8",
+  "deploymentBlock": "46559702",
+  "router": "0x94a84a72714566cd22bb65568af452aed7b8e7f0",
+  "codeHash": "0xc281d17cd289b874f8d05d58d01cdf28f9bedaa5a6c0805f205a9ed2ea45c1d6",
+  "routerCodeHash": "0xb1388f8f69e64396bdd22c6acb2f30395b092e209e4282964d46db1843773b8f",
+  "initialBalances": {
+    "buyer": "20000000",
+    "seller": "0",
+    "treasury": "0"
+  },
+  "jobs": {
+    "release": {
+      "terms": "0x26aee6209a19685d6983852c67ed593a817476afce043f9fc77659cdff6c8b69",
+      "key": "0x6fa6d14f9c6f57a65a5d78adb85a65972d45634f77976fc0d6fdc9c2b2ba32d9",
+      "amount": "1000000",
+      "deliverBy": 1789492511,
+      "artifact": "0x41e11d992edadf3616a20fb229a46523a2704451ec7f9ed90cd831033fd1c5a3"
+    },
+    "refund": {
+      "terms": "0x4e04a896ce137a31b22500767e7b4f9e16955857b50918709c05a6a1d56462b3",
+      "key": "0x2cea38080c4ca3484d1c014c841f548e3d3c5ea3547b12cda35ed17802571ea4",
+      "amount": "2000000",
+      "deliverBy": 1789492531,
+      "artifact": "0x2c29e69bde6d08b7d9ef72de0400b848b317f32a4d4ffecb57a92cd41036aeb2"
+    },
+    "dispute": {
+      "terms": "0x7a7a6b269009c30978bb87f853d04cf3079075c78791e2be3a16794f10fc4f13",
+      "key": "0x1a522a14acb6ff58b2fa56ae29321c69567eeaffe73466e84aea0cbb08356dcd",
+      "amount": "2000000",
+      "deliverBy": 1789492544,
+      "artifact": "0xf059e6e4e6715bef5e6b6b459628301c95c8f1fe6008af6dd952454fe3562e09"
+    }
+  },
+  "completedAt": "2026-09-08T17:16:21.321Z",
+  "result": {
+    "buyerSpent": "3000000",
+    "sellerReceived": "2850000",
+    "treasuryReceived": "150000",
+    "escrowRemaining": "0",
+    "routerRemaining": "0"
+  }
+}
