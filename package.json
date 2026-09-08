@@ -19,6 +19,7 @@
     "db:reset": "prisma db push --force-reset && prisma db seed",
     "db:studio": "prisma studio",
     "test": "vitest run",
+    "test:worker": "node --test examples/reference-agent/shutdown.test.mjs",
     "test:e2e": "playwright test",
     "contracts:build": "node contracts/scripts/compile.mjs",
     "test:contracts": "node contracts/test/escrow.mjs",

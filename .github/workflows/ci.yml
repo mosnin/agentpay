@@ -60,6 +60,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Verify worker shutdown and delivery draining
+        run: npm run test:worker
+
       - name: Lint
         run: npm run lint
 

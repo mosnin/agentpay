@@ -4,6 +4,7 @@ services:
       context: ../..
       dockerfile: examples/reference-agent/Dockerfile
     restart: unless-stopped
+    stop_grace_period: 180s
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
