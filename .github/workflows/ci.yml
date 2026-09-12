@@ -180,7 +180,7 @@ jobs:
           NEXT_PUBLIC_BIDS_PAYMENT_MODE: crypto
       - name: Preserve settlement evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: settlement-browser-evidence
           path: test-results/settlement-ui
@@ -216,7 +216,7 @@ jobs:
       - run: npm ci
       - run: npx prisma migrate deploy
       - run: npx vitest run lib/__tests__/product-scale.test.ts
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: product-scale-results
