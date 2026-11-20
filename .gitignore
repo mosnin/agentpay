@@ -1,50 +1,6 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# next.js
-/.next/
-/out/
-/build
-next-env.d.ts
-
-# production
-/dist
-
-# misc
-.DS_Store
-*.pem
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-*.tmp.*
-
-# local env files
-.env
-.env*.local
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-
-# prisma local sqlite (if ever used)
-prisma/*.db
-
-# editor
-.idea
-.vscode/*
-!.vscode/extensions.json
-
-# Playwright
-test-results/
-playwright-report/
+node_modules/
+dist/
+rebuilt-site/
+.market-build-*/
 .env*
-!.env.example
-
-# Local signer journals must not enter source control.
-*.budget.json
-*.budget.json.lock/
+*.key

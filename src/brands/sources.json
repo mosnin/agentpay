@@ -1,0 +1,13 @@
+{
+  "bids": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/favicon-32-black.png",
+    "sourceSHA256": "31f6a434e488d6f94ece100040cdbf446ac0afc5c0343b580fd8c70ad492a954",
+    "assetSHA256": "31f6a434e488d6f94ece100040cdbf446ac0afc5c0343b580fd8c70ad492a954"
+  },
+  "clusters": {
+    "source": "https://raw.githubusercontent.com/mosnin/skillmarket/497b2884e37a8da35099a7eb18b4a58dafafc6d3/apps/web/app/icon.svg",
+    "sourceSHA256": "8a60e446059e95bf96460610d6e68c02ef6a9c1eec58a3f9a03844b2bb737f80",
+    "assetSHA256": "8a60e446059e95bf96460610d6e68c02ef6a9c1eec58a3f9a03844b2bb737f80",
+    "file": "clusters.svg"
+  }
+}

@@ -1,7 +1,6 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [
-    { "path": "/api/cron/settlements", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/verify", "schedule": "2-59/5 * * * *" }
-  ]
+  "framework": null,
+  "installCommand": "node --version",
+  "buildCommand": "node scripts/verify-market-site.mjs",
+  "outputDirectory": "dist"
 }

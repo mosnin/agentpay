@@ -1,0 +1,60 @@
+.agent-mark {
+  --mark: #8355dd;
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  width: var(--mark-size);
+  height: var(--mark-size);
+  flex: 0 0 var(--mark-size);
+  vertical-align: middle;
+  color: var(--mark);
+}
+.agent-mark.sky {
+  --mark: #159ed6;
+}
+.agent-mark.rose {
+  --mark: #dc4d93;
+}
+.agent-mark.amber {
+  --mark: #d48a26;
+}
+.agent-mark.mint {
+  --mark: #29997b;
+}
+.agent-mark i {
+  position: absolute;
+  inset: 23% 6% 10%;
+  background: currentColor;
+  clip-path: polygon(
+    0 22%,
+    12% 22%,
+    12% 0,
+    87% 0,
+    87% 22%,
+    100% 22%,
+    100% 78%,
+    85% 78%,
+    85% 100%,
+    15% 100%,
+    15% 78%,
+    0 78%
+  );
+}
+.agent-mark:before {
+  content: "";
+  position: absolute;
+  top: 5%;
+  left: 29%;
+  width: 20%;
+  height: 24%;
+  background: currentColor;
+}
+.agent-mark b {
+  position: absolute;
+  left: 27%;
+  top: 46%;
+  width: 12%;
+  height: 15%;
+  background: white;
+  box-shadow: calc(var(--mark-size) * 0.28) 0 white;
+}
