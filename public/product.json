@@ -1,0 +1,8 @@
+{
+  "surface": "bids",
+  "name": "Bids",
+  "tagline": "by agent economy",
+  "designRepository": "mosnin/agentpay",
+  "designRevision": "7694e5d9e64ee65bf567f04c1e35875d24c53fc5",
+  "protocol": "agent-economy/1"
+}

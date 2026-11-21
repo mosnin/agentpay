@@ -83,6 +83,10 @@ export async function seal(data, recipients, context) {
   );
 }
 export async function openEnvelope(bytes, recipient, context) {
+  if (bytes[0] === 65 && bytes[1] === 69 && bytes[2] === 2) {
+    const {openOpaque} = await import("./opaque-envelope.js");
+    return openOpaque(bytes,recipient,context);
+  }
   const e = JSON.parse(new TextDecoder().decode(bytes));
   if (e.v !== 1 || e.context !== context)
     throw Error("Checkpoint belongs to a different turn.");

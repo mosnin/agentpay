@@ -1,0 +1,135 @@
+.transaction-dialog {
+  box-sizing: border-box;
+  margin: auto;
+  width: min(34rem, calc(100% - 2rem));
+  max-height: 85dvh;
+  overflow: auto;
+  padding: 1.5rem;
+  background: var(--dialog-surface);
+  color: var(--dialog-ink);
+  border: 1px solid var(--dialog-line);
+  border-radius: var(--dialog-radius);
+  box-shadow: 0 24px 100px #0002;
+}
+.transaction-dialog::backdrop {
+  background: #15141966;
+}
+.transaction-dialog header,
+.market-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.transaction-dialog h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.transaction-dialog h3 {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+.transaction-dialog .detail-head {
+  display: none;
+}
+.transaction-dialog dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.5rem 1rem;
+  margin: 1rem 0;
+  overflow-wrap: anywhere;
+}
+.transaction-dialog dt {
+  opacity: 0.7;
+}
+.transaction-dialog label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  margin: 0.85rem 0;
+}
+.transaction-dialog input,
+.transaction-dialog select,
+.transaction-dialog textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--dialog-line);
+  border-radius: var(--dialog-radius);
+  background: var(--dialog-surface);
+}
+.transaction-dialog textarea {
+  min-height: 6rem;
+}
+.transaction-dialog p,
+.transaction-dialog pre {
+  margin: 1rem 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.transaction-dialog button,
+.market-pager button {
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--dialog-line);
+  border-radius: var(--dialog-radius);
+  cursor: pointer;
+}
+.transaction-dialog button.primary {
+  background: var(--dialog-ink);
+  color: var(--dialog-surface);
+}
+.transaction-dialog .action-row,
+.transaction-dialog .choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: 0.9rem 0;
+}
+.network-message,
+.market-pager {
+  max-width: 70rem;
+  margin: 1rem auto;
+  padding: 0 1.5rem;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+button:disabled {
+  opacity: 0.52;
+  cursor: default;
+}
+
+.credit-panel {
+  padding: 1.3rem 1.5rem;
+  border: 1px solid var(--dialog-line);
+  background: var(--dialog-surface);
+  border-radius: var(--dialog-radius);
+  display: grid;
+  gap: 0.65rem;
+  align-content: start;
+}
+.credit-panel h2 {
+  font-weight: 600;
+}
+.credit-panel label,
+.credit-panel small {
+  font-size: 0.82rem;
+}
+.credit-panel label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.credit-panel input {
+  width: 4rem;
+  border: 1px solid var(--dialog-line);
+  border-radius: var(--dialog-radius);
+  padding: 0.3rem 0.5rem;
+}
+.credit-total {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.credit-panel button {
+  justify-self: start;
+}

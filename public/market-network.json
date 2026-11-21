@@ -1,0 +1,203 @@
+{
+  "agentTools": "0x0F82de4ecbFd6EB0ab70B47dF15A7b8888f4d42B",
+  "agentToolsBlock": 60613353,
+  "bridgeUSDC": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "guardianRelay": "0x7Def252336C745b92D17F4255Ebd64485C4781ff",
+  "guardianBlock": 60607592,
+  "guardians": [
+    {
+      "address": "0x1f70CD492bB51bCc490bbce96dD80535BFF5adff",
+      "recipient": "0xf869e38046a9c284bda1bdecf999248346b2819eaafe473bc93a396acbba1f25"
+    },
+    {
+      "address": "0x5ECc5a24b63e945DA086113667d2EBD6ACCc1172",
+      "recipient": "0x389ddec375ee9b844eb43896142573f7c33538bf271c7a2b4f4ffd9adee24733"
+    },
+    {
+      "address": "0xc5a30AB70bB7790B6C25ee5dD0037666a9595c79",
+      "recipient": "0x8d967cd08cfdaa8d720107980151883bdd7671231d278d3970f5bea118f47745"
+    }
+  ],
+  "compute": "0x7ce135AB5e4eeA5423dd4ed9e32448bdD7eF6110",
+  "memoryStore": "0x46C3CC82929D238E50250eF700BDf8c060F45a4B",
+  "vectorVault": "0xA47F4E46D4f31d8abd81728108100f2680E286BA",
+  "vectorVaultBlock": 60618315,
+  "business": "0x000964076eC740182E19bf604841bB25f7050D94",
+  "businessBlock": 60618324,
+  "mailboxBlock": 60606059,
+  "mailbox": "0xE9342718939EB6720d228A301F020a3CBCDef7d4",
+  "chatCatalog": {
+    "localModel": "qwen2.5:0.5b",
+    "venice": false,
+    "quotes": {
+      "local": {
+        "operator": "0x640E3d1e73Ee800e1EC08792693B2eBF54fF9418",
+        "route": "local",
+        "model": "qwen2.5:0.5b",
+        "inRate": "100000000",
+        "outRate": "500000000",
+        "maxIn": 12000,
+        "maxOut": 256
+      },
+      "venice": {
+        "operator": "0x640E3d1e73Ee800e1EC08792693B2eBF54fF9418",
+        "route": "venice",
+        "model": "kimi-k3-1-pro",
+        "inRate": "100000000",
+        "outRate": "500000000",
+        "maxIn": 12000,
+        "maxOut": 256
+      }
+    },
+    "slot": {
+      "product": "relay.dedicated-inference-slot.v1",
+      "rate": "100000000",
+      "duration": 120
+    }
+  },
+  "version": 1,
+  "deploymentBlockHash": "0x699197c793a133817a1faf9e221515e92842af174fea8e82ea41bb823e0e2284",
+  "signals": "0xCeeb38fe5c1F11F58e55355b07f59986b58032Ba",
+  "weth": "0xd0035965EF000a75131AAF4bbdfF989a25F1E24B",
+  "usd": "0xC973472c94FAFBf22b6Cf3BB1566dE58A591cF25",
+  "router": "0x2E7eD40f45D92779Ce3e100B9dE814B1B1C9718A",
+  "pair": "0xb07D9b75EF4743E4C6EC6B9267699e0B8D077992",
+  "poolSkill": "0x598B9fb1aD417291eF353d7c83A8FB95B97D6893",
+  "nodes": [],
+  "gateway": "https://ipfs.io",
+  "gatewayBackups": ["https://ipfs.filebase.io"],
+  "chainId": 84532,
+  "quickNodePayer": "0xF624657ae59c6229e7EA45aDA0d820A8A08D113C",
+  "label": "Base Sepolia",
+  "vectorProofRpc": "https://sepolia.base.org",
+  "rpc": "https://base-sepolia-rpc.publicnode.com",
+  "rpcBackups": ["https://sepolia.base.org"],
+  "relay": "0x00B07Cf103BcA0a61Ca471d238CCE68a8dA132bA",
+  "inference": "0xea0e6a17c98d36C4A7a9953Fc296CA73b2885181",
+  "market": "0xBedcB63566198926FC9a54Ca581705e1dF537BCA",
+  "passport": "0x26F3C8b6c1bD93004ba18Cf42a9029699dc3b95c",
+  "runwaySkill": "0x5448828a6C8e9f14A35afb7E62f152Ba8fb9D403",
+  "chatOperator": "0x640E3d1e73Ee800e1EC08792693B2eBF54fF9418",
+  "chatDelegate": "0x75b53195825826cc08b2EAA20a55A0F25f35A775",
+  "fromBlock": 60605381,
+  "registryCodeHash": "0xc1fefe7045d10e174065ff77df6ed317f1c2bcc2d6408dd22fa3ffb6bc34d1f3",
+  "scheduledDelivery": {
+    "inference": "0x34841e84dC6d67A8f0218e9EF351C843378E1383",
+    "inferenceBlock": 60845878,
+    "business": "0x66F856967D80C1C99a8F9e5dEaa4aD77BE9a73c0",
+    "businessBlock": 60845912,
+    "codingMarketCodeHash": "0x02d7dfad4fc7ba2eb81d97cef34c7971eb9f1965e1366162c5c376eb25e66d81",
+    "codingSalesCodeHash": "0xee56a129713c5dc691934af1881c4fda7db4e6e857da266dfe319d1e1af30f3b",
+    "incomePolicyVersion": 2,
+    "deliveryVersion": 1,
+    "codingQueueVersion": 1,
+    "runwayVersion": 1,
+    "codingRecoveryVersion": 1,
+    "deliveryFeeWei": "4000000000000",
+    "sourceEdits": "relay.source-edit.v1",
+    "sourceQuoteVersion": 1,
+    "sourceRunner": "offline-linux-vm",
+    "chatCatalog": {
+      "localModel": "smollm2:135m",
+      "venice": false,
+      "quotes": {
+        "local": {
+          "operator": "0x640E3d1e73Ee800e1EC08792693B2eBF54fF9418",
+          "route": "local",
+          "model": "smollm2:135m",
+          "inRate": "100000000",
+          "outRate": "500000000",
+          "maxIn": 12000,
+          "maxOut": 256
+        }
+      }
+    },
+    "defaultFromAgent": 9
+  },
+  "agentMarkets": {
+    "4": {
+      "inference": "0x5DBa8cC4777E4077f4fed490E5F1e9523e3D0a54",
+      "inferenceBlock": 60626813,
+      "business": "0x10F5173149Bff0B9404b9E8F6F5Cd9A28d418E88",
+      "businessBlock": 60626838,
+      "mailbox": "0x27f2125858d8F820fe1f001b7045AdA76437B615",
+      "mailboxBlock": 60633741,
+      "signals": "0x868D356bB88bB96D2C0103ACF035c892A7bfd468",
+      "signalsBlock": 60633763,
+      "incomePolicyVersion": 2,
+      "sourceEdits": "relay.source-edit.v1",
+      "sourceQuoteVersion": 1,
+      "paidDelivery": {
+        "inference": "0xaab489E5Ba31cAbF18D61fec293e0294163d1434",
+        "inferenceBlock": 60636749,
+        "business": "0xA99c0118ae508d52ca4A2ae53Ca24782690ebf71",
+        "businessBlock": 60636838,
+        "incomePolicyVersion": 2,
+        "deliveryVersion": 1,
+        "deliveryFeeWei": "2200000000000",
+        "sourceEdits": "relay.source-edit.v1",
+        "sourceQuoteVersion": 1,
+        "runwaySales": {
+          "business": "0x5447b98694A4Ad833aF6b63e649235780549170A",
+          "businessBlock": 60640304,
+          "runwayVersion": 1
+        },
+        "sourceRunner": "offline-linux-vm"
+      }
+    }
+  },
+  "vectorReceipts": [
+    {
+      "agent": "3",
+      "record": "0x4da5d3bdfdbb998c65e30841941ffdd4d14513a64f216ad075eb31fcd0803e9e",
+      "block": 60628227,
+      "sha256": "0xb8a9097aec29a20629d2f17a83d8d7589f468ce1ecac25acee1aa9095fcf3820"
+    }
+  ],
+  "strategyGate": "0xaCd9E5550a114c1E43E8E1EE991cd4523BadA631",
+  "strategyGateBlock": 60705619,
+  "guardianGas": "0x199234C9f40949cC75255F8e7f02da3B6Bd0bA36",
+  "guardianGasBlock": 60715762,
+  "vectorRecovery": "0xCBB8782aC27fa18e65cCD5D207Fc354A4769A59C",
+  "vectorRecoveryBlock": 60733875,
+  "vectorRecoveryCodeHash": "0x2c37927b986cc22e4c65558d4a1d866e84c302949dadf902c41e734025d8fa01",
+  "privateInbox": "0xEab03C12d424D29b2E964D3F101764359586893c",
+  "privateInboxBlock": 60737510,
+  "privateInboxCodeHash": "0x7f1d2da16dc18d2cf447a87108f88ce69c9702f4e54f233a92ee1a9d50e6b432",
+  "payoutShop": {
+    "address": "0x3C95cA4464B7Dd8F939a7788b0191Fa171D63007",
+    "codeHash": "0x19e7870ed9611aa67a10ab52b4e5e4a12d9bdf1ad69118785448d0c775b2a59d",
+    "agent": 1,
+    "worker": "0x75b53195825826cc08b2EAA20a55A0F25f35A775",
+    "payer": "0x8023A62cedC265D25c47eE44dEEadc8ED60C4d94",
+    "fromBlock": 61095393,
+    "deploymentTransaction": "0x324c98aa75f10dd7d742f8e86d2d6f572c7d3ffc0d0b6edacc675fa0e23370a7"
+  },
+  "payoutOperations": {
+    "address": "0x72DC2c5ff4339AAFAE897FF16a5d6F2f573A2Abb",
+    "codeHash": "0x5fa035b6990ddd6ed770a52680ef1c9cdaff286f6d6ed001baa9a4a92b659327",
+    "fromBlock": 61104324,
+    "deploymentTransaction": "0x38cd97db05001f5d59a573bd8ce97890ff7336ec12ca3f64d0240304eab17031"
+  },
+  "platformGrants": "0xeE4488e6C54667917fD090E3Da316040AB7C6832",
+  "platformGrantsCodeHash": "0xec8a8270ac93d4f6d08445cdd0e3a0145eeb1b29ef447de4aa7792b7ae2c912b",
+  "platformGrantsBlock": 61130191,
+  "operatingAccounts": {
+    "3": {
+      "address": "0x3eE3CCAaC09D93D5e7110B9f1DD749b3B1D85cA1",
+      "codeHash": "0xcc4db5162550bacca2a5b4858a265166459e513ef01ad1d9d6b84946e3314294",
+      "fromBlock": 61136888,
+      "deploymentTransaction": "0x425e04d48e809efa149325f7a33dd1131735f964bbdae6a853876e7fd52de5e7",
+      "featuredReport": "0xeacca93e488d8ce2bf69515262acf80709e818e61c3b54dfc4b9e42f301a4b6b",
+      "retentionReceipt": "0x75dae4ea4caf9e1d17f8f6e8b65976bbecae5f88e90a9508992bd3785b7c7212"
+    }
+  },
+  "identityPreview": {
+    "chainId": 84532,
+    "fromBlock": 61140712,
+    "deploymentBlockHash": "0x6b6c644490b957dd79221e41525c73e608a58ad67ebb4abe165e938c3a3f4268",
+    "relay": "0xA6830523D3DF38b7144D94A2241ba6d57aefbdbF",
+    "agentIdentity": "0x938010F148C0dcbC1A270651D6D673E58ad3Fd3A",
+    "registryCodeHash": "0x4c08fd81aadf011009f271c3e18a11c76222c00eaeb19e35a2e0b02ff210f812"
+  }
+}

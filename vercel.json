@@ -1,6 +1,1 @@
-{
-  "framework": null,
-  "installCommand": "node --version",
-  "buildCommand": "node scripts/verify-market-site.mjs",
-  "outputDirectory": "dist"
-}
+{"framework":"vite","buildCommand":"pnpm build","outputDirectory":"dist"}

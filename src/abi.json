@@ -2307,7 +2307,7 @@
         },
         {
           "indexed": false,
-          "internalType": "enum LivingRegistry.Mode",
+          "internalType": "enum LivingFields.Mode",
           "name": "mode",
           "type": "uint8"
         },
@@ -2363,7 +2363,7 @@
         },
         {
           "indexed": false,
-          "internalType": "enum LivingRegistry.Action",
+          "internalType": "enum LivingFields.Action",
           "name": "action",
           "type": "uint8"
         },
@@ -2375,6 +2375,25 @@
         }
       ],
       "name": "Decision",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "root",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "validUntil",
+          "type": "uint64"
+        }
+      ],
+      "name": "FamilyRenewed",
       "type": "event"
     },
     {
@@ -2419,7 +2438,7 @@
         },
         {
           "indexed": false,
-          "internalType": "enum Relay.Wake",
+          "internalType": "enum RelayStorage.Wake",
           "name": "reason",
           "type": "uint8"
         },
@@ -2456,6 +2475,68 @@
         }
       ],
       "name": "HeartbeatRescheduled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "creator",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "agent",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "humanRoot",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "endowment",
+          "type": "uint256"
+        }
+      ],
+      "name": "IndependentFounded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "agent",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "root",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "returnedCredit",
+          "type": "uint256"
+        }
+      ],
+      "name": "MemberRetired",
       "type": "event"
     },
     {
@@ -2543,6 +2624,31 @@
         }
       ],
       "name": "Sponsored",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "root",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "epoch",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
+        }
+      ],
+      "name": "StandingConsent",
       "type": "event"
     },
     {
@@ -2801,7 +2907,7 @@
               "type": "uint64"
             }
           ],
-          "internalType": "struct LivingRegistry.Rules",
+          "internalType": "struct LivingFields.Rules",
           "name": "r",
           "type": "tuple"
         },
@@ -2827,7 +2933,7 @@
       "name": "controlMode",
       "outputs": [
         {
-          "internalType": "enum LivingRegistry.Mode",
+          "internalType": "enum LivingFields.Mode",
           "name": "",
           "type": "uint8"
         }
@@ -2908,7 +3014,7 @@
               "type": "bytes32"
             }
           ],
-          "internalType": "struct Relay.Terms",
+          "internalType": "struct RelayStorage.Terms",
           "name": "t",
           "type": "tuple"
         }
@@ -2984,7 +3090,7 @@
               "type": "bytes32"
             }
           ],
-          "internalType": "struct Relay.Terms",
+          "internalType": "struct RelayStorage.Terms",
           "name": "t",
           "type": "tuple"
         },
@@ -3011,7 +3117,7 @@
               "type": "uint32"
             }
           ],
-          "internalType": "struct Relay.Standby",
+          "internalType": "struct RelayStorage.Standby",
           "name": "backup",
           "type": "tuple"
         }
@@ -3074,7 +3180,7 @@
           "type": "bytes32"
         },
         {
-          "internalType": "enum LivingRegistry.Action",
+          "internalType": "enum LivingFields.Action",
           "name": "action",
           "type": "uint8"
         },
@@ -3097,6 +3203,25 @@
       "name": "decide",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "economicRoot",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -3154,7 +3279,7 @@
                   "type": "uint64"
                 }
               ],
-              "internalType": "struct LivingRegistry.Rules",
+              "internalType": "struct LivingFields.Rules",
               "name": "rules",
               "type": "tuple"
             },
@@ -3169,9 +3294,33 @@
               "type": "uint16"
             }
           ],
-          "internalType": "struct LivingRegistry.Family",
+          "internalType": "struct LivingFields.Family",
           "name": "",
           "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "fencedWorker",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -3265,7 +3414,7 @@
                   "type": "bytes32"
                 }
               ],
-              "internalType": "struct Relay.Terms",
+              "internalType": "struct RelayStorage.Terms",
               "name": "terms",
               "type": "tuple"
             },
@@ -3300,7 +3449,7 @@
               "type": "bytes32"
             }
           ],
-          "internalType": "struct Relay.Agent",
+          "internalType": "struct RelayStorage.Agent",
           "name": "a",
           "type": "tuple"
         }
@@ -3324,7 +3473,7 @@
           "type": "uint64"
         },
         {
-          "internalType": "enum Relay.Wake",
+          "internalType": "enum RelayStorage.Wake",
           "name": "reason",
           "type": "uint8"
         }
@@ -3372,7 +3521,45 @@
           "type": "uint256"
         }
       ],
+      "name": "isolatedReplica",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "name": "lastChild",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "lastFounded",
       "outputs": [
         {
           "internalType": "uint256",
@@ -3523,7 +3710,7 @@
           "type": "uint8"
         },
         {
-          "internalType": "enum LivingRegistry.Mode",
+          "internalType": "enum LivingFields.Mode",
           "name": "mode",
           "type": "uint8"
         },
@@ -3665,7 +3852,7 @@
               "type": "bytes32"
             }
           ],
-          "internalType": "struct Relay.Terms",
+          "internalType": "struct RelayStorage.Terms",
           "name": "t",
           "type": "tuple"
         }
@@ -3729,6 +3916,19 @@
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "root",
+          "type": "uint256"
+        }
+      ],
+      "name": "renewFamily",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "id",
           "type": "uint256"
         },
@@ -3780,6 +3980,57 @@
           "internalType": "uint256",
           "name": "id",
           "type": "uint256"
+        }
+      ],
+      "name": "retire",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "retired",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "name": "retirementWorker",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
         },
         {
           "internalType": "uint64",
@@ -3787,7 +4038,7 @@
           "type": "uint64"
         },
         {
-          "internalType": "enum LivingRegistry.Mode",
+          "internalType": "enum LivingFields.Mode",
           "name": "mode",
           "type": "uint8"
         }
@@ -3811,6 +4062,24 @@
         }
       ],
       "name": "setInboxKey",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "root",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
+        }
+      ],
+      "name": "setStanding",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -3922,6 +4191,25 @@
           "type": "uint256"
         }
       ],
+      "name": "standingEpoch",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "name": "strategyAuthority",
       "outputs": [
         {
@@ -4017,6 +4305,25 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "workerPeriod",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     }
   ],
   "EnterpriseFactory": [
@@ -4072,6 +4379,19 @@
       "outputs": [
         {
           "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "builder",
+      "outputs": [
+        {
+          "internalType": "contract EnterpriseBuilder",
           "name": "",
           "type": "address"
         }
@@ -4332,6 +4652,11 @@
           "internalType": "uint256[]",
           "name": "ids",
           "type": "uint256[]"
+        },
+        {
+          "internalType": "address",
+          "name": "collector",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -4396,6 +4721,31 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "gross",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "protocolFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "CreatorProceeds",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "uint256",
           "name": "id",
           "type": "uint256"
@@ -4433,6 +4783,25 @@
         }
       ],
       "name": "Executed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "member",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "source",
+          "type": "address"
+        }
+      ],
+      "name": "IncomeSourceSet",
       "type": "event"
     },
     {
@@ -4620,6 +4989,19 @@
         }
       ],
       "name": "capitalizeFor",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "name": "capitalizeFromEarnings",
       "outputs": [],
       "stateMutability": "payable",
       "type": "function"
@@ -4881,6 +5263,19 @@
     },
     {
       "inputs": [],
+      "name": "feeCollector",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "fees",
       "outputs": [
         {
@@ -4900,6 +5295,25 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "incomeSource",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -5304,6 +5718,24 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "source",
+          "type": "address"
+        }
+      ],
+      "name": "setIncomeSource",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

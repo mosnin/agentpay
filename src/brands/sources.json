@@ -9,5 +9,65 @@
     "sourceSHA256": "8a60e446059e95bf96460610d6e68c02ef6a9c1eec58a3f9a03844b2bb737f80",
     "assetSHA256": "8a60e446059e95bf96460610d6e68c02ef6a9c1eec58a3f9a03844b2bb737f80",
     "file": "clusters.svg"
+  },
+  "public/brand/apple-icon.png": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/apple-icon.png",
+    "sourceSHA256": "11b9a2f973cd5ffef264e01e5b50b5be63f76f3764fc8001099b27ff4e48abee",
+    "assetSHA256": "11b9a2f973cd5ffef264e01e5b50b5be63f76f3764fc8001099b27ff4e48abee",
+    "file": "public/brand/apple-icon.png"
+  },
+  "public/brand/favicon-16-black.png": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/favicon-16-black.png",
+    "sourceSHA256": "532d28939dc4ac8154253ad858d90c84c5b0c044662c966bf68b49722ab69fb1",
+    "assetSHA256": "532d28939dc4ac8154253ad858d90c84c5b0c044662c966bf68b49722ab69fb1",
+    "file": "public/brand/favicon-16-black.png"
+  },
+  "public/brand/favicon-16-white.png": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/favicon-16-white.png",
+    "sourceSHA256": "43d7e79d4ee13835f2118cbb31f66d8ddede963ba93f7226dbba272ecb056ea4",
+    "assetSHA256": "43d7e79d4ee13835f2118cbb31f66d8ddede963ba93f7226dbba272ecb056ea4",
+    "file": "public/brand/favicon-16-white.png"
+  },
+  "public/brand/favicon-32-black.png": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/favicon-32-black.png",
+    "sourceSHA256": "31f6a434e488d6f94ece100040cdbf446ac0afc5c0343b580fd8c70ad492a954",
+    "assetSHA256": "31f6a434e488d6f94ece100040cdbf446ac0afc5c0343b580fd8c70ad492a954",
+    "file": "public/brand/favicon-32-black.png"
+  },
+  "public/brand/favicon-32-white.png": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/favicon-32-white.png",
+    "sourceSHA256": "636abbaf33d3a8c65fe5ec31f1a4dcf8c1c168671d48534eaa76f21eb3faaeb5",
+    "assetSHA256": "636abbaf33d3a8c65fe5ec31f1a4dcf8c1c168671d48534eaa76f21eb3faaeb5",
+    "file": "public/brand/favicon-32-white.png"
+  },
+  "public/brand/icon-black.svg": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/icon-black.svg",
+    "sourceSHA256": "902e57108f8a25a41d591f328fa764d514b33341fb52b91ad972dd07bde92796",
+    "assetSHA256": "902e57108f8a25a41d591f328fa764d514b33341fb52b91ad972dd07bde92796",
+    "file": "public/brand/icon-black.svg"
+  },
+  "public/brand/icon-white-mark.png": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/icon-white-mark.png",
+    "sourceSHA256": "4e295ec4ee03538907e0d21261ba58770fe74bea2a0709263d7aff663087d94e",
+    "assetSHA256": "4e295ec4ee03538907e0d21261ba58770fe74bea2a0709263d7aff663087d94e",
+    "file": "public/brand/icon-white-mark.png"
+  },
+  "public/brand/icon-white.svg": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/icon-white.svg",
+    "sourceSHA256": "9e77992ff427a7d3ac5d0c24216fe1ce0734c2da02057409dbe781be7a7f2e4c",
+    "assetSHA256": "9e77992ff427a7d3ac5d0c24216fe1ce0734c2da02057409dbe781be7a7f2e4c",
+    "file": "public/brand/icon-white.svg"
+  },
+  "public/brand/logo-black.png": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/logo-black.png",
+    "sourceSHA256": "6f2622d2d9b5d3b03c14e2f021273624b7378911bc423e68644a63e78b7919a1",
+    "assetSHA256": "6f2622d2d9b5d3b03c14e2f021273624b7378911bc423e68644a63e78b7919a1",
+    "file": "public/brand/logo-black.png"
+  },
+  "public/brand/logo-white.png": {
+    "source": "https://raw.githubusercontent.com/mosnin/agentpay/7694e5d9e64ee65bf567f04c1e35875d24c53fc5/public/brand/logo-white.png",
+    "sourceSHA256": "e796d623aaf1456d5ada4959f25e76187949ccaedf3a548e7615b2581c56ee03",
+    "assetSHA256": "e796d623aaf1456d5ada4959f25e76187949ccaedf3a548e7615b2581c56ee03",
+    "file": "public/brand/logo-white.png"
   }
 }

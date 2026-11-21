@@ -1,0 +1,16 @@
+{
+  "protocol": "agent-economy/1",
+  "revision": "d25d6d26587cf19d11c3329a8121f995840e8184",
+  "files": {
+    "protocol/commerce.mjs": "d9a217c14f0f6634ee77a54bb550f14d463665f3633ee2fb119dda72bd2461d4",
+    "protocol/market-spec.mjs": "566fdaded523e092810624735fc92baab5f7b0cf374f2202e34090f41a4a38c4",
+    "protocol/licensed-content.mjs": "d7e627fc3a13f6e209664b9c9552f6ef16457bf0e331d334f8de7e5132424b7c",
+    "src/device.js": "85447cc9f8afed6690c50c5e2123034464debb65b496c2c79e3e4cbe4e426052",
+    "src/release-origin.js": "560dfcddc2b688a4ed49fa4e2e4ce1d8ac13f51e5e0b51109ffd46551c25bb02",
+    "src/envelope.js": "e6a176b8b52aacd3f19e185cc334f2fb0d7d7ea69981ba6cf7a005fe26efbe19",
+    "src/opaque-envelope.js": "7fb97187650c032428e342220da6dc25b16943b5783184f4473c06c6baaacd1e",
+    "src/network-identity.js": "dc54741463fc375a9015a60bd86eb499acd7c2b88043e02b24d39df4ee777557",
+    "src/chain-view.js": "44d59fd2d6359843f308367710506264206c5174fe03c0f3d5c48e12208b3364",
+    "src/abi.json": "0040d0465e0745880fb255aca460a480712a578254cf29e8f33ae7694b01b138"
+  }
+}

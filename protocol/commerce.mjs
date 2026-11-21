@@ -4,7 +4,7 @@ import abis from "../src/abi.json" with {type:"json"};
 import {seal, openEnvelope} from "../src/envelope.js";
 import {matchesChainAnchor} from "../src/network-identity.js";
 
-const tokenABI = ["function allowance(address,address) view returns(uint256)", "function approve(address,uint256) returns(bool)", "function decimals() view returns(uint8)"];
+const tokenABI = ["function balanceOf(address) view returns(uint256)", "function allowance(address,address) view returns(uint256)", "function approve(address,uint256) returns(bool)", "function decimals() view returns(uint8)"];
 const coder = AbiCoder.defaultAbiCoder();
 export const kinds = ["Skill","MCP server","Data provider"];
 export const phases = ["Missing","Open","Assigned","Delivered","Paid","Refunded"];
@@ -16,13 +16,20 @@ const erc = (address, runner) => new Contract(address,tokenABI,runner);
 const providerOf = runner => runner.provider ?? runner;
 const same = (a,b) => a.toLowerCase() === b.toLowerCase();
 
-export async function connectMarkets(network,runner) {
-  const provider=providerOf(runner), m=network.markets;
-  if (!m) throw Error("This release has no published market addresses.");
+export async function connectRegistry(network,runner) {
+  const provider=providerOf(runner);
   if (Number((await provider.getNetwork()).chainId)!==network.chainId || !await matchesChainAnchor(network,provider)) throw Error("Registry chain or deployment anchor differs.");
-  if(network.registryCodeHash && keccak256(await provider.getCode(network.relay))!==network.registryCodeHash)throw Error("Unrecognized agent registry.");
+  const code=await provider.getCode(network.relay);
+  if(code==="0x" || (network.registryCodeHash && keccak256(code)!==network.registryCodeHash))throw Error("Unrecognized agent registry.");
+  return {network,provider,runner,registry:new Contract(network.relay,abis.MandatedLivingRelay,runner)};
+}
+
+export async function connectMarkets(network,runner) {
+  const m=network.markets;
+  if (!m) throw Error("This release has no published market addresses.");
+  const api=await connectRegistry(network,runner), {provider}=api;
+  api.token=erc(m.token,runner);
   const entries=[["bids","BidsMarket"],["clusters","ClustersMarket"],["directory","EconomyDirectory"]];
-  const api={network,provider,runner,token:erc(m.token,runner),registry:new Contract(network.relay,abis.MandatedLivingRelay,runner)};
   await Promise.all(entries.map(async ([k,type])=>{
     const code=await provider.getCode(m[k]);
     if(code==="0x" || keccak256(code)!==m[k+"Hash"]) throw Error("Unrecognized "+k+" deployment.");
@@ -69,12 +76,27 @@ export async function browse(api, section, page=1, height="latest") {
     default: throw Error("Unknown directory.");
   }
   if ((await api.provider.getBlock(b.number))?.hash!==b.hash) throw Error("Block changed during lookup.");
-  return {...result,block:b.number,hash:b.hash};
+  return {...result,block:b.number,hash:b.hash,timestamp:b.timestamp};
+}
+
+async function committedPacket(api,location,digest,blockTag) {
+  const code=getBytes(await api.provider.getCode(location,blockTag)), bytes=code.subarray(1);
+  if(code[0]!==0 || sha256(bytes)!==digest)throw Error("Private packet differs from its chain commitment.");
+  return bytes;
+}
+
+export async function readBidExperiment(api,order,quote,reader,at={}) {
+  const q=await api.bids.quotes(order,quote,at);
+  if(!same(q.reader,reader.publicKey)) return null;
+  const bytes=await committedPacket(api,q.packet,q.proposal,at.blockTag);
+  const attachment=JSON.parse(new TextDecoder().decode(bytes)).sellerExperiment;
+  if(!attachment) return null;
+  return openEnvelope(toUtf8Bytes(JSON.stringify(attachment)),reader,
+    context(api,"bids","experiment",order,q.seller,q.price,q.reader));
 }
 
 async function packet(api,market,stage,parts,reader,location,digest) {
-  const code=getBytes(await api.provider.getCode(location));let bytes=code.subarray(1);
-  if(code[0]!==0 || sha256(bytes)!==digest)throw Error("Private packet differs from its chain commitment.");
+  let bytes=await committedPacket(api,location,digest);
   const main=JSON.parse(new TextDecoder().decode(bytes));
   if(main.type==="economy-ciphertext-chunks-v1"){
     if(!Number.isSafeInteger(main.length)||main.length<=8192||main.length>1048576||main.chunks.length!==Math.ceil(main.length/24000))throw Error("Invalid chunk manifest.");
@@ -185,7 +207,16 @@ export async function transact(api,market,op,p,reader) {
     await ensureAgent(api,p.agent,payer);
     const o=await c.orders(p.order);
     if(o.status!==1n || BigInt(p.agent)===o.buyer || !u128(p.price) || BigInt(p.price)>o.amount || BigInt((await api.provider.getBlock("latest")).timestamp)>=o.deadline)throw Error("Quote is outside open job terms.");
-    const bytes=await wrap(api,market,"proposal",[p.order,p.agent,p.price,reader.publicKey],o.reader,{content:p.content});
+    const parts=[p.order,p.agent,p.price,reader.publicKey];
+    let bytes=await wrap(api,market,"proposal",parts,o.reader,{content:p.content});
+    if(p.experiment) {
+      // Retain the buyer's original readable proposal. Only the seller's enrolled reader opens the prediction.
+      const packet=JSON.parse(new TextDecoder().decode(bytes));
+      const protectedPrediction=await seal(p.experiment,[reader.publicKey],context(api,market,"experiment",...parts));
+      packet.sellerExperiment=JSON.parse(new TextDecoder().decode(protectedPrediction));
+      bytes=toUtf8Bytes(JSON.stringify(packet));
+      if(bytes.length>8192) throw Error("Attributed bid exceeds the onchain proposal limit.");
+    }
     tx=await c.bid(p.order,p.agent,p.price,reader.publicKey,bytes);
   }else if(market==="bids" && op==="award"){
     const o=await c.orders(p.order),q=await c.quotes(p.order,p.quote);

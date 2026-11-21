@@ -8,20 +8,32 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "build": "node scripts/verify-market-site.mjs",
-    "rebuild": "node scripts/build-commerce.mjs rebuilt-site bids",
-    "spec": "node scripts/economy-market.mjs spec"
+    "build": "node scripts/check-protocol.mjs && vite build",
+    "rebuild": "pnpm run build",
+    "spec": "node scripts/economy-market.mjs spec",
+    "dev": "vite"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "@hpke/core": "1.9.0",
+    "@phala/dcap-qvl": "0.7.3",
+    "@phala/dstack-sdk": "0.5.8",
+    "@radix-ui/react-slot": "^1.2.0",
+    "@radix-ui/react-tabs": "^1.2.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "ethers": "6.17.0",
+    "lucide-react": "0.577.0",
+    "multiformats": "13.4.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "ethers": "6.17.0",
-    "multiformats": "13.4.2",
-    "@fontsource-variable/inter": "5.3.0",
-    "@phala/dstack-sdk": "0.5.8",
-    "@phala/dcap-qvl": "0.7.3"
+    "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
     "vite": "7.3.8"
   }
 }
